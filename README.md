@@ -44,13 +44,13 @@ This project is organized as a monorepo with the following components:
 npm install -g pnpm
 
 # Install Turbo CLI globally (optional but recommended)
-pnpm add -g turbo
+npm install -g turbo
 
 # Install NestJS CLI globally
-pnpm add -g @nestjs/cli
+npm install -g @nestjs/cli
 
 # Install Expo CLI globally
-pnpm add -g @expo/cli
+npm install -g @expo/cli
 ```
 
 ### Installation
