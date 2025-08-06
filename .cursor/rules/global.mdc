@@ -1,0 +1,18 @@
+---
+alwaysApply: true
+---
+# Global rule
+
+Our project is a connected vending machine platform that enables users to reserve up to two products from a machine via their smartphone (web or mobile), then retrieve them by scanning a unique QR code. The system integrates a loyalty program, a real-time stock tracking mechanism, and an admin back-office for operations management.
+
+We use a Turborepo monorepo with three main applications: a React Native mobile app (Expo), a Next.js web interface, and a NestJS backend. All API communication is handled through tRPC, ensuring end-to-end type safety across the stack. Our data is stored in a PostgreSQL relational database.
+
+The system must:
+
+- Decrement stock immediately when a reservation is placed (not when it is picked up),
+- Invalidate expired or already-used QR codes,
+- Log loyalty point operations for each user, tracked via a personal barcode,
+- Allow users to consult their loyalty history and redeem rewards,
+- Offer a modern, fluid and accessible UI experience across platforms.
+
+We prioritize accessibility and animation fluidity, and expect all interfaces to meet WCAG standards while still feeling delightful to use.

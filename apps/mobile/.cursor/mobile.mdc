@@ -1,0 +1,13 @@
+---
+description: For every task related to the mobile app
+alwaysApply: false
+---
+# Mobile
+
+The mobile app is developed using React Native with Expo. Its core purpose is to allow users to log in, view machines nearby, select products (1–2 max), and place a reservation. A secure QR code is then displayed, allowing them to retrieve their items at the vending machine.
+
+The app communicates with the backend exclusively via tRPC to ensure type safety. We use React Navigation for routing and Reanimated for smooth, native-like transitions and animations.
+
+Accessibility is a top priority: all components should support screen readers, motion-reduce settings, and large text modes. Animations should feel modern and elegant without being distracting.
+
+The app also includes a loyalty dashboard, allowing users to monitor their points, see their barcode, and consult their order history.

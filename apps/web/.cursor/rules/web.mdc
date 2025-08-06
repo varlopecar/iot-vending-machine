@@ -1,0 +1,21 @@
+---
+description: For every task related to the back-office
+alwaysApply: false
+---
+# Back-office
+
+The web app is the back-office interface of the connected vending machine project. Built with Next.js (App Router) and Tailwind CSS, it is used by admins to monitor and manage operations across all machines.
+
+Admins can:
+
+- View and manage all products, machines, and stock levels,
+- Monitor incoming and expired orders,
+- Track which products are reserved, picked up, or expired,
+- Access user and loyalty point data,
+- View and filter detailed activity logs.
+
+All data is fetched via tRPC with strict end-to-end type safety. The interface must be responsive, fast, and easy to use, even for non-technical staff.
+
+Framer Motion is used to enhance usability with smooth transitions and subtle animations. All animations must respect motion-reduce preferences and accessibility standards (focus outlines, keyboard navigation, color contrast).
+
+Security is enforced at the route level, ensuring only authenticated admin users can access this app.

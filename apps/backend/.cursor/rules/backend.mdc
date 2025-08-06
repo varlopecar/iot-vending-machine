@@ -1,0 +1,19 @@
+---
+description: For every task related to back-end
+alwaysApply: false
+---
+# Backend
+
+The backend is built in NestJS and uses tRPC to expose typed APIs to both the web and mobile front-ends. PostgreSQL is used as the primary data store. Prisma is used as the ORM.
+
+The backend manages:
+
+- Users, products, machines, and real-time stocks,
+- Orders (linked to up to 2 products),
+- QR code token generation (UUID or secure hash),
+- Loyalty point calculation and logging,
+- Admin logs and expired command handling.
+
+When a user places an order, stock is decremented immediately. If the order is not picked up before `expires_at`, it is marked as expired and the stock is restored. QR code tokens are single-use only, and validated server-side with status and expiry checks.
+
+Admins can monitor operations via the activity_logs table and consult all data from a back-office interface. All endpoints must be secured and tested thoroughly.
