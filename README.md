@@ -1,135 +1,225 @@
-# Turborepo starter
+# IoT Vending Machine
 
-This Turborepo starter is maintained by the Turborepo core team.
+A modern IoT vending machine system built with a monorepo architecture using Turborepo. This project includes a backend API, mobile app, and web dashboard for managing and interacting with vending machines.
 
-## Using this example
+## 🏗️ Architecture
 
-Run the following command:
+This project is organized as a monorepo with the following components:
 
-```sh
-npx create-turbo@latest
+### Apps
+
+- **`backend`** - NestJS API server with tRPC integration
+  - RESTful API endpoints for vending machine management
+  - Real-time communication capabilities
+  - Database integration and business logic
+
+- **`mobile`** - React Native mobile app (Expo)
+  - Cross-platform mobile application
+  - User interface for vending machine interactions
+  - Real-time updates and notifications
+
+- **`web`** - Next.js web dashboard
+  - Admin dashboard for vending machine management
+  - Analytics and monitoring interface
+  - Responsive web application
+
+### Packages
+
+- **`@repo/eslint-config`** - Shared ESLint configuration
+- **`@repo/typescript-config`** - Shared TypeScript configuration
+
+## 🚀 Getting Started
+
+### Prerequisites
+
+- Node.js >= 18
+- pnpm (recommended package manager)
+- Expo CLI (for mobile development)
+- Turbo CLI (optional but recommended)
+
+### Install Global Dependencies
+
+```bash
+# Install pnpm globally (if not already installed)
+npm install -g pnpm
+
+# Install Turbo CLI globally (optional but recommended)
+pnpm add -g turbo
+
+# Install NestJS CLI globally
+pnpm add -g @nestjs/cli
+
+# Install Expo CLI globally
+pnpm add -g @expo/cli
 ```
 
-## What's inside?
+### Installation
 
-This Turborepo includes the following packages/apps:
+1. Clone the repository:
 
-### Apps and Packages
-
-- `docs`: a [Next.js](https://nextjs.org/) app
-- `web`: another [Next.js](https://nextjs.org/) app
-- `@repo/ui`: a stub React component library shared by both `web` and `docs` applications
-- `@repo/eslint-config`: `eslint` configurations (includes `eslint-config-next` and `eslint-config-prettier`)
-- `@repo/typescript-config`: `tsconfig.json`s used throughout the monorepo
-
-Each package/app is 100% [TypeScript](https://www.typescriptlang.org/).
-
-### Utilities
-
-This Turborepo has some additional tools already setup for you:
-
-- [TypeScript](https://www.typescriptlang.org/) for static type checking
-- [ESLint](https://eslint.org/) for code linting
-- [Prettier](https://prettier.io) for code formatting
-
-### Build
-
-To build all apps and packages, run the following command:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build
-yarn dlx turbo build
-pnpm exec turbo build
+```bash
+git clone <repository-url>
+cd iot-vending-machine
 ```
 
-You can build a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+2. Install dependencies:
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo build --filter=docs
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo build --filter=docs
-yarn exec turbo build --filter=docs
-pnpm exec turbo build --filter=docs
+```bash
+pnpm install
 ```
 
-### Develop
+3. Set up environment variables (create `.env` files in each app directory as needed)
 
-To develop all apps and packages, run the following command:
+## 📱 Development
 
-```
-cd my-turborepo
+### Start all applications
 
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+```bash
+# Start all apps in development mode
+pnpm dev
+
+# Or using turbo CLI directly
 turbo dev
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev
-yarn exec turbo dev
-pnpm exec turbo dev
 ```
 
-You can develop a specific package by using a [filter](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters):
+### Start specific applications
 
-```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
+```bash
+# Backend only
+pnpm dev --filter=backend
+# Or using turbo CLI
+turbo dev --filter=backend
+
+# Mobile app only
+pnpm dev --filter=mobile
+# Or using turbo CLI
+turbo dev --filter=mobile
+
+# Web dashboard only
+pnpm dev --filter=web
+# Or using turbo CLI
 turbo dev --filter=web
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo dev --filter=web
-yarn exec turbo dev --filter=web
-pnpm exec turbo dev --filter=web
 ```
 
-### Remote Caching
+### Build all applications
 
-> [!TIP]
-> Vercel Remote Cache is free for all plans. Get started today at [vercel.com](https://vercel.com/signup?/signup?utm_source=remote-cache-sdk&utm_campaign=free_remote_cache).
+```bash
+# Build all apps
+pnpm build
 
-Turborepo can use a technique known as [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching) to share cache artifacts across machines, enabling you to share build caches with your team and CI/CD pipelines.
-
-By default, Turborepo will cache locally. To enable Remote Caching you will need an account with Vercel. If you don't have an account you can [create one](https://vercel.com/signup?utm_source=turborepo-examples), then enter the following commands:
-
-```
-cd my-turborepo
-
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo login
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo login
-yarn exec turbo login
-pnpm exec turbo login
+# Or using turbo CLI directly
+turbo build
 ```
 
-This will authenticate the Turborepo CLI with your [Vercel account](https://vercel.com/docs/concepts/personal-accounts/overview).
+### Linting and Type Checking
 
-Next, you can link your Turborepo to your Remote Cache by running the following command from the root of your Turborepo:
+```bash
+# Lint all code
+pnpm lint
+
+# Check TypeScript types
+pnpm check-types
+
+# Format code
+pnpm format
+```
+
+## 🏃‍♂️ Running Individual Apps
+
+### Backend (NestJS)
+
+```bash
+cd apps/backend
+pnpm dev          # Development mode with hot reload
+pnpm start        # Production mode
+pnpm test         # Run tests
+```
+
+### Mobile (React Native + Expo)
+
+```bash
+cd apps/mobile
+pnpm dev          # Start Expo development server
+pnpm android      # Run on Android emulator
+pnpm ios          # Run on iOS simulator
+pnpm web          # Run in web browser
+```
+
+### Web (Next.js)
+
+```bash
+cd apps/web
+pnpm dev          # Development server (port 3001)
+pnpm build        # Build for production
+pnpm start        # Start production server
+```
+
+## 🛠️ Technology Stack
+
+- **Monorepo**: Turborepo
+- **Backend**: NestJS, tRPC, TypeScript
+- **Mobile**: React Native, Expo, TypeScript
+- **Web**: Next.js 15, React 19, TypeScript
+- **Package Manager**: pnpm
+- **Linting**: ESLint + Prettier
+- **Testing**: Jest
+
+## 📁 Project Structure
 
 ```
-# With [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation) installed (recommended)
-turbo link
-
-# Without [global `turbo`](https://turborepo.com/docs/getting-started/installation#global-installation), use your package manager
-npx turbo link
-yarn exec turbo link
-pnpm exec turbo link
+iot-vending-machine/
+├── apps/
+│   ├── backend/          # NestJS API server
+│   ├── mobile/           # React Native mobile app
+│   └── web/              # Next.js web dashboard
+├── packages/
+│   ├── eslint-config/    # Shared ESLint config
+│   └── typescript-config/ # Shared TypeScript config
+├── package.json
+├── turbo.json
+└── pnpm-workspace.yaml
 ```
 
-## Useful Links
+## 🔧 Development Workflow
 
-Learn more about the power of Turborepo:
+1. **Feature Development**: Create feature branches from main
+2. **Testing**: Run tests before committing changes
+3. **Linting**: Ensure code passes linting rules
+4. **Type Checking**: Verify TypeScript types are correct
+5. **Build**: Ensure all apps build successfully
 
-- [Tasks](https://turborepo.com/docs/crafting-your-repository/running-tasks)
-- [Caching](https://turborepo.com/docs/crafting-your-repository/caching)
-- [Remote Caching](https://turborepo.com/docs/core-concepts/remote-caching)
-- [Filtering](https://turborepo.com/docs/crafting-your-repository/running-tasks#using-filters)
-- [Configuration Options](https://turborepo.com/docs/reference/configuration)
-- [CLI Usage](https://turborepo.com/docs/reference/command-line-reference)
+## 🚀 Deployment
+
+### Backend Deployment
+
+- Build the NestJS application
+- Deploy to your preferred cloud platform (AWS, GCP, Azure, etc.)
+- Configure environment variables and database connections
+
+### Mobile App Deployment
+
+- Build the Expo app for production
+- Submit to App Store and Google Play Store
+- Configure app signing and certificates
+
+### Web Dashboard Deployment
+
+- Build the Next.js application
+- Deploy to Vercel, Netlify, or your preferred hosting platform
+- Configure environment variables
+
+## 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Run tests and linting
+5. Submit a pull request
+
+## 📄 License
+
+This project is licensed under the MIT License.
+
+## 🆘 Support
+
+For support and questions, please open an issue in the repository or contact the development team.
