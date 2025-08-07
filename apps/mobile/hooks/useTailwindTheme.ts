@@ -1,5 +1,5 @@
 import { useColorScheme } from 'react-native';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EventEmitter } from 'events';
 
@@ -54,6 +54,7 @@ export const darkTheme: ThemeColors = {
 
 // Événement global pour synchroniser le thème
 const themeEmitter = new EventEmitter();
+themeEmitter.setMaxListeners(20); // Augmenter la limite de listeners
 const THEME_CHANGE_EVENT = 'themeChange';
 
 // État global du thème
@@ -64,25 +65,38 @@ export function useTailwindTheme() {
   const systemColorScheme = useColorScheme();
   const [currentTheme, setCurrentTheme] = useState<Theme>(globalTheme);
   const [isDark, setIsDark] = useState(globalIsDark);
+  const listenerRef = useRef<((theme: Theme) => void) | null>(null);
 
   useEffect(() => {
     // Charger le thème initial
     loadTheme();
     
-    // Écouter les changements de thème
-    const handleThemeChange = (theme: Theme) => {
-      setCurrentTheme(theme);
-      if (theme === 'light') setIsDark(false);
-      else if (theme === 'dark') setIsDark(true);
-      else setIsDark(systemColorScheme === 'dark');
-    };
+    // Créer le handler une seule fois
+    if (!listenerRef.current) {
+      listenerRef.current = (theme: Theme) => {
+        setCurrentTheme(theme);
+        if (theme === 'light') setIsDark(false);
+        else if (theme === 'dark') setIsDark(true);
+        else setIsDark(systemColorScheme === 'dark');
+      };
+    }
 
-    themeEmitter.on(THEME_CHANGE_EVENT, handleThemeChange);
+    // Écouter les changements de thème
+    themeEmitter.on(THEME_CHANGE_EVENT, listenerRef.current);
     
     return () => {
-      themeEmitter.off(THEME_CHANGE_EVENT, handleThemeChange);
+      if (listenerRef.current) {
+        themeEmitter.off(THEME_CHANGE_EVENT, listenerRef.current);
+      }
     };
-  }, [systemColorScheme]);
+  }, []); // Supprimer systemColorScheme de la dépendance
+
+  // Effet séparé pour gérer les changements de systemColorScheme
+  useEffect(() => {
+    if (currentTheme === 'system') {
+      setIsDark(systemColorScheme === 'dark');
+    }
+  }, [systemColorScheme, currentTheme]);
 
   const loadTheme = async () => {
     try {
@@ -99,40 +113,9 @@ export function useTailwindTheme() {
     }
   };
 
-  const setTheme = async (theme: Theme) => {
-    globalTheme = theme;
-    globalIsDark = theme === 'light' ? false : theme === 'dark' ? true : systemColorScheme === 'dark';
-    
-    try {
-      await AsyncStorage.setItem('userTheme', theme);
-      themeEmitter.emit(THEME_CHANGE_EVENT, theme);
-    } catch (error) {
-      console.log('Erreur lors de la sauvegarde du thème:', error);
-    }
-  };
-
-  const colors = isDark ? darkTheme : lightTheme;
-  
   return {
-    theme: currentTheme,
-    setTheme,
-    colors,
     isDark,
-    isLight: !isDark,
   };
 }
 
-export const themeClasses = {
-  background: 'bg-light-background dark:bg-dark-background',
-  surface: 'bg-light-surface dark:bg-dark-surface',
-  text: 'text-light-text dark:text-dark-text',
-  textSecondary: 'text-light-textSecondary dark:text-dark-textSecondary',
-  textPrimary: 'text-light-primary dark:text-dark-primary',
-  border: 'border-light-border dark:border-dark-border',
-  button: 'bg-light-primary dark:bg-dark-primary',
-  buttonText: 'text-light-text dark:text-dark-buttonText',
-  success: 'text-light-success dark:text-dark-success',
-  warning: 'text-light-warning dark:text-dark-warning',
-  error: 'text-light-error dark:text-dark-error',
-  info: 'text-light-info dark:text-dark-info',
-} as const;
+
