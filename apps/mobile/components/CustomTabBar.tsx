@@ -1,6 +1,5 @@
 import React from "react";
 import { View, TouchableOpacity, Text, StyleSheet } from "react-native";
-import { Ionicons } from "@expo/vector-icons";
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
 
 interface TabBarProps {
@@ -107,7 +106,7 @@ const styles = StyleSheet.create({
   tab: {
     justifyContent: "center",
     alignItems: "center",
-    width: 100,
+    width: 85,
   },
   tabContent: {
     alignItems: "center",
