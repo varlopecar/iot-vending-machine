@@ -1,6 +1,9 @@
 import { useColorScheme } from 'react-native';
+import { useState, useEffect } from 'react';
+import AsyncStorage from '@react-native-async-storage/async-storage';
+import { EventEmitter } from 'events';
 
-export type Theme = 'light' | 'dark';
+export type Theme = 'light' | 'dark' | 'system';
 
 export interface ThemeColors {
   primary: string;
@@ -19,14 +22,14 @@ export interface ThemeColors {
 }
 
 export const lightTheme: ThemeColors = {
-  primary: '#F9F4EC', // PrimaryLight
-  secondary: '#5B715F', // SecondaryLight
-  tertiary: '#E3E8E4', // TertiaryLight
-  background: '#F9F4EC', // PrimaryLight
-  surface: '#E3E8E4', // TertiaryLight
-  text: '#3A2E2C', // TextLight
-  textSecondary: '#3A2E2C', // TextLight
-  border: '#F3E9D8', // LineLight
+  primary: '#F9F4EC',
+  secondary: '#5B715F',
+  tertiary: '#E3E8E4',
+  background: '#F9F4EC',
+  surface: '#E3E8E4',
+  text: '#3A2E2C',
+  textSecondary: '#3A2E2C',
+  border: '#F3E9D8',
   success: '#10b981',
   warning: '#f59e0b',
   error: '#ef4444',
@@ -34,68 +37,102 @@ export const lightTheme: ThemeColors = {
 };
 
 export const darkTheme: ThemeColors = {
-  primary: '#2C2221', // PrimaryDark
-  secondary: '#FD9BD9', // SecondaryDark
-  tertiary: '#FECDEC', // TertiaryDark
-  background: '#2C2221', // PrimaryDark
-  surface: '#493837', // LineDark
-  text: '#FAE4D1', // TextDark
-  textSecondary: '#FEFCFA', // SecondaryTextDark
-  border: '#493837', // LineDark
-  buttonText: '#320120', // ButtonTextDark
+  primary: '#2C2221',
+  secondary: '#FD9BD9',
+  tertiary: '#FECDEC',
+  background: '#2C2221',
+  surface: '#493837',
+  text: '#FAE4D1',
+  textSecondary: '#FEFCFA',
+  border: '#493837',
+  buttonText: '#320120',
   success: '#10b981',
   warning: '#f59e0b',
   error: '#ef4444',
   info: '#3b82f6',
 };
 
+// Événement global pour synchroniser le thème
+const themeEmitter = new EventEmitter();
+const THEME_CHANGE_EVENT = 'themeChange';
+
+// État global du thème
+let globalTheme: Theme = 'system';
+let globalIsDark = false;
+
 export function useTailwindTheme() {
-  const colorScheme = useColorScheme();
-  const theme: Theme = colorScheme === 'dark' ? 'dark' : 'light';
-  
-  const colors = theme === 'dark' ? darkTheme : lightTheme;
+  const systemColorScheme = useColorScheme();
+  const [currentTheme, setCurrentTheme] = useState<Theme>(globalTheme);
+  const [isDark, setIsDark] = useState(globalIsDark);
+
+  useEffect(() => {
+    // Charger le thème initial
+    loadTheme();
+    
+    // Écouter les changements de thème
+    const handleThemeChange = (theme: Theme) => {
+      setCurrentTheme(theme);
+      if (theme === 'light') setIsDark(false);
+      else if (theme === 'dark') setIsDark(true);
+      else setIsDark(systemColorScheme === 'dark');
+    };
+
+    themeEmitter.on(THEME_CHANGE_EVENT, handleThemeChange);
+    
+    return () => {
+      themeEmitter.off(THEME_CHANGE_EVENT, handleThemeChange);
+    };
+  }, [systemColorScheme]);
+
+  const loadTheme = async () => {
+    try {
+      const savedTheme = await AsyncStorage.getItem('userTheme');
+      if (savedTheme) {
+        const theme = savedTheme as Theme;
+        globalTheme = theme;
+        globalIsDark = theme === 'light' ? false : theme === 'dark' ? true : systemColorScheme === 'dark';
+        setCurrentTheme(theme);
+        setIsDark(globalIsDark);
+      }
+    } catch (error) {
+      console.log('Erreur lors du chargement du thème:', error);
+    }
+  };
+
+  const setTheme = async (theme: Theme) => {
+    globalTheme = theme;
+    globalIsDark = theme === 'light' ? false : theme === 'dark' ? true : systemColorScheme === 'dark';
+    
+    try {
+      await AsyncStorage.setItem('userTheme', theme);
+      themeEmitter.emit(THEME_CHANGE_EVENT, theme);
+    } catch (error) {
+      console.log('Erreur lors de la sauvegarde du thème:', error);
+    }
+  };
+
+  const colors = isDark ? darkTheme : lightTheme;
   
   return {
-    theme,
+    theme: currentTheme,
+    setTheme,
     colors,
-    isDark: theme === 'dark',
-    isLight: theme === 'light',
+    isDark,
+    isLight: !isDark,
   };
 }
 
-// Utility function to get theme-aware class names
-export function getThemeClasses(baseClasses: string, lightClasses?: string, darkClasses?: string): string {
-  if (!lightClasses && !darkClasses) {
-    return baseClasses;
-  }
-  
-  const lightSuffix = lightClasses ? ` ${lightClasses}` : '';
-  const darkSuffix = darkClasses ? ` ${darkClasses}` : '';
-  
-  return `${baseClasses}${lightSuffix} dark:${darkSuffix}`;
-}
-
-// Predefined theme-aware class combinations
 export const themeClasses = {
-  // Backgrounds
   background: 'bg-light-background dark:bg-dark-background',
   surface: 'bg-light-surface dark:bg-dark-surface',
-  
-  // Text
   text: 'text-light-text dark:text-dark-text',
   textSecondary: 'text-light-textSecondary dark:text-dark-textSecondary',
   textPrimary: 'text-light-primary dark:text-dark-primary',
-  
-  // Borders
   border: 'border-light-border dark:border-dark-border',
-  
-  // Interactive elements
   button: 'bg-light-primary dark:bg-dark-primary',
   buttonText: 'text-light-text dark:text-dark-buttonText',
-  
-  // Status colors
   success: 'text-light-success dark:text-dark-success',
   warning: 'text-light-warning dark:text-dark-warning',
   error: 'text-light-error dark:text-dark-error',
   info: 'text-light-info dark:text-dark-info',
-} as const; 
+} as const;
