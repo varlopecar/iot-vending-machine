@@ -1,53 +1,48 @@
-import { Platform } from 'react-native';
-import { TailwindView, TailwindText } from '../../components/ui';
-import { themeClasses } from '../../hooks/useTailwindTheme';
+import React from 'react';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { router } from 'expo-router';
+import { AuthButton } from '../../components/ui';
+import { useTailwindTheme } from '../../hooks/useTailwindTheme';
 
 export default function HomeScreen() {
+  const { isDark } = useTailwindTheme();
+
+  const handleLogin = () => {
+    router.push('/login');
+  };
+
+  const handleRegister = () => {
+    router.push('/register');
+  };
+
   return (
-    <TailwindView className={`${themeClasses.background} flex-1 p-4`}>
-      <TailwindView className="mb-6">
-        <TailwindText className={`${themeClasses.text} text-2xl font-bold`}>
-          Bienvenue !
-        </TailwindText>
-      </TailwindView>
-      
-      <TailwindView className="mb-6">
-        <TailwindText className={`${themeClasses.text} text-lg font-semibold mb-2`}>
-          Étape 1 : Testez
-        </TailwindText>
-        <TailwindText className={`${themeClasses.textSecondary} text-base`}>
-          Modifiez <TailwindText className="font-mono">app/(tabs)/index.tsx</TailwindText> pour voir les changements.
-        </TailwindText>
-        <TailwindText className={`${themeClasses.textSecondary} text-base mt-2`}>
-          Appuyez sur{' '}
-          <TailwindText className="font-mono">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12',
-            })}
-          </TailwindText>{' '}
-          pour ouvrir les outils de développement.
-        </TailwindText>
-      </TailwindView>
-      
-      <TailwindView className="mb-6">
-        <TailwindText className={`${themeClasses.text} text-lg font-semibold mb-2`}>
-          Étape 2 : Explorez
-        </TailwindText>
-        <TailwindText className={`${themeClasses.textSecondary} text-base`}>
-          Utilisez les composants Tailwind pour créer une interface moderne et accessible.
-        </TailwindText>
-      </TailwindView>
-      
-      <TailwindView className="mb-6">
-        <TailwindText className={`${themeClasses.text} text-lg font-semibold mb-2`}>
-          Étape 3 : Développez
-        </TailwindText>
-        <TailwindText className={`${themeClasses.textSecondary} text-base`}>
-          Commencez à développer votre application de distributeur automatique connecté !
-        </TailwindText>
-      </TailwindView>
-    </TailwindView>
+    <View className={`flex-1 p-6 ${isDark ? 'bg-dark-primary' : 'bg-light-primary'}`}>
+      <View className="flex-1 justify-center items-center">
+        <View className="mb-12">
+          <Text className={`text-4xl font-bold text-center mb-4 ${
+            isDark ? 'text-dark-text' : 'text-light-text'
+          }`}>
+            Bienvenue !
+          </Text>
+          <Text className={`text-lg text-center ${
+            isDark ? 'text-dark-textSecondary' : 'text-light-textSecondary'
+          }`}>
+            Connectez-vous ou créez un compte pour commencer
+          </Text>
+        </View>
+        
+        <View className="w-full space-y-4">
+          <AuthButton
+            title="Se connecter"
+            onPress={handleLogin}
+          />
+          
+          <AuthButton
+            title="S'inscrire"
+            onPress={handleRegister}
+          />
+        </View>
+      </View>
+    </View>
   );
 }

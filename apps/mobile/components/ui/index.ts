@@ -1,3 +1,3 @@
-export { TailwindView } from './TailwindView';
-export { TailwindText } from './TailwindText';
-export { TailwindButton } from './TailwindButton'; 
+export { AuthInput } from './AuthInput';
+export { AuthButton } from './AuthButton';
+export { VendingIllustration } from '../VendingIllustration'; 

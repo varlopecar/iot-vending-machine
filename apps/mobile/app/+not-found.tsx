@@ -1,23 +1,35 @@
 import { Link, Stack } from 'expo-router';
-import { TailwindView, TailwindText } from '../components/ui';
-import { themeClasses } from '../hooks/useTailwindTheme';
+import { View, Text, TouchableOpacity } from 'react-native';
+import { useTailwindTheme } from '../hooks/useTailwindTheme';
 
 export default function NotFoundScreen() {
+  const { isDark } = useTailwindTheme();
+
   return (
     <>
       <Stack.Screen options={{ title: 'Oops!' }} />
-      <TailwindView className={`${themeClasses.background} flex-1 items-center justify-center p-5`}>
-        <TailwindText className={`${themeClasses.text} text-lg mb-4`}>
+      <View className={`flex-1 items-center justify-center p-5 ${
+        isDark ? 'bg-dark-primary' : 'bg-light-primary'
+      }`}>
+        <Text className={`text-lg mb-4 ${
+          isDark ? 'text-dark-text' : 'text-light-text'
+        }`}>
           Cette page n&apos;existe pas.
-        </TailwindText>
+        </Text>
         <Link href="/" asChild>
-          <TailwindView className={`${themeClasses.surface} px-4 py-3 rounded-lg border ${themeClasses.border}`}>
-            <TailwindText className={`${themeClasses.textPrimary} font-semibold`}>
+          <TouchableOpacity className={`px-4 py-3 rounded-lg border-2 ${
+            isDark 
+              ? 'bg-dark-surface border-dark-border' 
+              : 'bg-light-surface border-light-border'
+          }`}>
+            <Text className={`font-semibold ${
+              isDark ? 'text-dark-text' : 'text-light-text'
+            }`}>
               Retour à l&apos;accueil
-            </TailwindText>
-          </TailwindView>
+            </Text>
+          </TouchableOpacity>
         </Link>
-      </TailwindView>
+      </View>
     </>
   );
 }
