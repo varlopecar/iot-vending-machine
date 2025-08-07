@@ -106,12 +106,11 @@ const styles = StyleSheet.create({
   tab: {
     justifyContent: "center",
     alignItems: "center",
-    width: "20%",
+    width: "25%",
   },
   tabContent: {
     alignItems: "center",
     justifyContent: "center",
-    borderRadius: 20,
     width: "100%",
   },
   activeTab: {
@@ -124,5 +123,6 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "600",
     textAlign: "center",
+    marginTop: 4,
   },
 });
