@@ -1,14 +1,20 @@
-import { TailwindView, TailwindText } from '../../components/ui';
-import { themeClasses } from '../../hooks/useTailwindTheme';
+import { View, Text } from "react-native";
+import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 
 export default function ProfilScreen() {
+  const { isDark } = useTailwindTheme();
+
   return (
-    <TailwindView className={`${themeClasses.background} flex-1 p-4`}>
-      <TailwindView className="flex-1 justify-center items-center">
-        <TailwindText className={`${themeClasses.text} text-2xl font-bold`}>
+    <View
+      className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1 p-4`}
+    >
+      <View className="flex-1 justify-center items-center">
+        <Text
+          className={`${isDark ? "text-dark-text" : "text-light-text"} text-2xl font-bold`}
+        >
           Page : Profil
-        </TailwindText>
-      </TailwindView>
-    </TailwindView>
+        </Text>
+      </View>
+    </View>
   );
 }

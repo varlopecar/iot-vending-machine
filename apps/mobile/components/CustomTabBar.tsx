@@ -94,8 +94,8 @@ const styles = StyleSheet.create({
     right: 0,
     elevation: 0,
     shadowOpacity: 0,
-    borderTopWidth: 1,
-    borderTopColor: "#CACACA",
+    borderTopWidth: 0.2,
+    borderTopColor: "#666666",
   },
   tabsWrapper: {
     display: "flex",

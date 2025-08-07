@@ -1,5 +1,4 @@
-import { TailwindView, TailwindText } from "../../components/ui";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, View, Text } from "react-native";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 
 export default function IndexScreen() {
@@ -21,15 +20,15 @@ export default function IndexScreen() {
   };
 
   return (
-    <TailwindView
+    <View
       className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1 p-4`}
     >
-      <TailwindView className="flex-1 justify-center items-center">
-        <TailwindText
+      <View className="flex-1 justify-center items-center">
+        <Text
           className={`${isDark ? "text-dark-text" : "text-light-text"} text-2xl font-bold mb-8`}
         >
           Page : Réserver
-        </TailwindText>
+        </Text>
 
         <TouchableOpacity
           onPress={toggleTheme}
@@ -42,13 +41,9 @@ export default function IndexScreen() {
             borderColor: isDark ? "#493837" : "#F3E9D8",
           }}
         >
-          <TailwindText
-            className={`${isDark ? "text-dark-buttonText" : "text-light-text"} font-semibold`}
-          >
-            Thème : {getThemeLabel()}
-          </TailwindText>
+          <Text>Thème : {getThemeLabel()}</Text>
         </TouchableOpacity>
-      </TailwindView>
-    </TailwindView>
+      </View>
+    </View>
   );
 }
