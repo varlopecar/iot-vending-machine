@@ -12,13 +12,14 @@ module.exports = {
       colors: {
         // Light theme colors
         light: {
-          primary: '#0a7ea4',
-          secondary: '#687076',
-          background: '#ffffff',
-          surface: '#f8f9fa',
-          text: '#11181C',
-          textSecondary: '#687076',
-          border: '#e1e5e9',
+          primary: '#F9F4EC', // PrimaryLight
+          secondary: '#5B715F', // SecondaryLight
+          tertiary: '#E3E8E4', // TertiaryLight
+          text: '#3A2E2C', // TextLight
+          textSecondary: '#3A2E2C', // TextLight
+          background: '#F9F4EC', // PrimaryLight
+          surface: '#E3E8E4', // TertiaryLight
+          border: '#F3E9D8', // LineLight
           success: '#10b981',
           warning: '#f59e0b',
           error: '#ef4444',
@@ -26,13 +27,15 @@ module.exports = {
         },
         // Dark theme colors
         dark: {
-          primary: '#ffffff',
-          secondary: '#9BA1A6',
-          background: '#151718',
-          surface: '#1a1b1e',
-          text: '#ECEDEE',
-          textSecondary: '#9BA1A6',
-          border: '#2a2b2e',
+          primary: '#2C2221', // PrimaryDark
+          secondary: '#FD9BD9', // SecondaryDark
+          tertiary: '#FECDEC', // TertiaryDark
+          text: '#FAE4D1', // TextDark
+          textSecondary: '#FEFCFA', // SecondaryTextDark
+          background: '#2C2221', // PrimaryDark
+          surface: '#493837', // LineDark
+          border: '#493837', // LineDark
+          buttonText: '#320120', // ButtonTextDark
           success: '#10b981',
           warning: '#f59e0b',
           error: '#ef4444',
