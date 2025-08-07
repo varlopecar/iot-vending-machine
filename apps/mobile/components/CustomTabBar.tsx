@@ -106,14 +106,13 @@ const styles = StyleSheet.create({
   tab: {
     justifyContent: "center",
     alignItems: "center",
-    width: 85,
+    width: "20%",
   },
   tabContent: {
     alignItems: "center",
     justifyContent: "center",
-    paddingHorizontal: 8,
-    paddingVertical: 6,
     borderRadius: 20,
+    width: "100%",
   },
   activeTab: {
     borderRadius: 20,
