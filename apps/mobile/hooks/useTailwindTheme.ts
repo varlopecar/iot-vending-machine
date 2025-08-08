@@ -101,20 +101,46 @@ export function useTailwindTheme() {
   const loadTheme = async () => {
     try {
       const savedTheme = await AsyncStorage.getItem('userTheme');
+      
       if (savedTheme) {
         const theme = savedTheme as Theme;
         globalTheme = theme;
         globalIsDark = theme === 'light' ? false : theme === 'dark' ? true : systemColorScheme === 'dark';
         setCurrentTheme(theme);
         setIsDark(globalIsDark);
+      } else {
+        // Si aucun thème n'est sauvegardé, utiliser le thème système par défaut
+        globalTheme = 'system';
+        globalIsDark = systemColorScheme === 'dark';
+        setCurrentTheme('system');
+        setIsDark(systemColorScheme === 'dark');
       }
     } catch (error) {
-      console.log('Erreur lors du chargement du thème:', error);
+      // En cas d'erreur, utiliser le thème système
+      globalTheme = 'system';
+      globalIsDark = systemColorScheme === 'dark';
+      setCurrentTheme('system');
+      setIsDark(systemColorScheme === 'dark');
+    }
+  };
+
+  const setTheme = async (theme: Theme) => {
+    try {
+      await AsyncStorage.setItem('userTheme', theme);
+      globalTheme = theme;
+      globalIsDark = theme === 'light' ? false : theme === 'dark' ? true : systemColorScheme === 'dark';
+      setCurrentTheme(theme);
+      setIsDark(globalIsDark);
+      themeEmitter.emit(THEME_CHANGE_EVENT, theme);
+    } catch (error) {
+      // Gestion silencieuse de l'erreur
     }
   };
 
   return {
     isDark,
+    currentTheme,
+    setTheme,
   };
 }
 
