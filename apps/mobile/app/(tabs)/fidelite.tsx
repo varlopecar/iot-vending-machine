@@ -9,6 +9,7 @@ import {
   Dimensions,
 } from "react-native";
 import { Image } from "expo-image";
+import { LinearGradient } from "expo-linear-gradient";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
@@ -89,6 +90,9 @@ const mockHistory: HistoryEntry[] = [
   { id: "4", date: "02/09/2025", location: "Antibes", points: 4 },
   { id: "5", date: "02/09/2025", location: "Antibes", points: 4 },
   { id: "6", date: "02/09/2025", location: "Antibes", points: 4 },
+  { id: "7", date: "02/09/2025", location: "Antibes", points: 4 },
+  { id: "8", date: "02/09/2025", location: "Antibes", points: 4 },
+  { id: "9", date: "02/09/2025", location: "Antibes", points: 4 },
 ];
 
 export default function FideliteScreen() {
@@ -169,7 +173,7 @@ export default function FideliteScreen() {
 
   const renderTabs = () => (
     <View
-      className={`${isDark ? "bg-dark-border" : "bg-light-border"} mb-6 flex-row items-center`}
+      className={`${isDark ? "bg-dark-border" : "bg-light-border"} flex-row items-center border-b ${isDark ? "border-dark-primary" : "border-light-primary"}`}
     >
       <TouchableOpacity
         onPress={() => setActiveTab("advantages")}
@@ -213,7 +217,7 @@ export default function FideliteScreen() {
   );
 
   const renderAdvantages = () => (
-    <View className="px-4">
+    <View className="px-4 mt-6">
       {/* Première ligne avec 2 cards */}
       <View className="flex-row gap-4 mb-4">
         {mockAdvantages.slice(0, 2).map((advantage) => (
@@ -312,36 +316,61 @@ export default function FideliteScreen() {
   );
 
   const renderHistory = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      {mockHistory.map((entry) => (
+    <View
+      className={`${isDark ? "bg-dark-border" : "bg-light-border"} overflow-hidden`}
+    >
+      {mockHistory.map((entry, index) => (
         <View
           key={entry.id}
-          className={`${isDark ? "bg-dark-surface" : "bg-light-surface"} rounded-lg p-4 mb-3`}
+          className={`flex-row items-center justify-between px-4 py-4 ${
+            index < mockHistory.length - 1
+              ? isDark
+                ? "border-b border-dark-primary"
+                : "border-b border-light-primary"
+              : ""
+          }`}
         >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-1">
-              <Text
-                className={`${isDark ? "text-dark-text" : "text-light-text"} font-medium`}
-              >
-                {entry.date} Commande aux bornes
-              </Text>
-              <Text
-                className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-sm`}
-              >
-                {entry.location}
-              </Text>
-            </View>
-            <View
-              className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} rounded-full px-3 py-1 border ${isDark ? "border-dark-secondary" : "border-light-secondary"}`}
+          <View className="flex-1">
+            <Text
+              className={`${isDark ? "text-dark-text" : "text-light-text"} font-bold text-lg`}
             >
-              <Text className="text-white font-bold">
-                +{entry.points} points
+              {entry.date}
+            </Text>
+            <Text
+              className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-lg font-bold`}
+            >
+              {entry.location}
+            </Text>
+          </View>
+          <LinearGradient
+            colors={gradientColors as [string, string, ...string[]]}
+            start={{ x: 0, y: 0 }}
+            end={{ x: 1, y: 1 }}
+            style={{
+              width: 72,
+              height: 72,
+              borderRadius: 9999,
+              padding: 3,
+            }}
+          >
+            <View
+              className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-full flex-1 items-center justify-center`}
+            >
+              <Text
+                className={`${isDark ? "text-dark-text" : "text-light-text"} text-xl font-extrabold`}
+              >
+                +{entry.points}
+              </Text>
+              <Text
+                className={`${isDark ? "text-dark-text" : "text-light-text"} text-xs font-semibold`}
+              >
+                points
               </Text>
             </View>
-          </View>
+          </LinearGradient>
         </View>
       ))}
-    </ScrollView>
+    </View>
   );
 
   const renderBarcodeBottomSheet = () => {
