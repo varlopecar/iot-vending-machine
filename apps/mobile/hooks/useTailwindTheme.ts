@@ -138,10 +138,13 @@ export function useTailwindTheme() {
     }
   };
 
+  const colors: ThemeColors = isDark ? darkTheme : lightTheme;
+
   return {
     isDark,
     currentTheme,
     setTheme,
+    colors,
   };
 }
 
