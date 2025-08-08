@@ -27,3 +27,21 @@ export interface AppliedOffer {
   description: string;
   itemName: string;
 }
+
+export interface Order {
+  id: string;
+  date: string;
+  items: CartItem[];
+  totalPrice: number;
+  qrCode: string;
+  expiresAt: Date;
+  status: 'active' | 'expired' | 'used' | 'cancelled';
+}
+
+export interface OrderItem {
+  id: string;
+  name: string;
+  quantity: number;
+  price: number;
+  image: any;
+}

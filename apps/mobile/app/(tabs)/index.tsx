@@ -45,11 +45,11 @@ export default function IndexScreen() {
 
   return (
     <SafeAreaView className={`${isDark ? 'bg-dark-background' : 'bg-light-background'} flex-1`}>
-      <ScrollView className="flex-1 p-4">
+      <ScrollView className="flex-1">
         {/* Header */}
-        <View className="mb-6">
+        <View className="p-4 mb-6">
           <Text
-            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-6xl font-bold text-left mb-2`}
+            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-4xl font-bold text-left mb-2`}
           >
             Réserver
           </Text>

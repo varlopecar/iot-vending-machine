@@ -15,9 +15,11 @@ export default function ProductCard({ product, onAddToCart, onPressDetail }: Pro
   return (
     <TouchableOpacity
       onPress={() => onPressDetail(product)}
-      className={`${isDark ? 'bg-dark-surface' : 'bg-light-surface'} p-4 mb-2 rounded-lg`}
+      className="w-full"
+      activeOpacity={0.7}
     >
-      <View className="flex-row items-center justify-between">
+      {/* Contenu avec padding et centrage vertical */}
+      <View className="flex-row items-center justify-between px-4 py-4">
         <View className="flex-row items-center flex-1">
           <Image
             source={product.image}
@@ -44,6 +46,14 @@ export default function ProductCard({ product, onAddToCart, onPressDetail }: Pro
           <Text className={`${isDark ? 'text-dark-buttonText' : 'text-white'} text-xl font-bold`}>+</Text>
         </TouchableOpacity>
       </View>
+      
+      {/* Ligne de séparation sur toute la largeur (sans padding) */}
+      <View 
+        className="w-full h-px"
+        style={{ 
+          backgroundColor: isDark ? '#493837' : '#F3E9D8'
+        }}
+      />
     </TouchableOpacity>
   );
 }
