@@ -19,7 +19,7 @@ export default function CustomTabBar({
     <View
       style={[
         styles.container,
-        { backgroundColor: isDark ? "#332B2C" : "#F9F4EC" },
+        { backgroundColor: isDark ? "#2C2221" : "#F9F4EC" },
       ]}
     >
       <View style={styles.tabsWrapper}>

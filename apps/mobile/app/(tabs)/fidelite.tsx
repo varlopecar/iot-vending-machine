@@ -6,9 +6,9 @@ import {
   TouchableOpacity,
   Pressable,
   Animated,
-  Image,
   Dimensions,
 } from "react-native";
+import { Image } from "expo-image";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
@@ -19,6 +19,7 @@ import { GradientText } from "../../components/ui/GradientText";
 import { GradientProgressBar } from "../../components/ui/GradientProgressBar";
 import { Header } from "../../components/Header";
 import BarcodeIcon from "../../assets/images/barcode_icon.svg";
+import PlusIcon from "../../assets/images/plus.svg";
 
 // Types pour les données
 interface Advantage {
@@ -97,7 +98,7 @@ export default function FideliteScreen() {
     "advantages"
   );
   const [showBarcode, setShowBarcode] = useState(false);
-  const scrollY = new Animated.Value(0);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Bottom sheet refs and snap points
   const bottomSheetRef = useRef<BottomSheet>(null);
@@ -212,54 +213,102 @@ export default function FideliteScreen() {
   );
 
   const renderAdvantages = () => (
-    <ScrollView showsVerticalScrollIndicator={false}>
-      {mockAdvantages.map((advantage) => (
-        <View
-          key={advantage.id}
-          className={`${isDark ? "bg-dark-surface" : "bg-light-surface"} rounded-lg p-4 mb-4`}
-        >
-          <View className="flex-row items-center justify-between">
-            <View className="flex-1">
-              <View className="flex-row items-center mb-2">
-                <Image
-                  source={
-                    imageMapping[advantage.image as keyof typeof imageMapping]
-                  }
-                  style={{ width: 40, height: 40, marginRight: 12 }}
-                  resizeMode="contain"
-                />
-                <View className="flex-1">
-                  <Text
-                    className={`${isDark ? "text-dark-text" : "text-light-text"} text-lg font-medium`}
-                  >
-                    {advantage.title}
-                  </Text>
-                  {advantage.description && (
-                    <Text
-                      className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-sm`}
-                    >
-                      {advantage.description}
-                    </Text>
-                  )}
-                </View>
-              </View>
-            </View>
-            <View className="flex-row items-center">
+    <View className="px-4">
+      {/* Première ligne avec 2 cards */}
+      <View className="flex-row gap-4 mb-4">
+        {mockAdvantages.slice(0, 2).map((advantage) => (
+          <TouchableOpacity
+            key={advantage.id}
+            className={`flex-1 ${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg p-4`}
+          >
+            <View className="items-start">
+              <Image
+                source={
+                  imageMapping[advantage.image as keyof typeof imageMapping]
+                }
+                style={{
+                  width: 120,
+                  height: 120,
+                  marginBottom: 12,
+                  alignSelf: "center",
+                }}
+                contentFit="contain"
+                cachePolicy="memory-disk"
+                transition={200}
+              />
               <Text
-                className={`${isDark ? "text-dark-text" : "text-light-text"} font-bold text-lg mr-3`}
+                className={`${isDark ? "text-dark-text" : "text-light-text"} text-xl text-center mb-1`}
+              >
+                {advantage.title}
+              </Text>
+              <Text
+                className={`${isDark ? "text-dark-text" : "text-light-text"} font-extrabold text-base mb-3`}
               >
                 {advantage.points} points
               </Text>
-              <TouchableOpacity
-                className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} w-8 h-8 rounded-full items-center justify-center`}
-              >
-                <Text className="text-white text-xl font-bold">+</Text>
-              </TouchableOpacity>
+              <View className="w-8 h-8 rounded-full self-end items-center justify-center">
+                <PlusIcon
+                  width={24}
+                  height={24}
+                  color={isDark ? "#FEFCFA" : "#3A2E2C"}
+                />
+              </View>
+            </View>
+          </TouchableOpacity>
+        ))}
+      </View>
+
+      {/* Cards individuelles pour les autres éléments */}
+      {mockAdvantages.slice(2).map((advantage) => (
+        <TouchableOpacity
+          key={advantage.id}
+          className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg px-4 py-8 mb-4`}
+        >
+          <View className="flex-row items-center">
+            <Image
+              source={
+                imageMapping[advantage.image as keyof typeof imageMapping]
+              }
+              style={{ width: 120, height: 120, marginRight: 12 }}
+              contentFit="contain"
+              cachePolicy="memory-disk"
+              transition={200}
+            />
+
+            <View className="flex-col items-start flex-1 gap-8">
+              <View className="flex-col items-start">
+                <Text
+                  className={`${isDark ? "text-dark-text" : "text-light-text"} text-xl text-center mb-1`}
+                >
+                  {advantage.title}
+                </Text>
+                {advantage.description && (
+                  <Text
+                    className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-sm`}
+                  >
+                    {advantage.description}
+                  </Text>
+                )}
+                <Text
+                  className={`${isDark ? "text-dark-text" : "text-light-text"} font-extrabold text-base mb-3`}
+                >
+                  {advantage.points} points
+                </Text>
+              </View>
+              <View className="self-end">
+                <View className="w-8 h-8 rounded-full self-end items-center justify-center">
+                  <PlusIcon
+                    width={24}
+                    height={24}
+                    color={isDark ? "#FEFCFA" : "#3A2E2C"}
+                  />
+                </View>
+              </View>
             </View>
           </View>
-        </View>
+        </TouchableOpacity>
       ))}
-    </ScrollView>
+    </View>
   );
 
   const renderHistory = () => (
@@ -355,8 +404,10 @@ export default function FideliteScreen() {
                 style={{
                   width: "100%",
                   height: imageHeight,
-                  resizeMode: "contain",
                 }}
+                contentFit="contain"
+                cachePolicy="memory-disk"
+                transition={200}
               />
             </View>
           </View>
@@ -372,7 +423,7 @@ export default function FideliteScreen() {
       <Header title="Mon programme" scrollY={scrollY} />
 
       <Animated.ScrollView
-        className="flex-1"
+        className="flex-1 mb-24"
         onScroll={Animated.event(
           [{ nativeEvent: { contentOffset: { y: scrollY } } }],
           { useNativeDriver: false }
