@@ -1,65 +1,24 @@
 import React, { useState, useCallback, useMemo, useRef } from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  TouchableOpacity,
-  Pressable,
-  Animated,
-  Dimensions,
-} from "react-native";
-import { Image } from "expo-image";
-import { LinearGradient } from "expo-linear-gradient";
-import BottomSheet, {
-  BottomSheetView,
-  BottomSheetBackdrop,
-} from "@gorhom/bottom-sheet";
+import { View, Animated } from "react-native";
+import BottomSheet from "@gorhom/bottom-sheet";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 import { useGradient } from "../../hooks/useGradient";
-import { GradientText } from "../../components/ui/GradientText";
-import { GradientProgressBar } from "../../components/ui/GradientProgressBar";
 import { Header } from "../../components/Header";
-import BarcodeIcon from "../../assets/images/barcode_icon.svg";
-import PlusIcon from "../../assets/images/plus.svg";
+import {
+  PointsProgress,
+  SectionTitle,
+  Tabs,
+  BarcodeButton,
+  BottomSheetBarcode,
+} from "../../components/ui";
+import { Advantage, HistoryEntry } from "../../types/types";
+import { AdvantageGrid, HistoryList } from "../../components/fidelity";
 
-// Types pour les données
-interface Advantage {
-  id: string;
-  title: string;
-  description?: string;
-  points: number;
-  image: string;
-}
-
-interface HistoryEntry {
-  id: string;
-  date: string;
-  location: string;
-  points: number;
-}
-
-// Données mockées
-const mockPoints = 100; // ou 50 selon l'état
-// Mapping des images pour React Native
-const imageMapping = {
-  "ptit_duo.png": require("../../assets/images/ptit_duo.png"),
-  "le_gourmand.png": require("../../assets/images/le_gourmand.png"),
-  "le_mix_parfait.png": require("../../assets/images/le_mix_parfait.png"),
-};
+const mockPoints = 100;
 
 const mockAdvantages: Advantage[] = [
-  {
-    id: "1",
-    title: "Petit snack",
-    points: 20,
-    image: "ptit_duo.png",
-  },
-  {
-    id: "2",
-    title: "Gros snack",
-    points: 40,
-    image: "le_gourmand.png",
-  },
+  { id: "1", title: "Petit snack", points: 20, image: "ptit_duo.png" },
+  { id: "2", title: "Gros snack", points: 40, image: "le_gourmand.png" },
   {
     id: "3",
     title: "Le p'tit duo",
@@ -104,346 +63,16 @@ export default function FideliteScreen() {
   const [showBarcode, setShowBarcode] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Bottom sheet refs and snap points
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["60%", "90%"], []);
 
-  // Callbacks
   const handleSheetChanges = useCallback((index: number) => {
-    if (index === -1) {
-      setShowBarcode(false);
-    }
+    if (index === -1) setShowBarcode(false);
   }, []);
 
   const handleClosePress = useCallback(() => {
     bottomSheetRef.current?.close();
   }, []);
-
-  const renderBackdrop = useCallback(
-    (props: any) => (
-      <BottomSheetBackdrop
-        {...props}
-        disappearsOnIndex={-1}
-        appearsOnIndex={0}
-        opacity={0.5}
-      />
-    ),
-    []
-  );
-
-  const renderProgressBar = () => {
-    const progress = (mockPoints / 100) * 100;
-
-    return (
-      <View className="mb-2 px-4">
-        <View style={{ marginBottom: 8 }}>
-          <GradientText
-            colors={textGradientColors}
-            style={{ fontSize: 32, fontWeight: "bold" }}
-          >
-            {`${mockPoints} points`}
-          </GradientText>
-        </View>
-        <GradientProgressBar
-          progress={progress}
-          colors={gradientColors}
-          height={12}
-        />
-      </View>
-    );
-  };
-
-  const renderBarcodeButton = () => (
-    <TouchableOpacity
-      onPress={() => setShowBarcode(true)}
-      className={`${
-        isDark ? "bg-dark-secondary" : "bg-light-secondary"
-      } rounded-lg px-6 py-3 mb-6 flex-row items-center justify-center gap-2 mx-4`}
-    >
-      <BarcodeIcon width={24} height={24} fill={colors.buttonText} />
-      <Text
-        className={`${
-          isDark ? "text-dark-buttonText" : "text-light-buttonText"
-        } text-lg font-medium`}
-      >
-        Mon identifiant
-      </Text>
-    </TouchableOpacity>
-  );
-
-  const renderTabs = () => (
-    <View
-      className={`${isDark ? "bg-dark-border" : "bg-light-border"} flex-row items-center border-b ${isDark ? "border-dark-primary" : "border-light-primary"}`}
-    >
-      <TouchableOpacity
-        onPress={() => setActiveTab("advantages")}
-        className={`px-6 w-1/2 py-5 flex-row items-center justify-center gap-2 relative`}
-      >
-        <Text
-          className={`${isDark ? "text-dark-text" : "text-light-text"} text-lg ${
-            activeTab === "advantages" ? "font-bold" : "font-medium"
-          }`}
-        >
-          Mes avantages
-        </Text>
-        {activeTab === "advantages" && (
-          <View
-            className={`absolute bottom-0 left-0 right-0 h-1 mx-2 rounded-full ${
-              isDark ? "bg-dark-secondary" : "bg-light-secondary"
-            }`}
-          />
-        )}
-      </TouchableOpacity>
-      <TouchableOpacity
-        onPress={() => setActiveTab("history")}
-        className={`px-6 w-1/2 py-5 flex-row items-center justify-center gap-2 relative`}
-      >
-        <Text
-          className={`${isDark ? "text-dark-text" : "text-light-text"} text-lg ${
-            activeTab === "history" ? "font-bold" : "font-medium"
-          }`}
-        >
-          Mon historique
-        </Text>
-        {activeTab === "history" && (
-          <View
-            className={`absolute bottom-0 left-0 right-0 h-1 mx-2 rounded-full ${
-              isDark ? "bg-dark-secondary" : "bg-light-secondary"
-            }`}
-          />
-        )}
-      </TouchableOpacity>
-    </View>
-  );
-
-  const renderAdvantages = () => (
-    <View className="px-4 mt-6">
-      {/* Première ligne avec 2 cards */}
-      <View className="flex-row gap-4 mb-4">
-        {mockAdvantages.slice(0, 2).map((advantage) => (
-          <TouchableOpacity
-            key={advantage.id}
-            className={`flex-1 ${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg p-4`}
-          >
-            <View className="items-start">
-              <Image
-                source={
-                  imageMapping[advantage.image as keyof typeof imageMapping]
-                }
-                style={{
-                  width: 120,
-                  height: 120,
-                  marginBottom: 12,
-                  alignSelf: "center",
-                }}
-                contentFit="contain"
-                cachePolicy="memory-disk"
-                transition={200}
-              />
-              <Text
-                className={`${isDark ? "text-dark-text" : "text-light-text"} text-xl text-center mb-1`}
-              >
-                {advantage.title}
-              </Text>
-              <Text
-                className={`${isDark ? "text-dark-text" : "text-light-text"} font-extrabold text-base mb-3`}
-              >
-                {advantage.points} points
-              </Text>
-              <View className="w-8 h-8 rounded-full self-end items-center justify-center">
-                <PlusIcon
-                  width={24}
-                  height={24}
-                  color={isDark ? "#FEFCFA" : "#3A2E2C"}
-                />
-              </View>
-            </View>
-          </TouchableOpacity>
-        ))}
-      </View>
-
-      {/* Cards individuelles pour les autres éléments */}
-      {mockAdvantages.slice(2).map((advantage) => (
-        <TouchableOpacity
-          key={advantage.id}
-          className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg px-4 py-8 mb-4`}
-        >
-          <View className="flex-row items-center">
-            <Image
-              source={
-                imageMapping[advantage.image as keyof typeof imageMapping]
-              }
-              style={{ width: 120, height: 120, marginRight: 12 }}
-              contentFit="contain"
-              cachePolicy="memory-disk"
-              transition={200}
-            />
-
-            <View className="flex-col items-start flex-1 gap-8">
-              <View className="flex-col items-start">
-                <Text
-                  className={`${isDark ? "text-dark-text" : "text-light-text"} text-xl text-center mb-1`}
-                >
-                  {advantage.title}
-                </Text>
-                {advantage.description && (
-                  <Text
-                    className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-sm`}
-                  >
-                    {advantage.description}
-                  </Text>
-                )}
-                <Text
-                  className={`${isDark ? "text-dark-text" : "text-light-text"} font-extrabold text-base mb-3`}
-                >
-                  {advantage.points} points
-                </Text>
-              </View>
-              <View className="self-end">
-                <View className="w-8 h-8 rounded-full self-end items-center justify-center">
-                  <PlusIcon
-                    width={24}
-                    height={24}
-                    color={isDark ? "#FEFCFA" : "#3A2E2C"}
-                  />
-                </View>
-              </View>
-            </View>
-          </View>
-        </TouchableOpacity>
-      ))}
-    </View>
-  );
-
-  const renderHistory = () => (
-    <View
-      className={`${isDark ? "bg-dark-border" : "bg-light-border"} overflow-hidden`}
-    >
-      {mockHistory.map((entry, index) => (
-        <View
-          key={entry.id}
-          className={`flex-row items-center justify-between px-4 py-4 ${
-            index < mockHistory.length - 1
-              ? isDark
-                ? "border-b border-dark-primary"
-                : "border-b border-light-primary"
-              : ""
-          }`}
-        >
-          <View className="flex-1">
-            <Text
-              className={`${isDark ? "text-dark-text" : "text-light-text"} font-bold text-lg`}
-            >
-              {entry.date}
-            </Text>
-            <Text
-              className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-lg font-bold`}
-            >
-              {entry.location}
-            </Text>
-          </View>
-          <LinearGradient
-            colors={gradientColors as [string, string, ...string[]]}
-            start={{ x: 0, y: 0 }}
-            end={{ x: 1, y: 1 }}
-            style={{
-              width: 72,
-              height: 72,
-              borderRadius: 9999,
-              padding: 3,
-            }}
-          >
-            <View
-              className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-full flex-1 items-center justify-center`}
-            >
-              <Text
-                className={`${isDark ? "text-dark-text" : "text-light-text"} text-xl font-extrabold`}
-              >
-                +{entry.points}
-              </Text>
-              <Text
-                className={`${isDark ? "text-dark-text" : "text-light-text"} text-xs font-semibold`}
-              >
-                points
-              </Text>
-            </View>
-          </LinearGradient>
-        </View>
-      ))}
-    </View>
-  );
-
-  const renderBarcodeBottomSheet = () => {
-    const { width, height } = Dimensions.get("window");
-    const isLandscape = width > height;
-    const imageHeight = isLandscape ? height * 0.4 : height * 0.3;
-
-    return (
-      <BottomSheet
-        ref={bottomSheetRef}
-        index={showBarcode ? 1 : -1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-        enablePanDownToClose={true}
-        backdropComponent={renderBackdrop}
-        handleIndicatorStyle={{
-          backgroundColor: isDark ? "#6B7280" : "#9CA3AF",
-          width: 40,
-          height: 4,
-        }}
-        backgroundStyle={{
-          backgroundColor: isDark ? "#2C2221" : "#F9F4EC", // Utilise les couleurs background du thème
-        }}
-      >
-        <BottomSheetView className="flex-1">
-          {/* Header avec titre et croix */}
-          <View className="flex-row items-center px-6 mb-6">
-            <TouchableOpacity
-              onPress={handleClosePress}
-              className="w-8 h-8 items-center justify-center"
-            >
-              <Text
-                className={`${
-                  isDark ? "text-dark-text" : "text-light-text"
-                } text-2xl font-bold`}
-              >
-                ×
-              </Text>
-            </TouchableOpacity>
-            <Text
-              className={`${
-                isDark ? "text-dark-text" : "text-light-text"
-              } text-xl font-bold text-center flex-1`}
-            >
-              Mon identifiant
-            </Text>
-            <View className="w-8" />
-          </View>
-
-          {/* Contenu du code-barres */}
-          <View className="flex-1 px-6 pb-6">
-            <View
-              className={`${
-                isDark ? "bg-dark-border" : "bg-light-border"
-              } rounded-lg items-center justify-center flex-1`}
-              style={{ padding: 20 }}
-            >
-              <Image
-                source={require("../../assets/images/barcode.jpg")}
-                style={{
-                  width: "100%",
-                  height: imageHeight,
-                }}
-                contentFit="contain"
-                cachePolicy="memory-disk"
-                transition={200}
-              />
-            </View>
-          </View>
-        </BottomSheetView>
-      </BottomSheet>
-    );
-  };
 
   return (
     <View
@@ -459,20 +88,49 @@ export default function FideliteScreen() {
         )}
         scrollEventThrottle={16}
       >
-        <Text
-          className={`${isDark ? "text-dark-text" : "text-light-text"} text-5xl font-bold mb-6 px-4`}
-        >
-          Mon programme
-        </Text>
+        <SectionTitle isDark={isDark}>Mon programme</SectionTitle>
 
-        {renderProgressBar()}
-        {renderBarcodeButton()}
-        {renderTabs()}
+        <PointsProgress
+          points={mockPoints}
+          textGradientColors={textGradientColors}
+          barGradientColors={gradientColors}
+        />
 
-        {activeTab === "advantages" ? renderAdvantages() : renderHistory()}
+        <BarcodeButton
+          isDark={isDark}
+          onPress={() => setShowBarcode(true)}
+          buttonTextColor={colors.buttonText ?? "#FFFFFF"}
+        />
+
+        <Tabs
+          isDark={isDark}
+          active={activeTab}
+          options={[
+            { key: "advantages", label: "Mes avantages" },
+            { key: "history", label: "Mon historique" },
+          ]}
+          onChange={(key) => setActiveTab(key as "advantages" | "history")}
+        />
+
+        {activeTab === "advantages" ? (
+          <AdvantageGrid isDark={isDark} advantages={mockAdvantages} />
+        ) : (
+          <HistoryList
+            isDark={isDark}
+            entries={mockHistory}
+            gradientColors={gradientColors}
+          />
+        )}
       </Animated.ScrollView>
 
-      {renderBarcodeBottomSheet()}
+      <BottomSheetBarcode
+        isDark={isDark}
+        bottomSheetRef={bottomSheetRef}
+        index={showBarcode ? 1 : -1}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}
+        onClosePress={handleClosePress}
+      />
     </View>
   );
 }
