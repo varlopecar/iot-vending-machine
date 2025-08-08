@@ -1,6 +1,7 @@
 import React from "react";
 import { View, Text } from "react-native";
 import { LinearGradient } from "expo-linear-gradient";
+import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 
 interface GradientProgressBarProps {
   progress: number; // 0-100
@@ -21,6 +22,7 @@ export function GradientProgressBar({
   showLabels = true,
   labels = [0, 25, 50, 75, 100],
 }: GradientProgressBarProps) {
+  const { isDark } = useTailwindTheme();
   const progressPercentage = Math.min(Math.max(progress, 0), 100);
 
   return (
@@ -66,7 +68,7 @@ export function GradientProgressBar({
           {labels.map((label, index) => (
             <Text
               key={label}
-              className="text-white text-sm"
+              className={`${isDark ? "text-white" : "text-black"} text-sm`}
               style={{
                 textAlign: "center",
                 width: 20,

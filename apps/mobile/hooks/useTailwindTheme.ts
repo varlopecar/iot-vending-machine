@@ -30,6 +30,7 @@ export const lightTheme: ThemeColors = {
   text: '#3A2E2C',
   textSecondary: '#3A2E2C',
   border: '#F3E9D8',
+  buttonText: '#FFFFFF',
   success: '#10b981',
   warning: '#f59e0b',
   error: '#ef4444',
@@ -42,7 +43,7 @@ export const darkTheme: ThemeColors = {
   tertiary: '#FECDEC',
   background: '#2C2221',
   surface: '#493837',
-  text: '#FAE4D1',
+  text: '#FEFCFA',
   textSecondary: '#FEFCFA',
   border: '#493837',
   buttonText: '#320120',
@@ -144,4 +145,17 @@ export function useTailwindTheme() {
   };
 }
 
-
+export const themeClasses = {
+  background: 'bg-light-background dark:bg-dark-background',
+  surface: 'bg-light-surface dark:bg-dark-surface',
+  text: 'text-light-text dark:text-dark-text',
+  textSecondary: 'text-light-textSecondary dark:text-dark-textSecondary',
+  textPrimary: 'text-light-primary dark:text-dark-primary',
+  border: 'border-light-border dark:border-dark-border',
+  button: 'bg-light-primary dark:bg-dark-primary',
+  buttonText: 'text-light-buttonText dark:text-dark-buttonText',
+  success: 'text-light-success dark:text-dark-success',
+  warning: 'text-light-warning dark:text-dark-warning',
+  error: 'text-light-error dark:text-dark-error',
+  info: 'text-light-info dark:text-dark-info',
+} as const;

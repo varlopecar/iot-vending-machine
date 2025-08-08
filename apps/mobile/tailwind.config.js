@@ -20,6 +20,7 @@ module.exports = {
           background: '#F9F4EC', // PrimaryLight
           surface: '#E3E8E4', // TertiaryLight
           border: '#F3E9D8', // LineLight
+          buttonText: '#FFFFFF', // ButtonTextLight
           success: '#10b981',
           warning: '#f59e0b',
           error: '#ef4444',
@@ -30,7 +31,7 @@ module.exports = {
           primary: '#2C2221', // PrimaryDark
           secondary: '#FD9BD9', // SecondaryDark
           tertiary: '#FECDEC', // TertiaryDark
-          text: '#FAE4D1', // TextDark
+          text: '#FEFCFA', // TextDark
           textSecondary: '#FEFCFA', // SecondaryTextDark
           background: '#2C2221', // PrimaryDark
           surface: '#493837', // LineDark

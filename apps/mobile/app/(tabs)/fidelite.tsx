@@ -1,16 +1,24 @@
-import React, { useState } from "react";
+import React, { useState, useCallback, useMemo, useRef } from "react";
 import {
   View,
   Text,
   ScrollView,
   TouchableOpacity,
-  Modal,
   Pressable,
+  Animated,
+  Image,
+  Dimensions,
 } from "react-native";
+import BottomSheet, {
+  BottomSheetView,
+  BottomSheetBackdrop,
+} from "@gorhom/bottom-sheet";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 import { useGradient } from "../../hooks/useGradient";
-import { GradientText } from "../../components/GradientText";
-import { GradientProgressBar } from "../../components/GradientProgressBar";
+import { GradientText } from "../../components/ui/GradientText";
+import { GradientProgressBar } from "../../components/ui/GradientProgressBar";
+import { Header } from "../../components/Header";
+import BarcodeIcon from "../../assets/images/barcode_icon.svg";
 
 // Types pour les données
 interface Advantage {
@@ -30,39 +38,46 @@ interface HistoryEntry {
 
 // Données mockées
 const mockPoints = 100; // ou 50 selon l'état
+// Mapping des images pour React Native
+const imageMapping = {
+  "ptit_duo.png": require("../../assets/images/ptit_duo.png"),
+  "le_gourmand.png": require("../../assets/images/le_gourmand.png"),
+  "le_mix_parfait.png": require("../../assets/images/le_mix_parfait.png"),
+};
+
 const mockAdvantages: Advantage[] = [
   {
     id: "1",
     title: "Petit snack",
     points: 20,
-    image: "🥤🍶",
+    image: "ptit_duo.png",
   },
   {
     id: "2",
     title: "Gros snack",
     points: 40,
-    image: "🍟🍫",
+    image: "le_gourmand.png",
   },
   {
     id: "3",
     title: "Le p'tit duo",
     description: "Choisissez deux petits snacks",
     points: 35,
-    image: "🥤🍶",
+    image: "ptit_duo.png",
   },
   {
     id: "4",
     title: "Le Mix Parfait",
     description: "Choisissez un petit snack et un gros snack",
     points: 55,
-    image: "🍫🥤",
+    image: "le_mix_parfait.png",
   },
   {
     id: "5",
     title: "Le gourmand",
     description: "Choisissez deux gros snacks",
     points: 70,
-    image: "🍟🍫",
+    image: "le_gourmand.png",
   },
 ];
 
@@ -76,18 +91,46 @@ const mockHistory: HistoryEntry[] = [
 ];
 
 export default function FideliteScreen() {
-  const { isDark } = useTailwindTheme();
+  const { isDark, colors } = useTailwindTheme();
   const { gradientColors, textGradientColors } = useGradient();
   const [activeTab, setActiveTab] = useState<"advantages" | "history">(
     "advantages"
   );
   const [showBarcode, setShowBarcode] = useState(false);
+  const scrollY = new Animated.Value(0);
+
+  // Bottom sheet refs and snap points
+  const bottomSheetRef = useRef<BottomSheet>(null);
+  const snapPoints = useMemo(() => ["60%", "90%"], []);
+
+  // Callbacks
+  const handleSheetChanges = useCallback((index: number) => {
+    if (index === -1) {
+      setShowBarcode(false);
+    }
+  }, []);
+
+  const handleClosePress = useCallback(() => {
+    bottomSheetRef.current?.close();
+  }, []);
+
+  const renderBackdrop = useCallback(
+    (props: any) => (
+      <BottomSheetBackdrop
+        {...props}
+        disappearsOnIndex={-1}
+        appearsOnIndex={0}
+        opacity={0.5}
+      />
+    ),
+    []
+  );
 
   const renderProgressBar = () => {
     const progress = (mockPoints / 100) * 100;
 
     return (
-      <View className="mb-6">
+      <View className="mb-2 px-4">
         <View style={{ marginBottom: 8 }}>
           <GradientText
             colors={textGradientColors}
@@ -108,42 +151,62 @@ export default function FideliteScreen() {
   const renderBarcodeButton = () => (
     <TouchableOpacity
       onPress={() => setShowBarcode(true)}
-      className="bg-pink-400 rounded-lg px-6 py-3 mb-6 flex-row items-center justify-center"
+      className={`${
+        isDark ? "bg-dark-secondary" : "bg-light-secondary"
+      } rounded-lg px-6 py-3 mb-6 flex-row items-center justify-center gap-2 mx-4`}
     >
-      <Text className="text-white text-lg mr-2">📱</Text>
-      <Text className="text-white text-lg font-medium">Mon identifiant</Text>
+      <BarcodeIcon width={24} height={24} fill={colors.buttonText} />
+      <Text
+        className={`${
+          isDark ? "text-dark-buttonText" : "text-light-buttonText"
+        } text-lg font-medium`}
+      >
+        Mon identifiant
+      </Text>
     </TouchableOpacity>
   );
 
   const renderTabs = () => (
-    <View className="flex-row bg-gray-700 rounded-lg p-1 mb-6">
+    <View
+      className={`${isDark ? "bg-dark-border" : "bg-light-border"} mb-6 flex-row items-center`}
+    >
       <TouchableOpacity
         onPress={() => setActiveTab("advantages")}
-        className={`flex-1 py-3 px-4 rounded-md ${
-          activeTab === "advantages" ? "bg-pink-400" : "bg-transparent"
-        }`}
+        className={`px-6 w-1/2 py-5 flex-row items-center justify-center gap-2 relative`}
       >
         <Text
-          className={`text-center font-medium ${
-            activeTab === "advantages" ? "text-white" : "text-gray-300"
+          className={`${isDark ? "text-dark-text" : "text-light-text"} text-lg ${
+            activeTab === "advantages" ? "font-bold" : "font-medium"
           }`}
         >
           Mes avantages
         </Text>
+        {activeTab === "advantages" && (
+          <View
+            className={`absolute bottom-0 left-0 right-0 h-1 mx-2 rounded-full ${
+              isDark ? "bg-dark-secondary" : "bg-light-secondary"
+            }`}
+          />
+        )}
       </TouchableOpacity>
       <TouchableOpacity
         onPress={() => setActiveTab("history")}
-        className={`flex-1 py-3 px-4 rounded-md ${
-          activeTab === "history" ? "bg-pink-400" : "bg-transparent"
-        }`}
+        className={`px-6 w-1/2 py-5 flex-row items-center justify-center gap-2 relative`}
       >
         <Text
-          className={`text-center font-medium ${
-            activeTab === "history" ? "text-white" : "text-gray-300"
+          className={`${isDark ? "text-dark-text" : "text-light-text"} text-lg ${
+            activeTab === "history" ? "font-bold" : "font-medium"
           }`}
         >
           Mon historique
         </Text>
+        {activeTab === "history" && (
+          <View
+            className={`absolute bottom-0 left-0 right-0 h-1 mx-2 rounded-full ${
+              isDark ? "bg-dark-secondary" : "bg-light-secondary"
+            }`}
+          />
+        )}
       </TouchableOpacity>
     </View>
   );
@@ -151,17 +214,30 @@ export default function FideliteScreen() {
   const renderAdvantages = () => (
     <ScrollView showsVerticalScrollIndicator={false}>
       {mockAdvantages.map((advantage) => (
-        <View key={advantage.id} className="bg-gray-700 rounded-lg p-4 mb-4">
+        <View
+          key={advantage.id}
+          className={`${isDark ? "bg-dark-surface" : "bg-light-surface"} rounded-lg p-4 mb-4`}
+        >
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
               <View className="flex-row items-center mb-2">
-                <Text className="text-2xl mr-3">{advantage.image}</Text>
+                <Image
+                  source={
+                    imageMapping[advantage.image as keyof typeof imageMapping]
+                  }
+                  style={{ width: 40, height: 40, marginRight: 12 }}
+                  resizeMode="contain"
+                />
                 <View className="flex-1">
-                  <Text className="text-white text-lg font-medium">
+                  <Text
+                    className={`${isDark ? "text-dark-text" : "text-light-text"} text-lg font-medium`}
+                  >
                     {advantage.title}
                   </Text>
                   {advantage.description && (
-                    <Text className="text-gray-300 text-sm">
+                    <Text
+                      className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-sm`}
+                    >
                       {advantage.description}
                     </Text>
                   )}
@@ -169,10 +245,14 @@ export default function FideliteScreen() {
               </View>
             </View>
             <View className="flex-row items-center">
-              <Text className="text-white font-bold text-lg mr-3">
+              <Text
+                className={`${isDark ? "text-dark-text" : "text-light-text"} font-bold text-lg mr-3`}
+              >
                 {advantage.points} points
               </Text>
-              <TouchableOpacity className="bg-purple-500 w-8 h-8 rounded-full items-center justify-center">
+              <TouchableOpacity
+                className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} w-8 h-8 rounded-full items-center justify-center`}
+              >
                 <Text className="text-white text-xl font-bold">+</Text>
               </TouchableOpacity>
             </View>
@@ -185,15 +265,26 @@ export default function FideliteScreen() {
   const renderHistory = () => (
     <ScrollView showsVerticalScrollIndicator={false}>
       {mockHistory.map((entry) => (
-        <View key={entry.id} className="bg-gray-700 rounded-lg p-4 mb-3">
+        <View
+          key={entry.id}
+          className={`${isDark ? "bg-dark-surface" : "bg-light-surface"} rounded-lg p-4 mb-3`}
+        >
           <View className="flex-row items-center justify-between">
             <View className="flex-1">
-              <Text className="text-white font-medium">
+              <Text
+                className={`${isDark ? "text-dark-text" : "text-light-text"} font-medium`}
+              >
                 {entry.date} Commande aux bornes
               </Text>
-              <Text className="text-gray-300 text-sm">{entry.location}</Text>
+              <Text
+                className={`${isDark ? "text-dark-textSecondary" : "text-light-textSecondary"} text-sm`}
+              >
+                {entry.location}
+              </Text>
             </View>
-            <View className="bg-pink-400 rounded-full px-3 py-1 border border-pink-300">
+            <View
+              className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} rounded-full px-3 py-1 border ${isDark ? "border-dark-secondary" : "border-light-secondary"}`}
+            >
               <Text className="text-white font-bold">
                 +{entry.points} points
               </Text>
@@ -204,45 +295,93 @@ export default function FideliteScreen() {
     </ScrollView>
   );
 
-  const renderBarcodeModal = () => (
-    <Modal
-      visible={showBarcode}
-      transparent
-      animationType="slide"
-      onRequestClose={() => setShowBarcode(false)}
-    >
-      <Pressable
-        className="flex-1 bg-black/50 justify-end"
-        onPress={() => setShowBarcode(false)}
+  const renderBarcodeBottomSheet = () => {
+    const { width, height } = Dimensions.get("window");
+    const isLandscape = width > height;
+    const imageHeight = isLandscape ? height * 0.4 : height * 0.3;
+
+    return (
+      <BottomSheet
+        ref={bottomSheetRef}
+        index={showBarcode ? 1 : -1}
+        snapPoints={snapPoints}
+        onChange={handleSheetChanges}
+        enablePanDownToClose={true}
+        backdropComponent={renderBackdrop}
+        handleIndicatorStyle={{
+          backgroundColor: isDark ? "#6B7280" : "#9CA3AF",
+          width: 40,
+          height: 4,
+        }}
+        backgroundStyle={{
+          backgroundColor: isDark ? "#2C2221" : "#F9F4EC", // Utilise les couleurs background du thème
+        }}
       >
-        <View className="bg-gray-800 rounded-t-3xl p-6">
-          <View className="w-12 h-1 bg-gray-600 rounded-full self-center mb-6" />
-          <Text className="text-white text-xl font-bold text-center mb-6">
-            Mon identifiant
-          </Text>
-          <View className="bg-white p-8 rounded-lg items-center mb-6">
-            <Text className="text-black text-2xl font-mono">
-              |||| |||| |||| |||| |||| ||||
+        <BottomSheetView className="flex-1">
+          {/* Header avec titre et croix */}
+          <View className="flex-row items-center px-6 mb-6">
+            <TouchableOpacity
+              onPress={handleClosePress}
+              className="w-8 h-8 items-center justify-center"
+            >
+              <Text
+                className={`${
+                  isDark ? "text-dark-text" : "text-light-text"
+                } text-2xl font-bold`}
+              >
+                ×
+              </Text>
+            </TouchableOpacity>
+            <Text
+              className={`${
+                isDark ? "text-dark-text" : "text-light-text"
+              } text-xl font-bold text-center flex-1`}
+            >
+              Mon identifiant
             </Text>
-            <Text className="text-black text-lg font-mono mt-2">
-              1234567890123456
-            </Text>
+            <View className="w-8" />
           </View>
-          <TouchableOpacity
-            onPress={() => setShowBarcode(false)}
-            className="bg-pink-400 rounded-lg py-3"
-          >
-            <Text className="text-white text-center font-medium">Fermer</Text>
-          </TouchableOpacity>
-        </View>
-      </Pressable>
-    </Modal>
-  );
+
+          {/* Contenu du code-barres */}
+          <View className="flex-1 px-6 pb-6">
+            <View
+              className={`${
+                isDark ? "bg-dark-border" : "bg-light-border"
+              } rounded-lg items-center justify-center flex-1`}
+              style={{ padding: 20 }}
+            >
+              <Image
+                source={require("../../assets/images/barcode.jpg")}
+                style={{
+                  width: "100%",
+                  height: imageHeight,
+                  resizeMode: "contain",
+                }}
+              />
+            </View>
+          </View>
+        </BottomSheetView>
+      </BottomSheet>
+    );
+  };
 
   return (
-    <View className="bg-gray-900 flex-1">
-      <ScrollView className="flex-1 px-4 pt-12">
-        <Text className="text-white text-3xl font-bold mb-6">
+    <View
+      className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
+    >
+      <Header title="Mon programme" scrollY={scrollY} />
+
+      <Animated.ScrollView
+        className="flex-1"
+        onScroll={Animated.event(
+          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+          { useNativeDriver: false }
+        )}
+        scrollEventThrottle={16}
+      >
+        <Text
+          className={`${isDark ? "text-dark-text" : "text-light-text"} text-5xl font-bold mb-6 px-4`}
+        >
           Mon programme
         </Text>
 
@@ -251,9 +390,9 @@ export default function FideliteScreen() {
         {renderTabs()}
 
         {activeTab === "advantages" ? renderAdvantages() : renderHistory()}
-      </ScrollView>
+      </Animated.ScrollView>
 
-      {renderBarcodeModal()}
+      {renderBarcodeBottomSheet()}
     </View>
   );
 }
