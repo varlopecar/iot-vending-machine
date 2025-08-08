@@ -2,70 +2,90 @@ import React, { useState, useEffect } from "react";
 import { View, Text, ScrollView } from "react-native";
 import { useRouter } from "expo-router";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
-import { OrderCard } from "../../components";
+import { HeaderSkeleton, OrderListSkeleton } from "../../components";
 import { mockOrders } from "../../data/mockProducts";
 import { Order } from "../../types/product";
 import { SafeContainer } from "../../components/ui";
 
-export default function CommandesScreen() {
-  const { isDark } = useTailwindTheme();
-  const router = useRouter();
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+// Lazy loading des composants
+const OrderCard = React.lazy(() => import('../../components/OrderCard'));
 
-  // Mise à jour du temps restant toutes les minutes
+export default function CommandesScreen() {
+  const router = useRouter();
+  const { isDark } = useTailwindTheme();
+  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Simulation du chargement initial
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+    }, 300);
+
+    return () => clearTimeout(timer);
+  }, []);
+
   useEffect(() => {
     const interval = setInterval(() => {
-      setOrders(prevOrders => [...prevOrders]);
-    }, 60000); // 1 minute
+      setOrders(prevOrders =>
+        prevOrders.map(order => ({
+          ...order,
+          expiresAt: new Date(order.expiresAt.getTime() - 60000), // Décrémente d'1 minute
+        }))
+      );
+    }, 60000); // Met à jour toutes les minutes
 
     return () => clearInterval(interval);
   }, []);
 
   const handleOrderPress = (order: Order) => {
-    router.push(`/qr-code?orderId=${order.id}`);
+    router.push({
+      pathname: '/qr-code',
+      params: { orderId: order.id }
+    } as any);
   };
+
+  if (isLoading) {
+    return (
+      <SafeContainer>
+        <View className="flex-1">
+          <HeaderSkeleton />
+          <OrderListSkeleton />
+        </View>
+      </SafeContainer>
+    );
+  }
 
   return (
     <SafeContainer>
-      <ScrollView className="flex-1">
+      <View className="flex-1">
         {/* Header */}
         <View className="p-4 mb-6">
           <Text
-            className={`${isDark ? "text-dark-textSecondary" : "text-light-text"} text-4xl font-bold text-left mb-2`}
+            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-4xl font-bold text-left mb-2`}
           >
             Commandes
           </Text>
           <Text
-            className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-lg text-left mt-6`}
+            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'} text-lg text-left mt-6`}
           >
-            Vos QR Codes :
+            Vos QR codes
           </Text>
         </View>
 
-        {/* Liste des commandes */}
-        {orders.length > 0 ? (
-          orders.map((order) => (
-            <OrderCard
-              key={order.id}
-              order={order}
-              onPress={handleOrderPress}
-            />
-          ))
-        ) : (
-          <View className="flex-1 justify-center items-center py-8 px-4">
-            <Text
-              className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-lg text-center`}
-            >
-              Aucune commande active
-            </Text>
-            <Text
-              className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-sm text-center mt-2`}
-            >
-              Réservez des produits pour voir vos commandes ici
-            </Text>
-          </View>
-        )}
-      </ScrollView>
+        {/* Orders List */}
+        <ScrollView className="flex-1 px-4">
+          <React.Suspense fallback={<OrderListSkeleton />}>
+            {orders.map((order) => (
+              <OrderCard
+                key={order.id}
+                order={order}
+                onPress={handleOrderPress}
+              />
+            ))}
+          </React.Suspense>
+        </ScrollView>
+      </View>
     </SafeContainer>
   );
 }
