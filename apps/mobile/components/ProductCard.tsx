@@ -51,7 +51,7 @@ export default function ProductCard({
           <PlusIcon
             width={24}
             height={24}
-            color={isDark ? "#FEFCFA" : "#3A2E2C"}
+            color={isDark ? "#3A2E2C" : "#FEFCFA"}
           />
         </TouchableOpacity>
       </View>

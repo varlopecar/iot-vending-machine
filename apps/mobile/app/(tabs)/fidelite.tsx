@@ -12,40 +12,21 @@ import {
   BottomSheetBarcode,
   SafeContainer,
 } from "../../components/ui";
-import { Advantage, HistoryEntry } from "../../types/types";
+import { HistoryEntry } from "../../types/types";
 import { AdvantageGrid, HistoryList } from "../../components/fidelity";
 import { useRouter } from "expo-router";
 import { useCart } from "../../contexts/CartContext";
+import {
+  getAdvantagesFromOffers,
+  getOfferKeyFromTitle,
+} from "../../lib/offers/advantageSync";
 
 const CartBanner = React.lazy(() => import("../../components/CartBanner"));
 
 // Les points affichés proviennent maintenant du CartContext (getCurrentPoints)
 
-const mockAdvantages: Advantage[] = [
-  { id: "1", title: "Petit snack", points: 20, image: "ptit_duo.png" },
-  { id: "2", title: "Gros snack", points: 40, image: "le_gourmand.png" },
-  {
-    id: "3",
-    title: "Le p'tit duo",
-    description: "Choisissez deux petits snacks",
-    points: 35,
-    image: "ptit_duo.png",
-  },
-  {
-    id: "4",
-    title: "Le Mix Parfait",
-    description: "Choisissez un petit snack et un gros snack",
-    points: 55,
-    image: "le_mix_parfait.png",
-  },
-  {
-    id: "5",
-    title: "Le gourmand",
-    description: "Choisissez deux gros snacks",
-    points: 70,
-    image: "le_gourmand.png",
-  },
-];
+// Les avantages sont maintenant générés à partir de la configuration centralisée
+const advantages = getAdvantagesFromOffers();
 
 const mockHistory: HistoryEntry[] = [
   { id: "1", date: "04/08/2025", location: "Sophia", points: 2 },
@@ -127,20 +108,10 @@ export default function FideliteScreen() {
           {activeTab === "advantages" ? (
             <AdvantageGrid
               isDark={isDark}
-              advantages={mockAdvantages}
+              advantages={advantages}
               // Navigation vers l'écran de détail d'offre
               onPress={(adv) => {
-                // Map du titre vers une clé stable
-                const key = adv.title.toLowerCase().includes("petit snack")
-                  ? "petit_snack"
-                  : adv.title.toLowerCase().includes("gros snack")
-                    ? "gros_snack"
-                    : adv.title.toLowerCase().includes("p'tit duo") ||
-                        adv.title.toLowerCase().includes("ptit duo")
-                      ? "ptit_duo"
-                      : adv.title.toLowerCase().includes("mix")
-                        ? "mix_parfait"
-                        : "gourmand";
+                const key = getOfferKeyFromTitle(adv.title);
                 router.push({
                   pathname: "/offres/[offer]",
                   params: { offer: key },

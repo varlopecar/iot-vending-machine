@@ -24,6 +24,10 @@ export function AdvantageCard({
       <TouchableOpacity
         onPress={onPress}
         className={`flex-1 ${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg p-4`}
+        style={{
+          borderWidth: 0.2,
+          borderColor: "#666666",
+        }}
       >
         <View className="items-start">
           <Image
@@ -64,6 +68,10 @@ export function AdvantageCard({
     <TouchableOpacity
       onPress={onPress}
       className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg px-4 py-8 mb-4`}
+      style={{
+        borderWidth: 0.2,
+        borderColor: "#666666",
+      }}
     >
       <View className="flex-row items-center">
         <Image

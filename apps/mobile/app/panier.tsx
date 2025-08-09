@@ -86,7 +86,12 @@ export default function CartScreen() {
           {/* Cart Items */}
           <View className="mb-6">
             {cartItems.map((item) => (
-              <View key={item.id} className="p-2">
+              <View
+                key={
+                  item.fromOfferId ? `${item.id}-${item.fromOfferId}` : item.id
+                }
+                className="p-2"
+              >
                 <View className="flex-row items-center">
                   {/* Secondary color line indicator */}
                   <View
