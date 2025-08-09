@@ -10,11 +10,14 @@ import {
   Tabs,
   BarcodeButton,
   BottomSheetBarcode,
+  SafeContainer,
 } from "../../components/ui";
 import { Advantage, HistoryEntry } from "../../types/types";
 import { AdvantageGrid, HistoryList } from "../../components/fidelity";
 import { useRouter } from "expo-router";
 import { useCart } from "../../contexts/CartContext";
+
+const CartBanner = React.lazy(() => import("../../components/CartBanner"));
 
 // Les points affichés proviennent maintenant du CartContext (getCurrentPoints)
 
@@ -65,7 +68,7 @@ export default function FideliteScreen() {
   const [showBarcode, setShowBarcode] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const router = useRouter();
-  const { getCurrentPoints } = useCart();
+  const { getCurrentPoints, getTotalItems, getTotalPrice } = useCart();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["60%", "90%"], []);
@@ -78,84 +81,99 @@ export default function FideliteScreen() {
     bottomSheetRef.current?.close();
   }, []);
 
+  const navigateToCart = () => {
+    router.push("/panier");
+  };
+
   return (
-    <View
-      className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
-    >
-      <Header title="Mon programme" scrollY={scrollY} />
-
-      <Animated.ScrollView
-        className="flex-1 mb-24"
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
+    <SafeContainer>
+      <View
+        className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
       >
-        <SectionTitle isDark={isDark}>Mon programme</SectionTitle>
+        <Header title="Mon programme" scrollY={scrollY} />
 
-        <PointsProgress
-          points={getCurrentPoints()}
-          textGradientColors={textGradientColors}
-          barGradientColors={gradientColors}
-        />
+        <Animated.ScrollView
+          className="flex-1"
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
+          <SectionTitle isDark={isDark}>Mon programme</SectionTitle>
 
-        <BarcodeButton
-          isDark={isDark}
-          onPress={() => setShowBarcode(true)}
-          buttonTextColor={colors.buttonText ?? "#FFFFFF"}
-        />
-
-        <Tabs
-          isDark={isDark}
-          active={activeTab}
-          options={[
-            { key: "advantages", label: "Mes avantages" },
-            { key: "history", label: "Mon historique" },
-          ]}
-          onChange={(key) => setActiveTab(key as "advantages" | "history")}
-        />
-
-        {activeTab === "advantages" ? (
-          <AdvantageGrid
-            isDark={isDark}
-            advantages={mockAdvantages}
-            // Navigation vers l'écran de détail d'offre
-            onPress={(adv) => {
-              // Map du titre vers une clé stable
-              const key = adv.title.toLowerCase().includes("petit snack")
-                ? "petit_snack"
-                : adv.title.toLowerCase().includes("gros snack")
-                  ? "gros_snack"
-                  : adv.title.toLowerCase().includes("p'tit duo") ||
-                      adv.title.toLowerCase().includes("ptit duo")
-                    ? "ptit_duo"
-                    : adv.title.toLowerCase().includes("mix")
-                      ? "mix_parfait"
-                      : "gourmand";
-              router.push({
-                pathname: "/offres/[offer]",
-                params: { offer: key },
-              } as any);
-            }}
+          <PointsProgress
+            points={getCurrentPoints()}
+            textGradientColors={textGradientColors}
+            barGradientColors={gradientColors}
           />
-        ) : (
-          <HistoryList
-            isDark={isDark}
-            entries={mockHistory}
-            gradientColors={gradientColors}
-          />
-        )}
-      </Animated.ScrollView>
 
-      <BottomSheetBarcode
-        isDark={isDark}
-        bottomSheetRef={bottomSheetRef}
-        index={showBarcode ? 1 : -1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-        onClosePress={handleClosePress}
-      />
-    </View>
+          <BarcodeButton
+            isDark={isDark}
+            onPress={() => setShowBarcode(true)}
+            buttonTextColor={colors.buttonText ?? "#FFFFFF"}
+          />
+
+          <Tabs
+            isDark={isDark}
+            active={activeTab}
+            options={[
+              { key: "advantages", label: "Mes avantages" },
+              { key: "history", label: "Mon historique" },
+            ]}
+            onChange={(key) => setActiveTab(key as "advantages" | "history")}
+          />
+
+          {activeTab === "advantages" ? (
+            <AdvantageGrid
+              isDark={isDark}
+              advantages={mockAdvantages}
+              // Navigation vers l'écran de détail d'offre
+              onPress={(adv) => {
+                // Map du titre vers une clé stable
+                const key = adv.title.toLowerCase().includes("petit snack")
+                  ? "petit_snack"
+                  : adv.title.toLowerCase().includes("gros snack")
+                    ? "gros_snack"
+                    : adv.title.toLowerCase().includes("p'tit duo") ||
+                        adv.title.toLowerCase().includes("ptit duo")
+                      ? "ptit_duo"
+                      : adv.title.toLowerCase().includes("mix")
+                        ? "mix_parfait"
+                        : "gourmand";
+                router.push({
+                  pathname: "/offres/[offer]",
+                  params: { offer: key },
+                } as any);
+              }}
+            />
+          ) : (
+            <HistoryList
+              isDark={isDark}
+              entries={mockHistory}
+              gradientColors={gradientColors}
+            />
+          )}
+        </Animated.ScrollView>
+
+        {/* Cart Banner */}
+        <React.Suspense fallback={<View className="h-20" />}>
+          <CartBanner
+            itemCount={getTotalItems()}
+            totalPrice={getTotalPrice()}
+            onPress={navigateToCart}
+          />
+        </React.Suspense>
+
+        <BottomSheetBarcode
+          isDark={isDark}
+          bottomSheetRef={bottomSheetRef}
+          index={showBarcode ? 1 : -1}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+          onClosePress={handleClosePress}
+        />
+      </View>
+    </SafeContainer>
   );
 }

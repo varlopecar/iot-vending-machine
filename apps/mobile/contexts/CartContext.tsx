@@ -103,10 +103,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
   };
 
   const getTotalPrice = () => {
-    return cartItems.reduce(
+    const raw = cartItems.reduce(
       (total, item) => total + item.price * item.quantity,
       0
     );
+    return Math.round(raw * 100) / 100;
   };
 
   const getTotalItems = () => {

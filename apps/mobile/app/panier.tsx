@@ -115,7 +115,9 @@ export default function CartScreen() {
                       <Text
                         className={`${isDark ? "text-dark-textSecondary" : "text-light-text"} text-lg font-semibold mr-3`}
                       >
-                        {(item.price * item.quantity).toFixed(2)}€
+                        {item.price * item.quantity === 0
+                          ? "0€"
+                          : `${(item.price * item.quantity).toFixed(2)}€`}
                       </Text>
                     )}
                     <TouchableOpacity
@@ -160,7 +162,7 @@ export default function CartScreen() {
             <Text
               className={`${isDark ? "text-dark-textSecondary" : "text-light-text"} text-lg font-bold`}
             >
-              {getTotalPrice()}€
+              {getTotalPrice() === 0 ? "0€" : `${getTotalPrice().toFixed(2)}€`}
             </Text>
           </View>
 

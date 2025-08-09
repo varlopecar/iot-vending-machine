@@ -16,7 +16,7 @@ export function AdvantageGrid({
   onPress,
 }: AdvantageGridProps) {
   return (
-    <View className="px-4 mt-6">
+    <View className="px-4 mt-6 pb-16">
       <View className="flex-row gap-4 mb-4">
         {advantages.slice(0, 2).map((adv) => (
           <AdvantageCard

@@ -30,10 +30,10 @@ export function Header({
     <View
       className={`${
         isDark ? "bg-dark-background" : "bg-light-background"
-      } pt-12 pb-4 px-4`}
+      } pt-2 pb-4 px-4`}
       style={{
-        minHeight: 100,
         justifyContent: "center",
+        minHeight: 50,
       }}
     >
       {showTitle && (
@@ -46,7 +46,6 @@ export function Header({
             bottom: 0,
             justifyContent: "center",
             alignItems: "center",
-            paddingTop: 48, // Pour compenser le status bar
           }}
         >
           <Text

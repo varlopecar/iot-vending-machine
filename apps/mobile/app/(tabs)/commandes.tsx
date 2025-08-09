@@ -6,13 +6,16 @@ import { HeaderSkeleton, OrderListSkeleton } from "../../components";
 import { mockOrders } from "../../data/mockProducts";
 import { Order } from "../../types/product";
 import { SafeContainer } from "../../components/ui";
+import { useCart } from "../../contexts/CartContext";
 
 // Lazy loading des composants
-const OrderCard = React.lazy(() => import('../../components/OrderCard'));
+const OrderCard = React.lazy(() => import("../../components/OrderCard"));
+const CartBanner = React.lazy(() => import("../../components/CartBanner"));
 
 export default function CommandesScreen() {
   const router = useRouter();
   const { isDark } = useTailwindTheme();
+  const { getTotalItems, getTotalPrice } = useCart();
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [isLoading, setIsLoading] = useState(true);
 
@@ -27,8 +30,8 @@ export default function CommandesScreen() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setOrders(prevOrders =>
-        prevOrders.map(order => ({
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => ({
           ...order,
           expiresAt: new Date(order.expiresAt.getTime() - 60000), // Décrémente d'1 minute
         }))
@@ -40,9 +43,13 @@ export default function CommandesScreen() {
 
   const handleOrderPress = (order: Order) => {
     router.push({
-      pathname: '/qr-code',
-      params: { orderId: order.id }
+      pathname: "/qr-code",
+      params: { orderId: order.id },
     } as any);
+  };
+
+  const navigateToCart = () => {
+    router.push("/panier");
   };
 
   if (isLoading) {
@@ -62,12 +69,12 @@ export default function CommandesScreen() {
         {/* Header */}
         <View className="p-4 mb-6">
           <Text
-            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-4xl font-bold text-left mb-2`}
+            className={`${isDark ? "text-dark-textSecondary" : "text-light-text"} text-4xl font-bold text-left mb-2`}
           >
             Commandes
           </Text>
           <Text
-            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'} text-lg text-left mt-6`}
+            className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-lg text-left mt-6`}
           >
             Vos QR codes
           </Text>
@@ -85,6 +92,15 @@ export default function CommandesScreen() {
             ))}
           </React.Suspense>
         </ScrollView>
+
+        {/* Cart Banner */}
+        <React.Suspense fallback={<View className="h-20" />}>
+          <CartBanner
+            itemCount={getTotalItems()}
+            totalPrice={getTotalPrice()}
+            onPress={navigateToCart}
+          />
+        </React.Suspense>
       </View>
     </SafeContainer>
   );

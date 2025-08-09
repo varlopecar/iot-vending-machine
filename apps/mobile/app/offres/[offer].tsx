@@ -6,6 +6,9 @@ import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 import { mockProducts } from "../../data/mockProducts";
 import { Product } from "../../types/product";
 import { useCart } from "../../contexts/CartContext";
+const ProductDetailModal = React.lazy(
+  () => import("../../components/ProductDetailModal")
+);
 
 type OfferKey =
   | "petit_snack"
@@ -26,12 +29,14 @@ const OFFER_POINTS: Record<OfferKey, number> = {
 type ProductRowSingleProps = {
   product: Product;
   isDark: boolean;
-  onAdd: () => void;
+  selected: boolean;
+  onToggle: () => void;
 };
 const ProductRowSingle = ({
   product,
   isDark,
-  onAdd,
+  selected,
+  onToggle,
 }: ProductRowSingleProps) => (
   <View>
     <View className="flex-row items-center justify-between px-4 py-4">
@@ -49,22 +54,34 @@ const ProductRowSingle = ({
           >
             {product.name}
           </Text>
-          <Text
-            className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-base`}
-          >
-            {product.price}€
-          </Text>
+          {/* Pas de prix sur la page détails de l'offre */}
         </View>
       </View>
+      {/* Zone cliquable élargie pour radio (20% width) */}
       <TouchableOpacity
-        onPress={onAdd}
-        className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} w-10 h-10 rounded-full items-center justify-center`}
+        onPress={onToggle}
+        activeOpacity={0.7}
+        style={{
+          width: "20%",
+          height: 60,
+          alignItems: "flex-end",
+          justifyContent: "center",
+        }}
       >
-        <Text
-          className={`${isDark ? "text-dark-buttonText" : "text-white"} text-xl font-bold`}
-        >
-          +
-        </Text>
+        <View
+          style={{
+            width: 22,
+            height: 22,
+            borderRadius: 11,
+            borderWidth: 2,
+            borderColor: isDark ? "#FEFCFA" : "#3A2E2C",
+            backgroundColor: selected
+              ? isDark
+                ? "#FD9BD9"
+                : "#5B715F"
+              : "transparent",
+          }}
+        />
       </TouchableOpacity>
     </View>
     <View
@@ -80,6 +97,7 @@ type ProductRowCounterProps = {
   current: number;
   onDecrement: () => void;
   onIncrement: () => void;
+  isIncrementDisabled?: boolean;
 };
 const ProductRowCounter = ({
   product,
@@ -87,6 +105,7 @@ const ProductRowCounter = ({
   current,
   onDecrement,
   onIncrement,
+  isIncrementDisabled = false,
 }: ProductRowCounterProps) => (
   <View>
     <View className="flex-row items-center justify-between px-4 py-4">
@@ -104,11 +123,7 @@ const ProductRowCounter = ({
           >
             {product.name}
           </Text>
-          <Text
-            className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-base`}
-          >
-            {product.price}€
-          </Text>
+          {/* Pas de prix sur la page détails de l'offre */}
         </View>
       </View>
       <View className="flex-row items-center">
@@ -131,7 +146,10 @@ const ProductRowCounter = ({
         </View>
         <TouchableOpacity
           onPress={onIncrement}
-          className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} w-10 h-10 rounded-full items-center justify-center`}
+          disabled={isIncrementDisabled}
+          className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} w-10 h-10 rounded-full items-center justify-center ${
+            isIncrementDisabled ? "opacity-50" : ""
+          }`}
         >
           <Text
             className={`${isDark ? "text-dark-buttonText" : "text-white"} text-xl font-bold`}
@@ -154,6 +172,11 @@ export default function OfferDetailScreen() {
   const { isDark } = useTailwindTheme();
   const router = useRouter();
   const { addOffer, getTotalItems, getCurrentPoints } = useCart();
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+  const [isDetailModalVisible, setIsDetailModalVisible] = useState(false);
+  const [selectedSingleId, setSelectedSingleId] = useState<string | null>(null);
+  const [selectedSmallId, setSelectedSmallId] = useState<string | null>(null);
+  const [selectedBigId, setSelectedBigId] = useState<string | null>(null);
 
   const smallSnacks = mockProducts.filter((p) => p.price < 1.5);
   const bigSnacks = mockProducts.filter(
@@ -224,8 +247,9 @@ export default function OfferDetailScreen() {
     }
   };
 
-  const handleAddSingle = (product: Product) => {
-    // Vérifier limite et points
+  const handleValidateSingle = () => {
+    const id = selectedSingleId;
+    if (!id) return;
     if (getTotalItems() + 1 > 2) {
       Alert.alert(
         "Limite atteinte",
@@ -241,13 +265,16 @@ export default function OfferDetailScreen() {
       );
       return;
     }
+    const srcList = offerKey === "petit_snack" ? smallSnacks : bigSnacks;
+    const found = srcList.find((p) => p.id === id);
+    if (!found) return;
     const offer = {
       id: `${offerKey}-${Date.now()}`,
       key: offerKey,
       name: title,
       description: undefined,
       points: pointsCost,
-      items: [{ id: product.id, name: product.name, quantity: 1 }],
+      items: [{ id: found.id, name: found.name, quantity: 1 }],
     };
     const res = addOffer(offer);
     if ("ok" in res && res.ok) router.back();
@@ -260,10 +287,6 @@ export default function OfferDetailScreen() {
     if (offerKey === "ptit_duo") {
       const total = totalSelectedSmall;
       if (total !== 2) {
-        Alert.alert(
-          "Sélection incomplète",
-          "Choisissez exactement 2 petits snacks."
-        );
         return;
       }
       for (const p of smallSnacks) {
@@ -273,10 +296,6 @@ export default function OfferDetailScreen() {
     } else if (offerKey === "gourmand") {
       const total = totalSelectedBig;
       if (total !== 2) {
-        Alert.alert(
-          "Sélection incomplète",
-          "Choisissez exactement 2 gros snacks."
-        );
         return;
       }
       for (const p of bigSnacks) {
@@ -329,6 +348,48 @@ export default function OfferDetailScreen() {
     if ("ok" in res && res.ok) router.back();
   };
 
+  const handleValidateMixRadio = () => {
+    if (offerKey !== "mix_parfait") return;
+    if (!selectedSmallId || !selectedBigId) {
+      Alert.alert(
+        "Sélection incomplète",
+        "Choisissez 1 petit snack et 1 gros snack."
+      );
+      return;
+    }
+    if (getTotalItems() + 2 > 2) {
+      Alert.alert(
+        "Limite atteinte",
+        "Vous ne pouvez pas dépasser 2 produits au total."
+      );
+      return;
+    }
+    const pointsCost = OFFER_POINTS[offerKey];
+    if (getCurrentPoints() < pointsCost) {
+      Alert.alert(
+        "Points insuffisants",
+        "Vous n'avez pas assez de points pour cette offre."
+      );
+      return;
+    }
+    const s = smallSnacks.find((p) => p.id === selectedSmallId);
+    const b = bigSnacks.find((p) => p.id === selectedBigId);
+    if (!s || !b) return;
+    const offer = {
+      id: `${offerKey}-${Date.now()}`,
+      key: offerKey,
+      name: title,
+      description: undefined,
+      points: pointsCost,
+      items: [
+        { id: s.id, name: s.name, quantity: 1 },
+        { id: b.id, name: b.name, quantity: 1 },
+      ],
+    };
+    const res = addOffer(offer);
+    if ("ok" in res && res.ok) router.back();
+  };
+
   return (
     <View
       className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
@@ -346,24 +407,42 @@ export default function OfferDetailScreen() {
         {offerKey === "petit_snack" && (
           <View className="mb-4">
             {smallSnacks.map((p) => (
-              <ProductRowSingle
+              <TouchableOpacity
                 key={p.id}
-                product={p}
-                isDark={isDark}
-                onAdd={() => handleAddSingle(p)}
-              />
+                activeOpacity={0.7}
+                onPress={() => {
+                  setSelectedProduct(p);
+                  setIsDetailModalVisible(true);
+                }}
+              >
+                <ProductRowSingle
+                  product={p}
+                  isDark={isDark}
+                  selected={selectedSingleId === p.id}
+                  onToggle={() => setSelectedSingleId(p.id)}
+                />
+              </TouchableOpacity>
             ))}
           </View>
         )}
         {offerKey === "gros_snack" && (
           <View className="mb-4">
             {bigSnacks.map((p) => (
-              <ProductRowSingle
+              <TouchableOpacity
                 key={p.id}
-                product={p}
-                isDark={isDark}
-                onAdd={() => handleAddSingle(p)}
-              />
+                activeOpacity={0.7}
+                onPress={() => {
+                  setSelectedProduct(p);
+                  setIsDetailModalVisible(true);
+                }}
+              >
+                <ProductRowSingle
+                  product={p}
+                  isDark={isDark}
+                  selected={selectedSingleId === p.id}
+                  onToggle={() => setSelectedSingleId(p.id)}
+                />
+              </TouchableOpacity>
             ))}
           </View>
         )}
@@ -373,14 +452,23 @@ export default function OfferDetailScreen() {
             {smallSnacks.map((p) => {
               const current = qtySmall[p.id] ?? 0;
               return (
-                <ProductRowCounter
+                <TouchableOpacity
                   key={p.id}
-                  product={p}
-                  isDark={isDark}
-                  current={current}
-                  onDecrement={() => decrementQty("small", p)}
-                  onIncrement={() => incrementQty("small", p, 2, 2)}
-                />
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setSelectedProduct(p);
+                    setIsDetailModalVisible(true);
+                  }}
+                >
+                  <ProductRowCounter
+                    product={p}
+                    isDark={isDark}
+                    current={current}
+                    onDecrement={() => decrementQty("small", p)}
+                    onIncrement={() => incrementQty("small", p, 2, 2)}
+                    isIncrementDisabled={totalSelectedSmall >= 2}
+                  />
+                </TouchableOpacity>
               );
             })}
           </View>
@@ -395,16 +483,22 @@ export default function OfferDetailScreen() {
             </Text>
             <View className="mb-4">
               {smallSnacks.map((p) => {
-                const current = qtySmall[p.id] ?? 0;
                 return (
-                  <ProductRowCounter
+                  <TouchableOpacity
                     key={p.id}
-                    product={p}
-                    isDark={isDark}
-                    current={current}
-                    onDecrement={() => decrementQty("small", p)}
-                    onIncrement={() => incrementQty("small", p, 1, 2)}
-                  />
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setSelectedProduct(p);
+                      setIsDetailModalVisible(true);
+                    }}
+                  >
+                    <ProductRowSingle
+                      product={p}
+                      isDark={isDark}
+                      selected={selectedSmallId === p.id}
+                      onToggle={() => setSelectedSmallId(p.id)}
+                    />
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -415,16 +509,22 @@ export default function OfferDetailScreen() {
             </Text>
             <View className="mb-4">
               {bigSnacks.map((p) => {
-                const current = qtyBig[p.id] ?? 0;
                 return (
-                  <ProductRowCounter
+                  <TouchableOpacity
                     key={p.id}
-                    product={p}
-                    isDark={isDark}
-                    current={current}
-                    onDecrement={() => decrementQty("big", p)}
-                    onIncrement={() => incrementQty("big", p, 1, 2)}
-                  />
+                    activeOpacity={0.7}
+                    onPress={() => {
+                      setSelectedProduct(p);
+                      setIsDetailModalVisible(true);
+                    }}
+                  >
+                    <ProductRowSingle
+                      product={p}
+                      isDark={isDark}
+                      selected={selectedBigId === p.id}
+                      onToggle={() => setSelectedBigId(p.id)}
+                    />
+                  </TouchableOpacity>
                 );
               })}
             </View>
@@ -436,25 +536,33 @@ export default function OfferDetailScreen() {
             {bigSnacks.map((p) => {
               const current = qtyBig[p.id] ?? 0;
               return (
-                <ProductRowCounter
+                <TouchableOpacity
                   key={p.id}
-                  product={p}
-                  isDark={isDark}
-                  current={current}
-                  onDecrement={() => decrementQty("big", p)}
-                  onIncrement={() => incrementQty("big", p, 2, 2)}
-                />
+                  activeOpacity={0.7}
+                  onPress={() => {
+                    setSelectedProduct(p);
+                    setIsDetailModalVisible(true);
+                  }}
+                >
+                  <ProductRowCounter
+                    product={p}
+                    isDark={isDark}
+                    current={current}
+                    onDecrement={() => decrementQty("big", p)}
+                    onIncrement={() => incrementQty("big", p, 2, 2)}
+                    isIncrementDisabled={totalSelectedBig >= 2}
+                  />
+                </TouchableOpacity>
               );
             })}
           </View>
         )}
       </ScrollView>
 
-      {(offerKey === "ptit_duo" ||
-        offerKey === "mix_parfait" ||
-        offerKey === "gourmand") && (
+      {/* Footer uniforme pour toutes les offres */}
+      {true && (
         <View
-          className={`${isDark ? "bg-dark-surface" : "bg-light-surface"} p-4`}
+          className={`${isDark ? "bg-dark-surface" : "bg-light-surface"} px-4 pb-8 pt-4`}
         >
           {/* Résumé dynamique */}
           {offerKey === "ptit_duo" && (
@@ -475,8 +583,8 @@ export default function OfferDetailScreen() {
             <Text
               className={`${isDark ? "text-dark-textSecondary" : "text-light-text"} text-sm mb-2`}
             >
-              {totalSelectedSmall}/1 petit snack • {totalSelectedBig}/1 gros
-              snack
+              {selectedSmallId ? 1 : 0}/1 petit snack • {selectedBigId ? 1 : 0}
+              /1 gros snack
             </Text>
           )}
           <View className="flex-row justify-between mb-3">
@@ -503,18 +611,52 @@ export default function OfferDetailScreen() {
               {getCurrentPoints()}
             </Text>
           </View>
-          <TouchableOpacity
-            onPress={handleValidateMulti}
-            className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-4 rounded-lg`}
-          >
-            <Text
-              className={`${isDark ? "text-dark-buttonText" : "text-white"} text-lg font-bold text-center`}
-            >
-              Ajouter l&apos;offre
-            </Text>
-          </TouchableOpacity>
+          {(() => {
+            const isSingle =
+              offerKey === "petit_snack" || offerKey === "gros_snack";
+            const isMix = offerKey === "mix_parfait";
+            const footerDisabled = isSingle
+              ? !selectedSingleId
+              : isMix
+                ? !selectedSmallId || !selectedBigId
+                : offerKey === "ptit_duo"
+                  ? totalSelectedSmall !== 2
+                  : offerKey === "gourmand"
+                    ? totalSelectedBig !== 2
+                    : false;
+            const onPress = isSingle
+              ? handleValidateSingle
+              : isMix
+                ? handleValidateMixRadio
+                : handleValidateMulti;
+            return (
+              <TouchableOpacity
+                disabled={footerDisabled}
+                onPress={onPress}
+                className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-4 rounded-lg ${footerDisabled ? "opacity-50" : ""}`}
+              >
+                <Text
+                  className={`${isDark ? "text-dark-buttonText" : "text-white"} text-lg font-bold text-center`}
+                >
+                  Ajouter l&apos;offre
+                </Text>
+              </TouchableOpacity>
+            );
+          })()}
         </View>
       )}
+
+      {/* Product Detail Modal (uniforme avec Réserver) */}
+      <React.Suspense fallback={null}>
+        <ProductDetailModal
+          product={selectedProduct}
+          visible={isDetailModalVisible}
+          onClose={() => {
+            setIsDetailModalVisible(false);
+            setSelectedProduct(null);
+          }}
+        />
+      </React.Suspense>
     </View>
   );
 }
