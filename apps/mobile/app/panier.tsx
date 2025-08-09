@@ -22,6 +22,7 @@ export default function CartScreen() {
       <Stack.Screen
         options={{
           title: 'Panier',
+          headerBackTitle: '',
           headerStyle: {
             backgroundColor: isDark ? '#493837' : '#E3E8E4',
           },

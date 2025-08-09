@@ -58,6 +58,7 @@ export default function QRCodeScreen() {
       <Stack.Screen
         options={{
           title: 'Informations sur la commande',
+          headerBackTitle: '',
           headerStyle: {
             backgroundColor: isDark ? '#493837' : '#E3E8E4',
           },
