@@ -47,12 +47,19 @@ export default function OfferDetailScreen() {
     []
   );
 
+  // Fonction de gestion du succès - retour immédiat
+  const handleOfferSuccess = (offerName?: string) => {
+    // Retourner immédiatement à la page précédente
+    // Le nom de l'offre est déjà enregistré dans le CartContext
+    router.back();
+  };
+
   // Hook pour la gestion de la sélection
   const selection = useOfferSelection({
     offerRule,
     smallSnacks,
     bigSnacks,
-    onSuccess: () => router.back(),
+    onSuccess: handleOfferSuccess,
   });
 
   const handleProductPress = (product: Product) => {

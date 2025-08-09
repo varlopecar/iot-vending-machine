@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import { View, Animated } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
@@ -20,6 +26,7 @@ import {
   getAdvantagesFromOffers,
   getOfferKeyFromTitle,
 } from "../../lib/offers/advantageSync";
+import SuccessBanner from "../../components/SuccessBanner";
 
 const CartBanner = React.lazy(() => import("../../components/CartBanner"));
 
@@ -47,9 +54,16 @@ export default function FideliteScreen() {
     "advantages"
   );
   const [showBarcode, setShowBarcode] = useState(false);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const router = useRouter();
-  const { getCurrentPoints, getTotalItems, getTotalPrice } = useCart();
+  const {
+    getCurrentPoints,
+    getTotalItems,
+    getTotalPrice,
+    lastOfferAdded,
+    clearLastOfferAdded,
+  } = useCart();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["60%", "90%"], []);
@@ -66,11 +80,37 @@ export default function FideliteScreen() {
     router.push("/panier");
   };
 
+  const navigateToCartFromBanner = () => {
+    setShowSuccessBanner(false);
+    router.push("/panier");
+  };
+
+  // Détecter quand une offre a été ajoutée et afficher la notification
+  useEffect(() => {
+    if (lastOfferAdded) {
+      setShowSuccessBanner(true);
+      // Après l'affichage, on peut nettoyer
+      setTimeout(() => {
+        clearLastOfferAdded();
+      }, 2500); // Un peu plus que la durée de la notification
+    }
+  }, [lastOfferAdded, clearLastOfferAdded]);
+
   return (
     <SafeContainer>
       <View
         className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
       >
+        {/* Bandeau de succès pour l'ajout d'offre */}
+        <SuccessBanner
+          visible={showSuccessBanner && !!lastOfferAdded}
+          message={`L'offre ${lastOfferAdded} a été ajoutée au panier !`}
+          onClose={() => setShowSuccessBanner(false)}
+          onPress={navigateToCartFromBanner}
+          autoHide={true}
+          duration={2000}
+        />
+
         <Header title="Mon programme" scrollY={scrollY} />
 
         <Animated.ScrollView

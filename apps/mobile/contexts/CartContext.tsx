@@ -1,10 +1,4 @@
-import React, {
-  createContext,
-  useContext,
-  useMemo,
-  useState,
-  ReactNode,
-} from "react";
+import React, { createContext, useContext, useState, ReactNode } from "react";
 import { CartItem, AppliedOffer, Product } from "../types/product";
 
 interface CartContextType {
@@ -20,8 +14,10 @@ interface CartContextType {
   getTotalItems: () => number;
   addOffer: (
     offer: AppliedOffer
-  ) => { ok: true } | { ok: false; reason: string };
+  ) => { ok: true; offerName: string } | { ok: false; reason: string };
   removeOffer: (offerId: string) => void;
+  lastOfferAdded: string | null;
+  clearLastOfferAdded: () => void;
 }
 
 const CartContext = createContext<CartContextType | undefined>(undefined);
@@ -30,6 +26,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [appliedOffers, setAppliedOffers] = useState<AppliedOffer[]>([]);
   const [userBasePoints] = useState<number>(100);
+  const [lastOfferAdded, setLastOfferAdded] = useState<string | null>(null);
 
   const getCurrentPoints = () => {
     const pointsUsed = appliedOffers.reduce(
@@ -116,7 +113,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const addOffer = (
     offer: AppliedOffer
-  ): { ok: true } | { ok: false; reason: string } => {
+  ): { ok: true; offerName: string } | { ok: false; reason: string } => {
     // Vérifier qu'on ne dépasse pas 2 items au total lorsque l'on ajoute les items de l'offre
     const currentTotal = getTotalItems();
     const offerItemsCount = offer.items.reduce(
@@ -157,7 +154,11 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
     // Déduire les points en ajoutant l'offre
     setAppliedOffers((prev) => [...prev, offer]);
-    return { ok: true };
+
+    // Enregistrer la dernière offre ajoutée pour la notification
+    setLastOfferAdded(offer.name);
+
+    return { ok: true, offerName: offer.name };
   };
 
   const removeOffer = (offerId: string) => {
@@ -176,6 +177,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     setAppliedOffers((prev) => prev.filter((o) => o.id !== offerId));
   };
 
+  const clearLastOfferAdded = () => {
+    setLastOfferAdded(null);
+  };
+
   return (
     <CartContext.Provider
       value={{
@@ -191,6 +196,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         getTotalItems,
         addOffer,
         removeOffer,
+        lastOfferAdded,
+        clearLastOfferAdded,
       }}
     >
       {children}

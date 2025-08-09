@@ -8,7 +8,7 @@ interface UseOfferSelectionProps {
   offerRule: OfferRule;
   smallSnacks: Product[];
   bigSnacks: Product[];
-  onSuccess: () => void;
+  onSuccess: (offerName?: string) => void;
 }
 
 export function useOfferSelection({
@@ -226,7 +226,7 @@ export function useOfferSelection({
 
     const result = addOffer(offer);
     if ("ok" in result && result.ok) {
-      onSuccess();
+      onSuccess(result.offerName);
     }
   }, [validation, offerRule, state, getTotalItems, getCurrentPoints, addOffer, onSuccess, smallSnacks, bigSnacks]);
 
