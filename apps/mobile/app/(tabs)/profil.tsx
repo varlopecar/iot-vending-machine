@@ -74,23 +74,6 @@ export default function ProfilScreen() {
             Edit Password
           </ActionButton>
         </View>
-
-        {/* Section identifiant */}
-        <View className="mb-6">
-          <View className="mb-3">
-            <Text
-              className={`${isDark ? "text-dark-text" : "text-light-text"} text-lg font-bold ml-1`}
-            >
-              Votre Identifiant
-            </Text>
-          </View>
-
-          <IdentifierCard
-            identifier={user.identifier}
-            onCopy={handleCopyIdentifier}
-            showCopyButton={true}
-          />
-        </View>
       </ScrollView>
 
       <TabBarSpacer />
