@@ -8,7 +8,7 @@ import { Image } from "expo-image";
 
 interface BottomSheetBarcodeProps {
   isDark: boolean;
-  bottomSheetRef: RefObject<BottomSheet>;
+  bottomSheetRef: RefObject<BottomSheet | null>;
   index: number; // 1 or -1
   snapPoints: (string | number)[];
   onChange: (index: number) => void;

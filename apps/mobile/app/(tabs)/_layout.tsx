@@ -12,11 +12,11 @@ export default function TabLayout() {
       screenOptions={{
         headerShown: false,
         tabBarStyle: {
-          backgroundColor: isDark ? '#2A1810' : '#FDF8F0',
-          borderTopColor: isDark ? '#493837' : '#F3E9D8',
+          backgroundColor: isDark ? "#2A1810" : "#FDF8F0",
+          borderTopColor: isDark ? "#493837" : "#F3E9D8",
         },
-        tabBarActiveTintColor: isDark ? '#FDF8F0' : '#2A1810',
-        tabBarInactiveTintColor: isDark ? '#8B7355' : '#8B7355',
+        tabBarActiveTintColor: isDark ? "#FDF8F0" : "#2A1810",
+        tabBarInactiveTintColor: isDark ? "#8B7355" : "#8B7355",
         // Lazy loading natif d'Expo Router
         lazy: true,
       }}
@@ -41,7 +41,7 @@ export default function TabLayout() {
           title: "Commandes",
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
-              name={focused ? "list" : "list-outline"}
+              name={focused ? "document-text" : "document-text-outline"}
               size={24}
               color={color}
             />

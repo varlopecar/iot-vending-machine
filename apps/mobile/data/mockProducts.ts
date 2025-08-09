@@ -4,7 +4,7 @@ export const mockProducts: Product[] = [
   {
     id: '1',
     name: 'Coca-Cola',
-    price: 2.50,
+    price: 2.20,
     image: require('../assets/images/coca.png'),
     ingredients: ['Eau gazéifiée', 'Sucre', 'Colorant caramel', 'Acide phosphorique', 'Caféine', 'Arômes naturels'],
     allergens: ['Aucun allergène majeur'],
@@ -18,7 +18,7 @@ export const mockProducts: Product[] = [
   {
     id: '2',
     name: 'Eau minérale',
-    price: 1.50,
+    price: 1.10,
     image: require('../assets/images/eau.png'),
     ingredients: ['Eau minérale naturelle'],
     allergens: ['Aucun allergène'],
@@ -32,7 +32,7 @@ export const mockProducts: Product[] = [
   {
     id: '3',
     name: 'Chips nature',
-    price: 2.00,
+    price: 1.30,
     image: require('../assets/images/chips.png'),
     ingredients: ['Pommes de terre', 'Huile de tournesol', 'Sel'],
     allergens: ['Aucun allergène majeur'],
@@ -46,7 +46,7 @@ export const mockProducts: Product[] = [
   {
     id: '4',
     name: 'Kinder Bueno',
-    price: 3.00,
+    price: 2.30,
     image: require('../assets/images/kinder.png'),
     ingredients: ['Chocolat au lait', 'Noisettes', 'Sucre', 'Lait en poudre', 'Beurre de cacao'],
     allergens: ['Lait', 'Noisettes', 'Soja'],

@@ -6,7 +6,6 @@ export { default as SafeModal } from './SafeModal';
 export { default as TabBarSpacer } from './TabBarSpacer';
 export { default as ProfileAvatar } from './ProfileAvatar';
 export { default as UserInfo } from './UserInfo';
-export { default as ActionButton } from './ActionButton';
 export { default as IdentifierCard } from './IdentifierCard';
 export { default as SettingsSection } from './SettingsSection';
 export { default as SettingsItem } from './SettingsItem';
@@ -18,3 +17,9 @@ export * from './SectionTitle';
 export * from './Tabs';
 export * from './BarcodeButton';
 export * from './BottomSheetBarcode';
+// New UI components for offers
+export { ActionButton } from './ActionButton';
+export { FormSection } from './FormSection';
+export { ProductSelectorSingle } from './ProductSelectorSingle';
+export { ProductSelectorCounter } from './ProductSelectorCounter';
+export { SelectionSummary } from './SelectionSummary';

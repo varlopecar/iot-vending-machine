@@ -21,10 +21,17 @@ export default function RootLayout() {
     <GestureHandlerRootView style={{ flex: 1 }}>
       <SafeAreaProvider>
         <CartProvider>
-          <Stack screenOptions={{ headerBackTitle: '' }}>
+          <Stack screenOptions={{ headerBackTitle: "" }}>
             <Stack.Screen name="login" options={{ headerShown: false }} />
             <Stack.Screen name="register" options={{ headerShown: false }} />
-            <Stack.Screen name="(tabs)" options={{ headerShown: false, title: '' }} />
+            <Stack.Screen
+              name="(tabs)"
+              options={{ headerShown: false, title: "" }}
+            />
+            <Stack.Screen
+              name="offres/[offer]"
+              options={{ headerShown: false }}
+            />
             <Stack.Screen name="+not-found" />
           </Stack>
         </CartProvider>

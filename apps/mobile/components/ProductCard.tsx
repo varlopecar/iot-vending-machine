@@ -1,7 +1,8 @@
-import React from 'react';
-import { View, Text, Image, TouchableOpacity } from 'react-native';
-import { useTailwindTheme } from '../hooks/useTailwindTheme';
-import { Product } from '../types/product';
+import React from "react";
+import { View, Text, Image, TouchableOpacity } from "react-native";
+import { useTailwindTheme } from "../hooks/useTailwindTheme";
+import { Product } from "../types/product";
+import PlusIcon from "../assets/images/plus.svg";
 
 interface ProductCardProps {
   product: Product;
@@ -9,7 +10,11 @@ interface ProductCardProps {
   onPressDetail: (product: Product) => void;
 }
 
-export default function ProductCard({ product, onAddToCart, onPressDetail }: ProductCardProps) {
+export default function ProductCard({
+  product,
+  onAddToCart,
+  onPressDetail,
+}: ProductCardProps) {
   const { isDark } = useTailwindTheme();
 
   return (
@@ -28,30 +33,34 @@ export default function ProductCard({ product, onAddToCart, onPressDetail }: Pro
           />
           <View className="flex-1">
             <Text
-              className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-lg font-semibold`}
+              className={`${isDark ? "text-dark-textSecondary" : "text-light-text"} text-lg font-semibold`}
             >
               {product.name}
             </Text>
             <Text
-              className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'} text-base`}
+              className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-base`}
             >
-              {product.price}€
+              {product.price.toFixed(2)}€
             </Text>
           </View>
         </View>
         <TouchableOpacity
           onPress={() => onAddToCart(product)}
-          className={`${isDark ? 'bg-dark-secondary' : 'bg-light-secondary'} w-10 h-10 rounded-full items-center justify-center`}
+          className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} w-10 h-10 rounded-full items-center justify-center`}
         >
-          <Text className={`${isDark ? 'text-dark-buttonText' : 'text-white'} text-xl font-bold`}>+</Text>
+          <PlusIcon
+            width={24}
+            height={24}
+            color={isDark ? "#3A2E2C" : "#FEFCFA"}
+          />
         </TouchableOpacity>
       </View>
-      
+
       {/* Ligne de séparation sur toute la largeur (sans padding) */}
-      <View 
+      <View
         className="w-full h-px"
-        style={{ 
-          backgroundColor: isDark ? '#493837' : '#F3E9D8'
+        style={{
+          backgroundColor: isDark ? "#493837" : "#F3E9D8",
         }}
       />
     </TouchableOpacity>

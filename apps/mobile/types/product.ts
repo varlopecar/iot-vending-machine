@@ -3,6 +3,7 @@ export interface Product {
   name: string;
   price: number;
   image: any;
+  category?: 'snack' | 'drink';
   ingredients: string[];
   allergens: string[];
   nutritionalValues: {
@@ -19,13 +20,16 @@ export interface CartItem {
   price: number;
   image: any;
   quantity: number;
+  fromOfferId?: string; // identifie si l'item provient d'une offre
 }
 
 export interface AppliedOffer {
   id: string;
+  key: 'petit_snack' | 'gros_snack' | 'ptit_duo' | 'mix_parfait' | 'gourmand';
   name: string;
-  description: string;
-  itemName: string;
+  description?: string;
+  points: number;
+  items: { id: string; name: string; quantity: number }[];
 }
 
 export interface Order {

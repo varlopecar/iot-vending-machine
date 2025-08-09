@@ -1,20 +1,25 @@
-import React, { useState, useEffect } from "react";
-import { View, Text, ScrollView } from "react-native";
+import React, { useState, useEffect, useRef } from "react";
+import { View, Text, Animated } from "react-native";
 import { useRouter } from "expo-router";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 import { HeaderSkeleton, OrderListSkeleton } from "../../components";
 import { mockOrders } from "../../data/mockProducts";
 import { Order } from "../../types/product";
-import { SafeContainer } from "../../components/ui";
+import { SafeContainer, SectionTitle } from "../../components/ui";
+import { useCart } from "../../contexts/CartContext";
+import { Header } from "../../components/Header";
 
 // Lazy loading des composants
-const OrderCard = React.lazy(() => import('../../components/OrderCard'));
+const OrderCard = React.lazy(() => import("../../components/OrderCard"));
+const CartBanner = React.lazy(() => import("../../components/CartBanner"));
 
 export default function CommandesScreen() {
   const router = useRouter();
   const { isDark } = useTailwindTheme();
+  const { getTotalItems, getTotalPrice } = useCart();
   const [orders, setOrders] = useState<Order[]>(mockOrders);
   const [isLoading, setIsLoading] = useState(true);
+  const scrollY = useRef(new Animated.Value(0)).current;
 
   // Simulation du chargement initial
   useEffect(() => {
@@ -27,8 +32,8 @@ export default function CommandesScreen() {
 
   useEffect(() => {
     const interval = setInterval(() => {
-      setOrders(prevOrders =>
-        prevOrders.map(order => ({
+      setOrders((prevOrders) =>
+        prevOrders.map((order) => ({
           ...order,
           expiresAt: new Date(order.expiresAt.getTime() - 60000), // Décrémente d'1 minute
         }))
@@ -40,9 +45,13 @@ export default function CommandesScreen() {
 
   const handleOrderPress = (order: Order) => {
     router.push({
-      pathname: '/qr-code',
-      params: { orderId: order.id }
+      pathname: "/qr-code",
+      params: { orderId: order.id },
     } as any);
+  };
+
+  const navigateToCart = () => {
+    router.push("/panier");
   };
 
   if (isLoading) {
@@ -58,33 +67,51 @@ export default function CommandesScreen() {
 
   return (
     <SafeContainer>
-      <View className="flex-1">
-        {/* Header */}
-        <View className="p-4 mb-6">
-          <Text
-            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-4xl font-bold text-left mb-2`}
-          >
-            Commandes
-          </Text>
-          <Text
-            className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'} text-lg text-left mt-6`}
-          >
-            Vos QR codes
-          </Text>
-        </View>
+      <View
+        className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
+      >
+        <Header title="Commandes" scrollY={scrollY} />
 
-        {/* Orders List */}
-        <ScrollView className="flex-1 px-4">
-          <React.Suspense fallback={<OrderListSkeleton />}>
-            {orders.map((order) => (
-              <OrderCard
-                key={order.id}
-                order={order}
-                onPress={handleOrderPress}
-              />
-            ))}
-          </React.Suspense>
-        </ScrollView>
+        <Animated.ScrollView
+          className="flex-1"
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
+          <SectionTitle isDark={isDark}>Commandes</SectionTitle>
+
+          <View className="px-4 mb-6">
+            <Text
+              className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-xl text-left`}
+            >
+              Vos QR codes
+            </Text>
+          </View>
+
+          {/* Orders List */}
+          <View className="">
+            <React.Suspense fallback={<OrderListSkeleton />}>
+              {orders.map((order) => (
+                <OrderCard
+                  key={order.id}
+                  order={order}
+                  onPress={handleOrderPress}
+                />
+              ))}
+            </React.Suspense>
+          </View>
+        </Animated.ScrollView>
+
+        {/* Cart Banner */}
+        <React.Suspense fallback={<View className="h-20" />}>
+          <CartBanner
+            itemCount={getTotalItems()}
+            totalPrice={getTotalPrice()}
+            onPress={navigateToCart}
+          />
+        </React.Suspense>
       </View>
     </SafeContainer>
   );

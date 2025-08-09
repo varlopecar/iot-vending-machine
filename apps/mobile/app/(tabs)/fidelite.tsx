@@ -1,4 +1,10 @@
-import React, { useState, useCallback, useMemo, useRef } from "react";
+import React, {
+  useState,
+  useCallback,
+  useMemo,
+  useRef,
+  useEffect,
+} from "react";
 import { View, Animated } from "react-native";
 import BottomSheet from "@gorhom/bottom-sheet";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
@@ -10,37 +16,24 @@ import {
   Tabs,
   BarcodeButton,
   BottomSheetBarcode,
+  SafeContainer,
 } from "../../components/ui";
-import { Advantage, HistoryEntry } from "../../types/types";
+import { HistoryEntry } from "../../types/types";
 import { AdvantageGrid, HistoryList } from "../../components/fidelity";
+import { useRouter } from "expo-router";
+import { useCart } from "../../contexts/CartContext";
+import {
+  getAdvantagesFromOffers,
+  getOfferKeyFromTitle,
+} from "../../lib/offers/advantageSync";
+import SuccessBanner from "../../components/SuccessBanner";
 
-const mockPoints = 100;
+const CartBanner = React.lazy(() => import("../../components/CartBanner"));
 
-const mockAdvantages: Advantage[] = [
-  { id: "1", title: "Petit snack", points: 20, image: "ptit_duo.png" },
-  { id: "2", title: "Gros snack", points: 40, image: "le_gourmand.png" },
-  {
-    id: "3",
-    title: "Le p'tit duo",
-    description: "Choisissez deux petits snacks",
-    points: 35,
-    image: "ptit_duo.png",
-  },
-  {
-    id: "4",
-    title: "Le Mix Parfait",
-    description: "Choisissez un petit snack et un gros snack",
-    points: 55,
-    image: "le_mix_parfait.png",
-  },
-  {
-    id: "5",
-    title: "Le gourmand",
-    description: "Choisissez deux gros snacks",
-    points: 70,
-    image: "le_gourmand.png",
-  },
-];
+// Les points affichés proviennent maintenant du CartContext (getCurrentPoints)
+
+// Les avantages sont maintenant générés à partir de la configuration centralisée
+const advantages = getAdvantagesFromOffers();
 
 const mockHistory: HistoryEntry[] = [
   { id: "1", date: "04/08/2025", location: "Sophia", points: 2 },
@@ -61,7 +54,16 @@ export default function FideliteScreen() {
     "advantages"
   );
   const [showBarcode, setShowBarcode] = useState(false);
+  const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const router = useRouter();
+  const {
+    getCurrentPoints,
+    getTotalItems,
+    getTotalPrice,
+    lastOfferAdded,
+    clearLastOfferAdded,
+  } = useCart();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["60%", "90%"], []);
@@ -74,63 +76,115 @@ export default function FideliteScreen() {
     bottomSheetRef.current?.close();
   }, []);
 
+  const navigateToCart = () => {
+    router.push("/panier");
+  };
+
+  const navigateToCartFromBanner = () => {
+    setShowSuccessBanner(false);
+    router.push("/panier");
+  };
+
+  // Détecter quand une offre a été ajoutée et afficher la notification
+  useEffect(() => {
+    if (lastOfferAdded) {
+      setShowSuccessBanner(true);
+      // Après l'affichage, on peut nettoyer
+      setTimeout(() => {
+        clearLastOfferAdded();
+      }, 2500); // Un peu plus que la durée de la notification
+    }
+  }, [lastOfferAdded, clearLastOfferAdded]);
+
   return (
-    <View
-      className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
-    >
-      <Header title="Mon programme" scrollY={scrollY} />
-
-      <Animated.ScrollView
-        className="flex-1 mb-24"
-        onScroll={Animated.event(
-          [{ nativeEvent: { contentOffset: { y: scrollY } } }],
-          { useNativeDriver: false }
-        )}
-        scrollEventThrottle={16}
+    <SafeContainer>
+      <View
+        className={`${isDark ? "bg-dark-background" : "bg-light-background"} flex-1`}
       >
-        <SectionTitle isDark={isDark}>Mon programme</SectionTitle>
-
-        <PointsProgress
-          points={mockPoints}
-          textGradientColors={textGradientColors}
-          barGradientColors={gradientColors}
+        {/* Bandeau de succès pour l'ajout d'offre */}
+        <SuccessBanner
+          visible={showSuccessBanner && !!lastOfferAdded}
+          message={`L'offre ${lastOfferAdded} a été ajoutée au panier !`}
+          onClose={() => setShowSuccessBanner(false)}
+          onPress={navigateToCartFromBanner}
+          autoHide={true}
+          duration={2000}
         />
 
-        <BarcodeButton
-          isDark={isDark}
-          onPress={() => setShowBarcode(true)}
-          buttonTextColor={colors.buttonText ?? "#FFFFFF"}
-        />
+        <Header title="Mon programme" scrollY={scrollY} />
 
-        <Tabs
-          isDark={isDark}
-          active={activeTab}
-          options={[
-            { key: "advantages", label: "Mes avantages" },
-            { key: "history", label: "Mon historique" },
-          ]}
-          onChange={(key) => setActiveTab(key as "advantages" | "history")}
-        />
+        <Animated.ScrollView
+          className="flex-1"
+          onScroll={Animated.event(
+            [{ nativeEvent: { contentOffset: { y: scrollY } } }],
+            { useNativeDriver: false }
+          )}
+          scrollEventThrottle={16}
+        >
+          <SectionTitle isDark={isDark}>Mon programme</SectionTitle>
 
-        {activeTab === "advantages" ? (
-          <AdvantageGrid isDark={isDark} advantages={mockAdvantages} />
-        ) : (
-          <HistoryList
-            isDark={isDark}
-            entries={mockHistory}
-            gradientColors={gradientColors}
+          <PointsProgress
+            points={getCurrentPoints()}
+            textGradientColors={textGradientColors}
+            barGradientColors={gradientColors}
           />
-        )}
-      </Animated.ScrollView>
 
-      <BottomSheetBarcode
-        isDark={isDark}
-        bottomSheetRef={bottomSheetRef}
-        index={showBarcode ? 1 : -1}
-        snapPoints={snapPoints}
-        onChange={handleSheetChanges}
-        onClosePress={handleClosePress}
-      />
-    </View>
+          <BarcodeButton
+            isDark={isDark}
+            onPress={() => setShowBarcode(true)}
+            buttonTextColor={colors.buttonText ?? "#FFFFFF"}
+          />
+
+          <Tabs
+            isDark={isDark}
+            active={activeTab}
+            options={[
+              { key: "advantages", label: "Mes avantages" },
+              { key: "history", label: "Mon historique" },
+            ]}
+            onChange={(key) => setActiveTab(key as "advantages" | "history")}
+          />
+
+          {activeTab === "advantages" ? (
+            <AdvantageGrid
+              isDark={isDark}
+              advantages={advantages}
+              // Navigation vers l'écran de détail d'offre
+              onPress={(adv) => {
+                const key = getOfferKeyFromTitle(adv.title);
+                router.push({
+                  pathname: "/offres/[offer]",
+                  params: { offer: key },
+                } as any);
+              }}
+            />
+          ) : (
+            <HistoryList
+              isDark={isDark}
+              entries={mockHistory}
+              gradientColors={gradientColors}
+            />
+          )}
+        </Animated.ScrollView>
+
+        {/* Cart Banner */}
+        <React.Suspense fallback={<View className="h-20" />}>
+          <CartBanner
+            itemCount={getTotalItems()}
+            totalPrice={getTotalPrice()}
+            onPress={navigateToCart}
+          />
+        </React.Suspense>
+
+        <BottomSheetBarcode
+          isDark={isDark}
+          bottomSheetRef={bottomSheetRef}
+          index={showBarcode ? 1 : -1}
+          snapPoints={snapPoints}
+          onChange={handleSheetChanges}
+          onClosePress={handleClosePress}
+        />
+      </View>
+    </SafeContainer>
   );
 }
