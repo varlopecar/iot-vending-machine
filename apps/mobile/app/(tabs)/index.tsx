@@ -76,6 +76,10 @@ export default function IndexScreen() {
         visible={showSuccessBanner}
         message={successMessage}
         onClose={() => setShowSuccessBanner(false)}
+        onPress={() => {
+          setShowSuccessBanner(false);
+          navigateToCart();
+        }}
         autoHide={true}
         duration={2000}
       />
