@@ -2,6 +2,7 @@ import React from "react";
 import { View, Text, Image, TouchableOpacity } from "react-native";
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
 import { Product } from "../types/product";
+import PlusIcon from "../assets/images/plus.svg";
 
 interface ProductCardProps {
   product: Product;
@@ -47,11 +48,11 @@ export default function ProductCard({
           onPress={() => onAddToCart(product)}
           className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} w-10 h-10 rounded-full items-center justify-center`}
         >
-          <Text
-            className={`${isDark ? "text-dark-buttonText" : "text-white"} text-xl font-bold`}
-          >
-            +
-          </Text>
+          <PlusIcon
+            width={24}
+            height={24}
+            color={isDark ? "#FEFCFA" : "#3A2E2C"}
+          />
         </TouchableOpacity>
       </View>
 
