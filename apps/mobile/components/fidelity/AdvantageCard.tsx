@@ -9,6 +9,7 @@ interface AdvantageCardProps {
   variant: "grid" | "list";
   advantage: Advantage;
   imageSource: any;
+  onPress?: () => void;
 }
 
 export function AdvantageCard({
@@ -16,10 +17,12 @@ export function AdvantageCard({
   variant,
   advantage,
   imageSource,
+  onPress,
 }: AdvantageCardProps) {
   if (variant === "grid") {
     return (
       <TouchableOpacity
+        onPress={onPress}
         className={`flex-1 ${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg p-4`}
       >
         <View className="items-start">
@@ -59,6 +62,7 @@ export function AdvantageCard({
 
   return (
     <TouchableOpacity
+      onPress={onPress}
       className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg px-4 py-8 mb-4`}
     >
       <View className="flex-row items-center">

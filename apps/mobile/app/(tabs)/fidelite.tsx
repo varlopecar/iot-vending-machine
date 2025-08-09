@@ -13,8 +13,10 @@ import {
 } from "../../components/ui";
 import { Advantage, HistoryEntry } from "../../types/types";
 import { AdvantageGrid, HistoryList } from "../../components/fidelity";
+import { useRouter } from "expo-router";
+import { useCart } from "../../contexts/CartContext";
 
-const mockPoints = 100;
+// Les points affichés proviennent maintenant du CartContext (getCurrentPoints)
 
 const mockAdvantages: Advantage[] = [
   { id: "1", title: "Petit snack", points: 20, image: "ptit_duo.png" },
@@ -62,6 +64,8 @@ export default function FideliteScreen() {
   );
   const [showBarcode, setShowBarcode] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
+  const router = useRouter();
+  const { getCurrentPoints } = useCart();
 
   const bottomSheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["60%", "90%"], []);
@@ -91,7 +95,7 @@ export default function FideliteScreen() {
         <SectionTitle isDark={isDark}>Mon programme</SectionTitle>
 
         <PointsProgress
-          points={mockPoints}
+          points={getCurrentPoints()}
           textGradientColors={textGradientColors}
           barGradientColors={gradientColors}
         />
@@ -113,7 +117,28 @@ export default function FideliteScreen() {
         />
 
         {activeTab === "advantages" ? (
-          <AdvantageGrid isDark={isDark} advantages={mockAdvantages} />
+          <AdvantageGrid
+            isDark={isDark}
+            advantages={mockAdvantages}
+            // Navigation vers l'écran de détail d'offre
+            onPress={(adv) => {
+              // Map du titre vers une clé stable
+              const key = adv.title.toLowerCase().includes("petit snack")
+                ? "petit_snack"
+                : adv.title.toLowerCase().includes("gros snack")
+                  ? "gros_snack"
+                  : adv.title.toLowerCase().includes("p'tit duo") ||
+                      adv.title.toLowerCase().includes("ptit duo")
+                    ? "ptit_duo"
+                    : adv.title.toLowerCase().includes("mix")
+                      ? "mix_parfait"
+                      : "gourmand";
+              router.push({
+                pathname: "/offres/[offer]",
+                params: { offer: key },
+              } as any);
+            }}
+          />
         ) : (
           <HistoryList
             isDark={isDark}

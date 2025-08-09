@@ -7,9 +7,14 @@ import { imageMapping } from "./imageMapping";
 interface AdvantageGridProps {
   isDark: boolean;
   advantages: Advantage[];
+  onPress?: (adv: Advantage) => void;
 }
 
-export function AdvantageGrid({ isDark, advantages }: AdvantageGridProps) {
+export function AdvantageGrid({
+  isDark,
+  advantages,
+  onPress,
+}: AdvantageGridProps) {
   return (
     <View className="px-4 mt-6">
       <View className="flex-row gap-4 mb-4">
@@ -20,6 +25,7 @@ export function AdvantageGrid({ isDark, advantages }: AdvantageGridProps) {
             variant="grid"
             advantage={adv}
             imageSource={imageMapping[adv.image as keyof typeof imageMapping]}
+            onPress={() => onPress?.(adv)}
           />
         ))}
       </View>
@@ -30,6 +36,7 @@ export function AdvantageGrid({ isDark, advantages }: AdvantageGridProps) {
           variant="list"
           advantage={adv}
           imageSource={imageMapping[adv.image as keyof typeof imageMapping]}
+          onPress={() => onPress?.(adv)}
         />
       ))}
     </View>
