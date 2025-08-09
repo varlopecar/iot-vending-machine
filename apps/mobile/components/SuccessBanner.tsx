@@ -1,5 +1,5 @@
 import React, { useEffect, useRef } from 'react';
-import { View, Text, Animated, TouchableOpacity } from 'react-native';
+import { View, Text, Animated, TouchableOpacity, Modal } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTailwindTheme } from '../hooks/useTailwindTheme';
@@ -19,7 +19,7 @@ export default function SuccessBanner({
   autoHide = true, 
   duration = 3000 
 }: SuccessBannerProps) {
-  const { isDark } = useTailwindTheme();
+  const { isDark, colors } = useTailwindTheme();
   const insets = useSafeAreaInsets();
   const slideAnim = useRef(new Animated.Value(-100)).current;
   const opacityAnim = useRef(new Animated.Value(0)).current;
@@ -73,46 +73,46 @@ export default function SuccessBanner({
   if (!visible) return null;
 
   return (
-    <Animated.View
-      style={{
-        transform: [{ translateY: slideAnim }],
-        opacity: opacityAnim,
-        position: 'absolute',
-        top: insets.top + 16, // Safe area + marge
-        left: 16,
-        right: 16,
-        zIndex: 50,
-      }}
-      className={`rounded-lg shadow-lg ${
-        isDark ? 'bg-green-600' : 'bg-green-500'
-      }`}
-    >
-      <View className="flex-row items-center justify-between p-4">
-        <View className="flex-row items-center flex-1">
-          <View className={`w-8 h-8 rounded-full items-center justify-center mr-3 ${
-            isDark ? 'bg-green-700' : 'bg-green-600'
-          }`}>
-            <Ionicons 
-              name="checkmark" 
-              size={16} 
-              color="white" 
-            />
+    <Modal visible transparent animationType="none">
+      <View style={{ flex: 1 }} pointerEvents="box-none">
+        <Animated.View
+          style={{
+            transform: [{ translateY: slideAnim }],
+            opacity: opacityAnim,
+            position: 'absolute',
+            top: insets.top + 16,
+            left: 16,
+            right: 16,
+            zIndex: 999,
+            // Couleur de fond calée sur la couleur secondaire du thème
+            backgroundColor: colors.secondary,
+          }}
+          className="rounded-lg shadow-lg"
+        >
+          <View className="flex-row items-center justify-between p-4">
+            <View className="flex-row items-center flex-1">
+              <View
+                className="w-8 h-8 rounded-full items-center justify-center mr-3"
+                style={{ backgroundColor: 'rgba(0,0,0,0.15)' }}
+              >
+                <Ionicons name="checkmark" size={16} color={colors.buttonText} />
+              </View>
+              <Text
+                className="font-semibold text-base flex-1"
+                style={{ color: colors.buttonText }}
+              >
+                {message}
+              </Text>
+            </View>
+
+            {!autoHide && (
+              <TouchableOpacity onPress={hideBanner} className="ml-2">
+                <Ionicons name="close" size={20} color={colors.buttonText} />
+              </TouchableOpacity>
+            )}
           </View>
-          <Text className="text-white font-semibold text-base flex-1">
-            {message}
-          </Text>
-        </View>
-        
-        {!autoHide && (
-          <TouchableOpacity onPress={hideBanner} className="ml-2">
-            <Ionicons 
-              name="close" 
-              size={20} 
-              color="white" 
-            />
-          </TouchableOpacity>
-        )}
+        </Animated.View>
       </View>
-    </Animated.View>
+    </Modal>
   );
 }
