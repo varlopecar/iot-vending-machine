@@ -4,5 +4,6 @@ import { ProductsRouter } from './products.router';
 
 @Module({
   providers: [ProductsService, ProductsRouter],
+  exports: [ProductsService],
 })
 export class ProductsModule {}

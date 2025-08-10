@@ -6,5 +6,6 @@ import { ProductsModule } from '../products/products.module';
 @Module({
   imports: [ProductsModule],
   providers: [StocksService, StocksRouter],
+  exports: [StocksService],
 })
 export class StocksModule {}

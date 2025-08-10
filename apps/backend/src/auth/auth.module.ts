@@ -4,5 +4,6 @@ import { AuthRouter } from './auth.router';
 
 @Module({
   providers: [AuthService, AuthRouter],
+  exports: [AuthService],
 })
 export class AuthModule {}

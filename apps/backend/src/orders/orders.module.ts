@@ -8,5 +8,6 @@ import { StocksModule } from '../stocks/stocks.module';
 @Module({
   imports: [AuthModule, ProductsModule, StocksModule],
   providers: [OrdersService, OrdersRouter],
+  exports: [OrdersService],
 })
 export class OrdersModule {}

@@ -1,8 +1,3 @@
----
-description: For every task related to back-end
-alwaysApply: false
----
-
 # Backend
 
 The backend is built in NestJS and uses tRPC to expose typed APIs to both the web and mobile front-ends. PostgreSQL is used as the primary data store. Prisma is used as the ORM.
@@ -18,6 +13,25 @@ The backend manages:
 When a user places an order, stock is decremented immediately. If the order is not picked up before `expires_at`, it is marked as expired and the stock is restored. QR code tokens are single-use only, and validated server-side with status and expiry checks.
 
 Admins can monitor operations via the activity_logs table and consult all data from a back-office interface. All endpoints must be secured and tested thoroughly.
+
+## NestJS Module Best Practices
+
+When creating NestJS modules, always follow these dependency injection rules:
+
+- **Export Services**: If a service is injected into another module's service, it MUST be exported from its module
+- **Import Dependencies**: Modules that need services from other modules must import those modules
+- **Check Dependencies**: Before creating a service that injects another service, verify the target service is exported
+
+Example of correct module structure:
+
+```typescript
+@Module({
+  imports: [OtherModule], // Import modules you depend on
+  providers: [MyService, MyRouter],
+  exports: [MyService], // Export services that other modules need
+})
+export class MyModule {}
+```
 
 ## Zod Schema Best Practices
 
