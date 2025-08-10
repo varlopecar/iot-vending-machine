@@ -63,9 +63,6 @@ pnpm seed
 
 # Run the Prisma Studio
 npx prisma studio
-
-# Run the Prisma CLI
-npx prisma db push
 ```
 
 ### Development
