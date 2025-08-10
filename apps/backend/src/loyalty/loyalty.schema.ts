@@ -5,7 +5,7 @@ export const loyaltyLogSchema = z.object({
   user_id: z.uuid(),
   change: z.number().int(),
   reason: z.string(),
-  created_at: z.date(),
+  created_at: z.string(),
 });
 
 export const advantageSchema = z.object({

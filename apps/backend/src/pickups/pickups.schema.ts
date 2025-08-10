@@ -4,7 +4,7 @@ export const pickupSchema = z.object({
   id: z.uuid(),
   order_id: z.uuid(),
   machine_id: z.uuid(),
-  picked_up_at: z.date(),
+  picked_up_at: z.string(),
   status: z.enum(['pending', 'completed', 'failed']),
 });
 

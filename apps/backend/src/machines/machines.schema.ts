@@ -5,7 +5,7 @@ export const machineSchema = z.object({
   location: z.string(),
   label: z.string(),
   status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-  last_update: z.date(),
+  last_update: z.string(),
 });
 
 export const createMachineSchema = machineSchema.omit({

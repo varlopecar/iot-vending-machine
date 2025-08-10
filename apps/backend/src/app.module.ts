@@ -1,5 +1,6 @@
 import { Module } from '@nestjs/common';
 import { TRPCModule } from 'nestjs-trpc';
+import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
 import { ProductsModule } from './products/products.module';
 import { OrdersModule } from './orders/orders.module';
@@ -10,6 +11,7 @@ import { PickupsModule } from './pickups/pickups.module';
 
 @Module({
   imports: [
+    PrismaModule,
     TRPCModule.forRoot({
       autoSchemaFile: '../../packages/trpc/src/server',
     }),

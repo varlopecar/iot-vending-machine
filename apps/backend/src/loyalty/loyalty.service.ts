@@ -9,29 +9,37 @@ export class LoyaltyService {
 
   constructor(private readonly authService: AuthService) {}
 
-  addPoints(userId: string, points: number, reason: string): LoyaltyLog {
+  async addPoints(
+    userId: string,
+    points: number,
+    reason: string,
+  ): Promise<LoyaltyLog> {
     // Verify user exists
-    const user = this.authService.getUserById(userId);
+    const user = await this.authService.getUserById(userId);
 
     const loyaltyLog: LoyaltyLog = {
       id: randomUUID(),
       user_id: userId,
       change: points,
       reason,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
     };
 
     this.loyaltyLogs.push(loyaltyLog);
 
     // Update user points
-    this.authService.updatePoints(userId, user.points + points);
+    await this.authService.updatePoints(userId, user.points + points);
 
     return loyaltyLog;
   }
 
-  deductPoints(userId: string, points: number, reason: string): LoyaltyLog {
+  async deductPoints(
+    userId: string,
+    points: number,
+    reason: string,
+  ): Promise<LoyaltyLog> {
     // Verify user exists and has enough points
-    const user = this.authService.getUserById(userId);
+    const user = await this.authService.getUserById(userId);
 
     if (user.points < points) {
       throw new Error('Insufficient points');
@@ -42,13 +50,13 @@ export class LoyaltyService {
       user_id: userId,
       change: -points,
       reason,
-      created_at: new Date(),
+      created_at: new Date().toISOString(),
     };
 
     this.loyaltyLogs.push(loyaltyLog);
 
     // Update user points
-    this.authService.updatePoints(userId, user.points - points);
+    await this.authService.updatePoints(userId, user.points - points);
 
     return loyaltyLog;
   }
@@ -114,7 +122,10 @@ export class LoyaltyService {
     ];
   }
 
-  redeemAdvantage(userId: string, advantageId: string): LoyaltyLog {
+  async redeemAdvantage(
+    userId: string,
+    advantageId: string,
+  ): Promise<LoyaltyLog> {
     const advantages = this.getAvailableAdvantages();
     const advantage = advantages.find((adv) => adv.id === advantageId);
 
@@ -123,15 +134,15 @@ export class LoyaltyService {
     }
 
     // Deduct points for the advantage
-    return this.deductPoints(
+    return await this.deductPoints(
       userId,
       advantage.points,
       `Redeemed: ${advantage.title}`,
     );
   }
 
-  getCurrentPoints(userId: string): number {
-    const user = this.authService.getUserById(userId);
+  async getCurrentPoints(userId: string): Promise<number> {
+    const user = await this.authService.getUserById(userId);
     return user.points;
   }
 

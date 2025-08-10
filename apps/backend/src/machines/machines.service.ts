@@ -14,7 +14,7 @@ export class MachinesService {
     const machine: Machine = {
       id: randomUUID(),
       ...machineData,
-      last_update: new Date(),
+      last_update: new Date().toISOString(),
     };
 
     this.machines.push(machine);
@@ -42,7 +42,7 @@ export class MachinesService {
     this.machines[machineIndex] = {
       ...this.machines[machineIndex],
       ...updateData,
-      last_update: new Date(),
+      last_update: new Date().toISOString(),
     };
 
     return this.machines[machineIndex];

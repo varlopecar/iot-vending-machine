@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-assignment, @typescript-eslint/no-unsafe-call, @typescript-eslint/no-unsafe-member-access, @typescript-eslint/no-unsafe-return */
 import {
   Injectable,
   NotFoundException,
@@ -10,88 +11,119 @@ import {
   UpdateUserInput,
   User,
 } from './auth.schema';
-import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class AuthService {
-  private users: User[] = [];
+  constructor(private prisma: PrismaService) {}
 
-  register(userData: CreateUserInput): User {
+  async register(userData: CreateUserInput): Promise<User> {
     // Check if user already exists
-    const existingUser = this.users.find(
-      (user) => user.email === userData.email,
-    );
+    const existingUser = (await this.prisma.user.findUnique({
+      where: { email: userData.email },
+    })) as User;
+    console.log(existingUser);
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
     }
 
+    // Hash password
+    const hashedPassword = await bcrypt.hash(userData.password, 10);
+
     // Generate unique barcode
     const barcode = this.generateBarcode();
 
-    const user: User = {
-      id: randomUUID(),
-      full_name: userData.full_name,
-      email: userData.email,
-      points: 0,
-      barcode,
-      created_at: new Date().toISOString(),
-    };
+    const user = (await this.prisma.user.create({
+      data: {
+        full_name: userData.full_name,
+        email: userData.email,
+        password: hashedPassword,
+        points: 0,
+        barcode,
+      },
+    })) as User;
 
-    this.users.push(user);
     return user;
   }
 
-  login(loginData: LoginInput): { user: User; token: string } {
-    const user = this.users.find((u) => u.email === loginData.email);
+  async login(loginData: LoginInput): Promise<{ user: User; token: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: loginData.email },
+    });
+
     if (!user) {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    // In a real app, you'd verify the password hash here
-    // For now, we'll just check if the user exists
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(
+      loginData.password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid credentials');
+    }
+
     const token = this.generateToken(user.id);
 
     return { user, token };
   }
 
-  getUserById(id: string): User {
-    const user = this.users.find((u) => u.id === id);
+  async getUserById(id: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return user;
   }
 
-  getUserByBarcode(barcode: string): User {
-    const user = this.users.find((u) => u.barcode === barcode);
+  async getUserByBarcode(barcode: string): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { barcode },
+    });
+
     if (!user) {
       throw new NotFoundException('User not found');
     }
     return user;
   }
 
-  updateUser(id: string, updateData: UpdateUserInput): User {
-    const userIndex = this.users.findIndex((u) => u.id === id);
-    if (userIndex === -1) {
+  async updateUser(id: string, updateData: UpdateUserInput): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    this.users[userIndex] = {
-      ...this.users[userIndex],
-      ...updateData,
-    };
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
 
-    return this.users[userIndex];
+    return updatedUser;
   }
 
-  updatePoints(id: string, points: number): User {
-    const userIndex = this.users.findIndex((u) => u.id === id);
-    if (userIndex === -1) {
+  async updatePoints(id: string, points: number): Promise<User> {
+    const user = await this.prisma.user.findUnique({
+      where: { id },
+    });
+
+    if (!user) {
       throw new NotFoundException('User not found');
     }
 
-    this.users[userIndex].points = points;
-    return this.users[userIndex];
+    const updatedUser = await this.prisma.user.update({
+      where: { id },
+      data: { points },
+    });
+
+    return updatedUser;
   }
 
   private generateBarcode(): string {

@@ -41,8 +41,8 @@ export class OrdersService {
       user_id: orderData.user_id,
       machine_id: orderData.machine_id,
       status: 'active',
-      created_at: new Date(),
-      expires_at: expiresAt,
+      created_at: new Date().toISOString(),
+      expires_at: expiresAt.toISOString(),
       qr_code_token: qrCodeToken,
     };
 

@@ -16,7 +16,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
-      created_at: z.iso.datetime(),
+      created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     login: publicProcedure.input(z.object({
       email: z.email(),
@@ -28,7 +28,7 @@ const appRouter = t.router({
         email: z.email(),
         points: z.number().int().min(0),
         barcode: z.string(),
-        created_at: z.iso.datetime(),
+        created_at: z.string(),
       }),
       token: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -38,7 +38,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
-      created_at: z.iso.datetime(),
+      created_at: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getUserByBarcode: publicProcedure.input(z.object({ barcode: z.string() })).output(z.object({
       id: z.uuid(),
@@ -46,7 +46,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
-      created_at: z.iso.datetime(),
+      created_at: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateUser: publicProcedure.input(z.object({
       id: z.uuid(),
@@ -63,7 +63,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
-      created_at: z.iso.datetime(),
+      created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updatePoints: publicProcedure.input(z.object({
       id: z.uuid(),
@@ -74,7 +74,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
-      created_at: z.iso.datetime(),
+      created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   products: t.router({
@@ -168,8 +168,8 @@ const appRouter = t.router({
       user_id: z.uuid(),
       machine_id: z.uuid(),
       status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-      created_at: z.date(),
-      expires_at: z.date(),
+      created_at: z.string(),
+      expires_at: z.string(),
       qr_code_token: z.string(),
     }).extend({
       items: z.array(z.object({
@@ -186,8 +186,8 @@ const appRouter = t.router({
       user_id: z.uuid(),
       machine_id: z.uuid(),
       status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-      created_at: z.date(),
-      expires_at: z.date(),
+      created_at: z.string(),
+      expires_at: z.string(),
       qr_code_token: z.string(),
     }).extend({
       items: z.array(z.object({
@@ -214,8 +214,8 @@ const appRouter = t.router({
       user_id: z.uuid(),
       machine_id: z.uuid(),
       status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-      created_at: z.date(),
-      expires_at: z.date(),
+      created_at: z.string(),
+      expires_at: z.string(),
       qr_code_token: z.string(),
     }).extend({
       items: z.array(z.object({
@@ -233,15 +233,15 @@ const appRouter = t.router({
         status: z
           .enum(['pending', 'active', 'expired', 'used', 'cancelled'])
           .optional(),
-        expires_at: z.date().optional(),
+        expires_at: z.string().optional(),
       }),
     })).output(z.object({
       id: z.uuid(),
       user_id: z.uuid(),
       machine_id: z.uuid(),
       status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-      created_at: z.date(),
-      expires_at: z.date(),
+      created_at: z.string(),
+      expires_at: z.string(),
       qr_code_token: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     cancelOrder: publicProcedure.input(z.object({ id: z.uuid() })).output(z.object({
@@ -249,8 +249,8 @@ const appRouter = t.router({
       user_id: z.uuid(),
       machine_id: z.uuid(),
       status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-      created_at: z.date(),
-      expires_at: z.date(),
+      created_at: z.string(),
+      expires_at: z.string(),
       qr_code_token: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     validateQRCode: publicProcedure.input(z.object({ qr_code_token: z.string() })).output(z.object({
@@ -258,8 +258,8 @@ const appRouter = t.router({
       user_id: z.uuid(),
       machine_id: z.uuid(),
       status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-      created_at: z.date(),
-      expires_at: z.date(),
+      created_at: z.string(),
+      expires_at: z.string(),
       qr_code_token: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     useOrder: publicProcedure.input(z.object({ id: z.uuid() })).output(z.object({
@@ -267,8 +267,8 @@ const appRouter = t.router({
       user_id: z.uuid(),
       machine_id: z.uuid(),
       status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-      created_at: z.date(),
-      expires_at: z.date(),
+      created_at: z.string(),
+      expires_at: z.string(),
       qr_code_token: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
@@ -398,7 +398,7 @@ const appRouter = t.router({
       user_id: z.uuid(),
       change: z.number().int(),
       reason: z.string(),
-      created_at: z.date(),
+      created_at: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getLoyaltyHistoryFormatted: publicProcedure.input(z.object({ user_id: z.uuid() })).output(z.array(z.object({
       id: z.string(),
@@ -422,7 +422,7 @@ const appRouter = t.router({
       user_id: z.uuid(),
       change: z.number().int(),
       reason: z.string(),
-      created_at: z.date(),
+      created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     deductPoints: publicProcedure.input(z.object({
       user_id: z.uuid(),
@@ -433,7 +433,7 @@ const appRouter = t.router({
       user_id: z.uuid(),
       change: z.number().int(),
       reason: z.string(),
-      created_at: z.date(),
+      created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     redeemAdvantage: publicProcedure.input(z.object({
       user_id: z.uuid(),
@@ -443,7 +443,7 @@ const appRouter = t.router({
       user_id: z.uuid(),
       change: z.number().int(),
       reason: z.string(),
-      created_at: z.date(),
+      created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   machines: t.router({
@@ -452,35 +452,35 @@ const appRouter = t.router({
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getMachineById: publicProcedure.input(z.object({ id: z.uuid() })).output(z.object({
       id: z.uuid(),
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getMachinesByLocation: publicProcedure.input(z.object({ location: z.string() })).output(z.array(z.object({
       id: z.uuid(),
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getOnlineMachines: publicProcedure.output(z.array(z.object({
       id: z.uuid(),
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     createMachine: publicProcedure.input(z.object({
       id: z.uuid(),
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     }).omit({
       id: true,
       last_update: true,
@@ -489,7 +489,7 @@ const appRouter = t.router({
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateMachine: publicProcedure.input(z.object({
       id: z.uuid(),
@@ -498,7 +498,7 @@ const appRouter = t.router({
         location: z.string(),
         label: z.string(),
         status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-        last_update: z.date(),
+        last_update: z.string(),
       }).omit({
         id: true,
         last_update: true,
@@ -508,7 +508,7 @@ const appRouter = t.router({
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateMachineStatus: publicProcedure.input(z.object({
       id: z.uuid(),
@@ -518,7 +518,7 @@ const appRouter = t.router({
       location: z.string(),
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.date(),
+      last_update: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   pickups: t.router({
@@ -526,42 +526,42 @@ const appRouter = t.router({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getPickupsByOrderId: publicProcedure.input(z.object({ order_id: z.uuid() })).output(z.array(z.object({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getPickupsByMachineId: publicProcedure.input(z.object({ machine_id: z.uuid() })).output(z.array(z.object({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getPendingPickups: publicProcedure.output(z.array(z.object({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getCompletedPickups: publicProcedure.output(z.array(z.object({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     createPickup: publicProcedure.input(z.object({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     }).omit({
       id: true,
@@ -570,7 +570,7 @@ const appRouter = t.router({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updatePickup: publicProcedure.input(z.object({
@@ -579,7 +579,7 @@ const appRouter = t.router({
         id: z.uuid(),
         order_id: z.uuid(),
         machine_id: z.uuid(),
-        picked_up_at: z.date(),
+        picked_up_at: z.string(),
         status: z.enum(['pending', 'completed', 'failed']),
       }).omit({
         id: true,
@@ -589,14 +589,14 @@ const appRouter = t.router({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     completePickup: publicProcedure.input(z.object({ id: z.uuid() })).output(z.object({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     failPickup: publicProcedure.input(z.object({
@@ -606,7 +606,7 @@ const appRouter = t.router({
       id: z.uuid(),
       order_id: z.uuid(),
       machine_id: z.uuid(),
-      picked_up_at: z.date(),
+      picked_up_at: z.string(),
       status: z.enum(['pending', 'completed', 'failed']),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   })

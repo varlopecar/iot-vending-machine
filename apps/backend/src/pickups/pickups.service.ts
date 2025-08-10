@@ -24,7 +24,7 @@ export class PickupsService {
     const pickup: Pickup = {
       id: randomUUID(),
       ...pickupData,
-      picked_up_at: new Date(),
+      picked_up_at: new Date().toISOString(),
       status: 'pending',
     };
 

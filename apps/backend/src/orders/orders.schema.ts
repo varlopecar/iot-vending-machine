@@ -13,8 +13,8 @@ export const orderSchema = z.object({
   user_id: z.uuid(),
   machine_id: z.uuid(),
   status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
-  created_at: z.date(),
-  expires_at: z.date(),
+  created_at: z.string(),
+  expires_at: z.string(),
   qr_code_token: z.string(),
 });
 
@@ -34,7 +34,7 @@ export const updateOrderSchema = z.object({
   status: z
     .enum(['pending', 'active', 'expired', 'used', 'cancelled'])
     .optional(),
-  expires_at: z.date().optional(),
+  expires_at: z.string().optional(),
 });
 
 export const orderWithItemsSchema = orderSchema.extend({

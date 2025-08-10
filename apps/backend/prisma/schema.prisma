@@ -1,0 +1,159 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model User {
+  id         String @id @default(cuid())
+  full_name  String
+  email      String @unique
+  password   String
+  points     Int    @default(0)
+  barcode    String @unique
+  created_at String @default(dbgenerated("now()"))
+
+  // Relations
+  orders       Order[]
+  loyalty_logs LoyaltyLog[]
+
+  @@map("users")
+}
+
+model Product {
+  id                String  @id @default(cuid())
+  name              String
+  description       String
+  price             Decimal @db.Decimal(10, 2)
+  ingredients       String
+  allergens         String
+  nutritional_value String
+  image_url         String
+  is_active         Boolean @default(true)
+
+  // Relations
+  stocks      Stock[]
+  order_items OrderItem[]
+
+  @@map("products")
+}
+
+model Machine {
+  id          String        @id @default(cuid())
+  location    String
+  label       String
+  status      MachineStatus @default(ONLINE)
+  last_update String        @default(dbgenerated("now()"))
+
+  // Relations
+  stocks  Stock[]
+  orders  Order[]
+  pickups Pickup[]
+
+  @@map("machines")
+}
+
+model Stock {
+  id          String @id @default(cuid())
+  machine_id  String
+  product_id  String
+  quantity    Int    @default(0)
+  slot_number Int
+
+  // Relations
+  machine Machine @relation(fields: [machine_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@unique([machine_id, product_id])
+  @@map("stocks")
+}
+
+model Order {
+  id            String      @id @default(cuid())
+  user_id       String
+  machine_id    String
+  status        OrderStatus @default(PENDING)
+  created_at    String      @default(dbgenerated("now()"))
+  expires_at    String
+  qr_code_token String      @unique
+
+  // Relations
+  user    User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
+  machine Machine     @relation(fields: [machine_id], references: [id], onDelete: Cascade)
+  items   OrderItem[]
+  pickups Pickup[]
+
+  @@map("orders")
+}
+
+model OrderItem {
+  id          String @id @default(cuid())
+  order_id    String
+  product_id  String
+  quantity    Int
+  slot_number Int
+
+  // Relations
+  order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+
+  @@map("order_items")
+}
+
+model Pickup {
+  id           String       @id @default(cuid())
+  order_id     String
+  machine_id   String
+  picked_up_at String       @default(dbgenerated("now()"))
+  status       PickupStatus @default(PENDING)
+
+  // Relations
+  order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  machine Machine @relation(fields: [machine_id], references: [id], onDelete: Cascade)
+
+  @@map("pickups")
+}
+
+model LoyaltyLog {
+  id         String @id @default(cuid())
+  user_id    String
+  change     Int // Positive for points earned, negative for points spent
+  reason     String
+  created_at String @default(dbgenerated("now()"))
+
+  // Relations
+  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
+
+  @@map("loyalty_logs")
+}
+
+// Enums
+enum MachineStatus {
+  ONLINE
+  OFFLINE
+  MAINTENANCE
+  OUT_OF_SERVICE
+}
+
+enum OrderStatus {
+  PENDING
+  ACTIVE
+  EXPIRED
+  USED
+  CANCELLED
+}
+
+enum PickupStatus {
+  PENDING
+  COMPLETED
+  FAILED
+}

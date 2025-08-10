@@ -6,7 +6,7 @@ export const userSchema = z.object({
   email: z.email(),
   points: z.number().int().min(0),
   barcode: z.string(),
-  created_at: z.iso.datetime(),
+  created_at: z.string(),
 });
 
 export const createUserSchema = z.object({

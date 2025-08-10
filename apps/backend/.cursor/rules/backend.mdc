@@ -1,6 +1,6 @@
 # Backend
 
-The backend is built in NestJS and uses tRPC to expose typed APIs to both the web and mobile front-ends. PostgreSQL is used as the primary data store. Prisma is used as the ORM.
+The backend is built in NestJS and uses tRPC to expose typed APIs to both the web and mobile front-ends. PostgreSQL is used as the primary data store. Prisma is used as the ORM. We use pnpm as our package manager.
 
 The backend manages:
 
