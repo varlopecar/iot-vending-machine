@@ -4,61 +4,105 @@ import {
   UpdateMachineInput,
   Machine,
 } from './machines.schema';
-import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class MachinesService {
-  private machines: Machine[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  createMachine(machineData: CreateMachineInput): Machine {
-    const machine: Machine = {
-      id: randomUUID(),
-      ...machineData,
-      last_update: new Date().toISOString(),
-    };
-
-    this.machines.push(machine);
-    return machine;
+  async createMachine(machineData: CreateMachineInput): Promise<Machine> {
+    const created = await this.prisma.machine.create({
+      data: {
+        location: machineData.location,
+        label: machineData.label,
+        status: this.toDbStatus(machineData.status),
+        last_update: new Date().toISOString(),
+      },
+    });
+    return this.mapMachine(created);
   }
 
-  getAllMachines(): Machine[] {
-    return this.machines;
+  async getAllMachines(): Promise<Machine[]> {
+    const machines = await this.prisma.machine.findMany({
+      orderBy: { last_update: 'desc' },
+    });
+    return machines.map(this.mapMachine);
   }
 
-  getMachineById(id: string): Machine {
-    const machine = this.machines.find((m) => m.id === id);
+  async getMachineById(id: string): Promise<Machine> {
+    const machine = await this.prisma.machine.findUnique({ where: { id } });
     if (!machine) {
       throw new NotFoundException('Machine not found');
     }
-    return machine;
+    return this.mapMachine(machine);
   }
 
-  updateMachine(id: string, updateData: UpdateMachineInput): Machine {
-    const machineIndex = this.machines.findIndex((m) => m.id === id);
-    if (machineIndex === -1) {
+  async updateMachine(
+    id: string,
+    updateData: UpdateMachineInput,
+  ): Promise<Machine> {
+    try {
+      const updated = await this.prisma.machine.update({
+        where: { id },
+        data: {
+          ...('location' in updateData ? { location: updateData.location } : {}),
+          ...('label' in updateData ? { label: updateData.label } : {}),
+          ...('status' in updateData
+            ? { status: this.toDbStatus(updateData.status!) }
+            : {}),
+          last_update: new Date().toISOString(),
+        },
+      });
+      return this.mapMachine(updated);
+    } catch {
       throw new NotFoundException('Machine not found');
     }
-
-    this.machines[machineIndex] = {
-      ...this.machines[machineIndex],
-      ...updateData,
-      last_update: new Date().toISOString(),
-    };
-
-    return this.machines[machineIndex];
   }
 
-  updateMachineStatus(id: string, status: Machine['status']): Machine {
+  async updateMachineStatus(
+    id: string,
+    status: Machine['status'],
+  ): Promise<Machine> {
     return this.updateMachine(id, { status });
   }
 
-  getMachinesByLocation(location: string): Machine[] {
-    return this.machines.filter((machine) =>
-      machine.location.toLowerCase().includes(location.toLowerCase()),
-    );
+  async getMachinesByLocation(location: string): Promise<Machine[]> {
+    const machines = await this.prisma.machine.findMany({
+      where: { location: { contains: location, mode: 'insensitive' } },
+      orderBy: { label: 'asc' },
+    });
+    return machines.map(this.mapMachine);
   }
 
-  getOnlineMachines(): Machine[] {
-    return this.machines.filter((machine) => machine.status === 'online');
+  async getOnlineMachines(): Promise<Machine[]> {
+    const machines = await this.prisma.machine.findMany({
+      where: { status: 'ONLINE' },
+    });
+    return machines.map(this.mapMachine);
   }
+
+  private toApiStatus(db: string): Machine['status'] {
+    return db.toLowerCase() as Machine['status'];
+  }
+
+  private toDbStatus(api: Machine['status']): 'ONLINE' | 'OFFLINE' | 'MAINTENANCE' | 'OUT_OF_SERVICE' {
+    switch (api) {
+      case 'online':
+        return 'ONLINE';
+      case 'offline':
+        return 'OFFLINE';
+      case 'maintenance':
+        return 'MAINTENANCE';
+      case 'out_of_service':
+        return 'OUT_OF_SERVICE';
+    }
+  }
+
+  private mapMachine = (m: any): Machine => ({
+    id: m.id,
+    location: m.location,
+    label: m.label,
+    status: this.toApiStatus(m.status),
+    last_update: m.last_update,
+  });
 }

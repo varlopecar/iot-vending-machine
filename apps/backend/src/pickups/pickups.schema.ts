@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const pickupSchema = z.object({
-  id: z.uuid(),
-  order_id: z.uuid(),
-  machine_id: z.uuid(),
+  id: z.string().min(1),
+  order_id: z.string().min(1),
+  machine_id: z.string().min(1),
   picked_up_at: z.string(),
   status: z.enum(['pending', 'completed', 'failed']),
 });

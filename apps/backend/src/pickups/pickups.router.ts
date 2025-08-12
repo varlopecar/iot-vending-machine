@@ -13,7 +13,7 @@ export class PickupsRouter {
   constructor(private readonly pickupsService: PickupsService) {}
 
   @Query({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: pickupSchema,
   })
   getPickupById(@Input('id') id: string) {
@@ -21,7 +21,7 @@ export class PickupsRouter {
   }
 
   @Query({
-    input: z.object({ order_id: z.uuid() }),
+    input: z.object({ order_id: z.string().min(1) }),
     output: z.array(pickupSchema),
   })
   getPickupsByOrderId(@Input('order_id') orderId: string) {
@@ -29,7 +29,7 @@ export class PickupsRouter {
   }
 
   @Query({
-    input: z.object({ machine_id: z.uuid() }),
+    input: z.object({ machine_id: z.string().min(1) }),
     output: z.array(pickupSchema),
   })
   getPickupsByMachineId(@Input('machine_id') machineId: string) {
@@ -60,7 +60,7 @@ export class PickupsRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       data: updatePickupSchema,
     }),
     output: pickupSchema,
@@ -73,7 +73,7 @@ export class PickupsRouter {
   }
 
   @Mutation({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: pickupSchema,
   })
   completePickup(@Input('id') id: string) {
@@ -82,7 +82,7 @@ export class PickupsRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       reason: z.string().optional(),
     }),
     output: pickupSchema,

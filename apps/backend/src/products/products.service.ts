@@ -4,64 +4,82 @@ import {
   UpdateProductInput,
   Product,
 } from './products.schema';
-import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class ProductsService {
-  private products: Product[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  createProduct(productData: CreateProductInput): Product {
-    const product: Product = {
-      id: randomUUID(),
-      ...productData,
-    };
-
-    this.products.push(product);
-    return product;
+  async createProduct(productData: CreateProductInput): Promise<Product> {
+    const product = await this.prisma.product.create({
+      data: productData,
+    });
+    return this.mapProduct(product);
   }
 
-  getAllProducts(): Product[] {
-    return this.products.filter((product) => product.is_active);
+  async getAllProducts(): Promise<Product[]> {
+    const products = await this.prisma.product.findMany({
+      where: { is_active: true },
+      orderBy: { name: 'asc' },
+    });
+    return products.map(this.mapProduct);
   }
 
-  getProductById(id: string): Product {
-    const product = this.products.find((p) => p.id === id);
+  async getProductById(id: string): Promise<Product> {
+    const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) {
       throw new NotFoundException('Product not found');
     }
-    return product;
+    return this.mapProduct(product);
   }
 
-  updateProduct(id: string, updateData: UpdateProductInput): Product {
-    const productIndex = this.products.findIndex((p) => p.id === id);
-    if (productIndex === -1) {
+  async updateProduct(
+    id: string,
+    updateData: UpdateProductInput,
+  ): Promise<Product> {
+    try {
+      const product = await this.prisma.product.update({
+        where: { id },
+        data: updateData,
+      });
+      return this.mapProduct(product);
+    } catch {
       throw new NotFoundException('Product not found');
     }
-
-    this.products[productIndex] = {
-      ...this.products[productIndex],
-      ...updateData,
-    };
-
-    return this.products[productIndex];
   }
 
-  deleteProduct(id: string): boolean {
-    const productIndex = this.products.findIndex((p) => p.id === id);
-    if (productIndex === -1) {
+  async deleteProduct(id: string): Promise<boolean> {
+    try {
+      await this.prisma.product.update({
+        where: { id },
+        data: { is_active: false },
+      });
+      return true;
+    } catch {
       throw new NotFoundException('Product not found');
     }
-
-    // Soft delete by setting is_active to false
-    this.products[productIndex].is_active = false;
-    return true;
   }
 
-  getProductsByCategory(category: string): Product[] {
-    return this.products.filter(
-      (product) =>
-        product.is_active &&
-        product.name.toLowerCase().includes(category.toLowerCase()),
-    );
+  async getProductsByCategory(category: string): Promise<Product[]> {
+    const products = await this.prisma.product.findMany({
+      where: {
+        is_active: true,
+        name: { contains: category, mode: 'insensitive' },
+      },
+      orderBy: { name: 'asc' },
+    });
+    return products.map(this.mapProduct);
   }
+
+  private mapProduct = (p: any): Product => ({
+    id: p.id,
+    name: p.name,
+    description: p.description,
+    price: Number(p.price),
+    ingredients: p.ingredients,
+    allergens: p.allergens,
+    nutritional_value: p.nutritional_value,
+    image_url: p.image_url,
+    is_active: p.is_active,
+  });
 }

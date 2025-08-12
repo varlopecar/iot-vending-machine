@@ -1,8 +1,8 @@
 import { z } from 'zod';
 
 export const loyaltyLogSchema = z.object({
-  id: z.uuid(),
-  user_id: z.uuid(),
+  id: z.string().min(1),
+  user_id: z.string().min(1),
   change: z.number().int(),
   reason: z.string(),
   created_at: z.string(),

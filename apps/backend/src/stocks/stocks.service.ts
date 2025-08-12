@@ -5,116 +5,115 @@ import {
   Stock,
   StockWithProduct,
 } from './stocks.schema';
-import { ProductsService } from '../products/products.service';
-import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class StocksService {
-  private stocks: Stock[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor(private readonly productsService: ProductsService) {}
-
-  createStock(stockData: CreateStockInput): Stock {
-    const stock: Stock = {
-      id: randomUUID(),
-      ...stockData,
-    };
-
-    this.stocks.push(stock);
-    return stock;
+  async createStock(stockData: CreateStockInput): Promise<Stock> {
+    const stock = await this.prisma.stock.create({
+      data: stockData,
+    });
+    return this.mapStock(stock);
   }
 
-  getAllStocks(): Stock[] {
-    return this.stocks;
+  async getAllStocks(): Promise<Stock[]> {
+    const stocks = await this.prisma.stock.findMany();
+    return stocks.map(this.mapStock);
   }
 
-  getStockById(id: string): Stock {
-    const stock = this.stocks.find((s) => s.id === id);
+  async getStockById(id: string): Promise<Stock> {
+    const stock = await this.prisma.stock.findUnique({ where: { id } });
     if (!stock) {
       throw new NotFoundException('Stock not found');
     }
-    return stock;
+    return this.mapStock(stock);
   }
 
-  getStocksByMachine(machineId: string): StockWithProduct[] {
-    const machineStocks = this.stocks.filter((s) => s.machine_id === machineId);
-    const stocksWithProducts: StockWithProduct[] = [];
-
-    for (const stock of machineStocks) {
-      const product = this.productsService.getProductById(stock.product_id);
-      stocksWithProducts.push({
-        ...stock,
-        product_name: product.name,
-        product_price: product.price,
-      });
-    }
-
-    return stocksWithProducts;
+  async getStocksByMachine(machineId: string): Promise<StockWithProduct[]> {
+    const stocks = await this.prisma.stock.findMany({
+      where: { machine_id: machineId },
+      include: { product: true },
+    });
+    return stocks.map((s) => ({
+      id: s.id,
+      machine_id: s.machine_id,
+      product_id: s.product_id,
+      quantity: s.quantity,
+      slot_number: s.slot_number,
+      product_name: s.product.name,
+      product_price: Number(s.product.price),
+    }));
   }
 
-  getStockByMachineAndProduct(
+  async getStockByMachineAndProduct(
     machineId: string,
     productId: string,
-  ): Stock | null {
-    return (
-      this.stocks.find(
-        (s) => s.machine_id === machineId && s.product_id === productId,
-      ) || null
-    );
+  ): Promise<Stock | null> {
+    const stock = await this.prisma.stock.findFirst({
+      where: { machine_id: machineId, product_id: productId },
+    });
+    return stock ? this.mapStock(stock) : null;
   }
 
-  updateStock(id: string, updateData: UpdateStockInput): Stock {
-    const stockIndex = this.stocks.findIndex((s) => s.id === id);
-    if (stockIndex === -1) {
+  async updateStock(id: string, updateData: UpdateStockInput): Promise<Stock> {
+    try {
+      const stock = await this.prisma.stock.update({
+        where: { id },
+        data: updateData,
+      });
+      return this.mapStock(stock);
+    } catch {
       throw new NotFoundException('Stock not found');
     }
-
-    this.stocks[stockIndex] = {
-      ...this.stocks[stockIndex],
-      ...updateData,
-    };
-
-    return this.stocks[stockIndex];
   }
 
-  updateStockQuantity(id: string, quantity: number): Stock {
+  async updateStockQuantity(id: string, quantity: number): Promise<Stock> {
     if (quantity < 0) {
       throw new Error('Quantity cannot be negative');
     }
-
     return this.updateStock(id, { quantity });
   }
 
-  addStockQuantity(id: string, quantity: number): Stock {
-    const stock = this.getStockById(id);
+  async addStockQuantity(id: string, quantity: number): Promise<Stock> {
+    const stock = await this.getStockById(id);
     return this.updateStockQuantity(id, stock.quantity + quantity);
   }
 
-  removeStockQuantity(id: string, quantity: number): Stock {
-    const stock = this.getStockById(id);
+  async removeStockQuantity(id: string, quantity: number): Promise<Stock> {
+    const stock = await this.getStockById(id);
     if (stock.quantity < quantity) {
       throw new Error('Insufficient stock');
     }
     return this.updateStockQuantity(id, stock.quantity - quantity);
   }
 
-  getLowStockItems(threshold: number = 5): StockWithProduct[] {
-    const lowStockItems = this.stocks.filter((s) => s.quantity <= threshold);
-    const stocksWithProducts: StockWithProduct[] = [];
-
-    for (const stock of lowStockItems) {
-      const product = this.productsService.getProductById(stock.product_id);
-      stocksWithProducts.push({
-        ...stock,
-        product_name: product.name,
-        product_price: product.price,
-      });
-    }
-
-    return stocksWithProducts;
+  async getLowStockItems(threshold: number = 5): Promise<StockWithProduct[]> {
+    const stocks = await this.prisma.stock.findMany({
+      where: { quantity: { lte: threshold } },
+      include: { product: true },
+    });
+    return stocks.map((s) => ({
+      id: s.id,
+      machine_id: s.machine_id,
+      product_id: s.product_id,
+      quantity: s.quantity,
+      slot_number: s.slot_number,
+      product_name: s.product.name,
+      product_price: Number(s.product.price),
+    }));
   }
 
-  getOutOfStockItems(): StockWithProduct[] {
+  async getOutOfStockItems(): Promise<StockWithProduct[]> {
     return this.getLowStockItems(0);
   }
+
+  private mapStock = (s: any): Stock => ({
+    id: s.id,
+    machine_id: s.machine_id,
+    product_id: s.product_id,
+    quantity: s.quantity,
+    slot_number: s.slot_number,
+  });
 }

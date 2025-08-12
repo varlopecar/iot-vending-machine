@@ -1,8 +1,4 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   CreateOrderInput,
   UpdateOrderInput,
@@ -12,193 +8,160 @@ import {
 } from './orders.schema';
 import { randomUUID } from 'crypto';
 import { AuthService } from '../auth/auth.service';
-import { ProductsService } from '../products/products.service';
-import { StocksService } from 'src/stocks/stocks.service';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class OrdersService {
-  private orders: Order[] = [];
-  private orderItems: OrderItem[] = [];
-
   constructor(
     private readonly authService: AuthService,
-    private readonly productsService: ProductsService,
-    private readonly stocksService: StocksService,
+    private readonly prisma: PrismaService,
   ) {}
 
-  createOrder(orderData: CreateOrderInput): OrderWithItems {
-    // Validate user exists
-    this.authService.getUserById(orderData.user_id);
+  async createOrder(orderData: CreateOrderInput): Promise<OrderWithItems> {
+    await this.authService.getUserById(orderData.user_id);
 
-    // Generate QR code token
     const qrCodeToken = this.generateQRCodeToken();
+    const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
+    const createdAt = new Date().toISOString();
 
-    // Set expiration time (30 minutes from now)
-    const expiresAt = new Date(Date.now() + 30 * 60 * 1000);
-
-    const order: Order = {
-      id: randomUUID(),
-      user_id: orderData.user_id,
-      machine_id: orderData.machine_id,
-      status: 'active',
-      created_at: new Date().toISOString(),
-      expires_at: expiresAt.toISOString(),
-      qr_code_token: qrCodeToken,
-    };
-
-    this.orders.push(order);
-
-    // Validate products and check stock
-    const items: OrderItem[] = [];
-    let totalPrice = 0;
-
-    for (const item of orderData.items) {
-      const product = this.productsService.getProductById(item.product_id);
-      const stock = this.stocksService.getStockByMachineAndProduct(
-        orderData.machine_id,
-        item.product_id,
-      );
-
-      if (!stock || stock.quantity < item.quantity) {
-        throw new BadRequestException(
-          `Insufficient stock for product ${product.name}`,
-        );
+    const result = await this.prisma.$transaction(async (tx) => {
+      // Validate stocks and decrement
+      for (const item of orderData.items) {
+        const stock = await tx.stock.findFirst({
+          where: {
+            machine_id: orderData.machine_id,
+            product_id: item.product_id,
+          },
+        });
+        if (!stock || stock.quantity < item.quantity) {
+          const product = await tx.product.findUnique({ where: { id: item.product_id } });
+          throw new BadRequestException(
+            `Insufficient stock for product ${product?.name ?? item.product_id}`,
+          );
+        }
+        await tx.stock.update({
+          where: { id: stock.id },
+          data: { quantity: stock.quantity - item.quantity },
+        });
       }
 
-      // Decrement stock immediately (as per requirements)
-      this.stocksService.updateStockQuantity(
-        stock.id,
-        stock.quantity - item.quantity,
-      );
-
-      const orderItem: OrderItem = {
-        id: randomUUID(),
-        order_id: order.id,
-        product_id: item.product_id,
-        quantity: item.quantity,
-        slot_number: item.slot_number,
-      };
-
-      items.push(orderItem);
-      this.orderItems.push(orderItem);
-      totalPrice += product.price * item.quantity;
-    }
-
-    return {
-      ...order,
-      items,
-      total_price: totalPrice,
-    };
-  }
-
-  getOrderById(id: string): OrderWithItems {
-    const order = this.orders.find((o) => o.id === id);
-    if (!order) {
-      throw new NotFoundException('Order not found');
-    }
-
-    const items = this.orderItems.filter((item) => item.order_id === id);
-    const totalPrice = this.calculateOrderTotal(items);
-
-    return {
-      ...order,
-      items,
-      total_price: totalPrice,
-    };
-  }
-
-  getOrdersByUserId(userId: string): OrderWithItems[] {
-    const userOrders = this.orders.filter((o) => o.user_id === userId);
-    const ordersWithItems: OrderWithItems[] = [];
-
-    for (const order of userOrders) {
-      const items = this.orderItems.filter(
-        (item) => item.order_id === order.id,
-      );
-      const totalPrice = this.calculateOrderTotal(items);
-
-      ordersWithItems.push({
-        ...order,
-        items,
-        total_price: totalPrice,
+      const order = await tx.order.create({
+        data: {
+          user_id: orderData.user_id,
+          machine_id: orderData.machine_id,
+          status: 'ACTIVE',
+          created_at: createdAt,
+          expires_at: expiresAt,
+          qr_code_token: qrCodeToken,
+        },
       });
-    }
 
-    return ordersWithItems;
+      const items = await Promise.all(
+        orderData.items.map((it) =>
+          tx.orderItem.create({
+            data: {
+              order_id: order.id,
+              product_id: it.product_id,
+              quantity: it.quantity,
+              slot_number: it.slot_number,
+            },
+          }),
+        ),
+      );
+
+      return { order, items };
+    });
+
+    const total = await this.calculateOrderTotal(result.items);
+    return this.mapOrderWithItems(result.order, result.items, total);
   }
 
-  updateOrder(id: string, updateData: UpdateOrderInput): Order {
-    const orderIndex = this.orders.findIndex((o) => o.id === id);
-    if (orderIndex === -1) {
+  async getOrderById(id: string): Promise<OrderWithItems> {
+    const order = await this.prisma.order.findUnique({ where: { id } });
+    if (!order) throw new NotFoundException('Order not found');
+    const items = await this.prisma.orderItem.findMany({ where: { order_id: id } });
+    const total = await this.calculateOrderTotal(items);
+    return this.mapOrderWithItems(order, items, total);
+  }
+
+  async getOrdersByUserId(userId: string): Promise<OrderWithItems[]> {
+    const orders = await this.prisma.order.findMany({ where: { user_id: userId } });
+    const itemsByOrder = await this.prisma.orderItem.findMany({
+      where: { order_id: { in: orders.map((o) => o.id) } },
+    });
+    return await Promise.all(
+      orders.map(async (o) => {
+        const items = itemsByOrder.filter((i) => i.order_id === o.id);
+        const total = await this.calculateOrderTotal(items);
+        return this.mapOrderWithItems(o, items, total);
+      }),
+    );
+  }
+
+  async updateOrder(id: string, updateData: UpdateOrderInput): Promise<Order> {
+    try {
+      const updated = await this.prisma.order.update({
+        where: { id },
+        data: {
+          ...('status' in updateData ? { status: this.toDbStatus(updateData.status!) } : {}),
+          ...('expires_at' in updateData ? { expires_at: updateData.expires_at! } : {}),
+        },
+      });
+      return this.mapOrder(updated);
+    } catch {
       throw new NotFoundException('Order not found');
     }
-
-    this.orders[orderIndex] = {
-      ...this.orders[orderIndex],
-      ...updateData,
-    };
-
-    return this.orders[orderIndex];
   }
 
-  cancelOrder(id: string): Order {
-    const order = this.getOrderById(id);
-
+  async cancelOrder(id: string): Promise<Order> {
+    const order = await this.getOrderById(id);
     if (order.status !== 'active') {
       throw new BadRequestException('Order cannot be cancelled');
     }
 
-    // Restore stock
-    for (const item of order.items) {
-      const stock = this.stocksService.getStockByMachineAndProduct(
-        order.machine_id,
-        item.product_id,
-      );
+    const items = order.items;
 
-      if (stock) {
-        this.stocksService.updateStockQuantity(
-          stock.id,
-          stock.quantity + item.quantity,
-        );
+    const updated = await this.prisma.$transaction(async (tx) => {
+      for (const item of items) {
+        const stock = await tx.stock.findFirst({
+          where: { machine_id: order.machine_id, product_id: item.product_id },
+        });
+        if (stock) {
+          await tx.stock.update({
+            where: { id: stock.id },
+            data: { quantity: stock.quantity + item.quantity },
+          });
+        }
       }
-    }
+      return await tx.order.update({ where: { id }, data: { status: 'CANCELLED' } });
+    });
 
-    return this.updateOrder(id, { status: 'cancelled' });
+    return this.mapOrder(updated);
   }
 
-  validateQRCode(qrCodeToken: string): Order {
-    const order = this.orders.find((o) => o.qr_code_token === qrCodeToken);
-    if (!order) {
-      throw new NotFoundException('Invalid QR code');
-    }
-
-    if (order.status !== 'active') {
-      throw new BadRequestException('Order is not active');
-    }
-
+  async validateQRCode(qrCodeToken: string): Promise<Order> {
+    const order = await this.prisma.order.findUnique({ where: { qr_code_token: qrCodeToken } });
+    if (!order) throw new NotFoundException('Invalid QR code');
+    if (order.status !== 'ACTIVE') throw new BadRequestException('Order is not active');
     if (new Date(order.expires_at) < new Date()) {
-      this.updateOrder(order.id, { status: 'expired' });
+      await this.prisma.order.update({ where: { id: order.id }, data: { status: 'EXPIRED' } });
       throw new BadRequestException('Order has expired');
     }
-
-    return order;
+    return this.mapOrder(order);
   }
 
-  useOrder(id: string): Order {
-    const order = this.getOrderById(id);
-
-    if (order.status !== 'active') {
-      throw new BadRequestException('Order cannot be used');
-    }
-
-    return this.updateOrder(id, { status: 'used' });
+  async useOrder(id: string): Promise<Order> {
+    const order = await this.getOrderById(id);
+    if (order.status !== 'active') throw new BadRequestException('Order cannot be used');
+    const updated = await this.prisma.order.update({ where: { id }, data: { status: 'USED' } });
+    return this.mapOrder(updated);
   }
 
-  private calculateOrderTotal(items: OrderItem[]): number {
+  private async calculateOrderTotal(items: Array<{ product_id: string; quantity: number }>): Promise<number> {
     let total = 0;
     for (const item of items) {
-      const product = this.productsService.getProductById(item.product_id);
-      total += product.price * item.quantity;
+      const product = await this.prisma.product.findUnique({ where: { id: item.product_id } });
+      total += Number(product?.price ?? 0) * item.quantity;
     }
     return total;
   }
@@ -206,4 +169,45 @@ export class OrdersService {
   private generateQRCodeToken(): string {
     return `qr_${randomUUID()}_${Date.now()}`;
   }
+
+  private toApiStatus(db: string): Order['status'] {
+    return db.toLowerCase() as Order['status'];
+  }
+
+  private toDbStatus(api: Order['status']): 'PENDING' | 'ACTIVE' | 'EXPIRED' | 'USED' | 'CANCELLED' {
+    switch (api) {
+      case 'pending':
+        return 'PENDING';
+      case 'active':
+        return 'ACTIVE';
+      case 'expired':
+        return 'EXPIRED';
+      case 'used':
+        return 'USED';
+      case 'cancelled':
+        return 'CANCELLED';
+    }
+  }
+
+  private mapOrder = (o: any): Order => ({
+    id: o.id,
+    user_id: o.user_id,
+    machine_id: o.machine_id,
+    status: this.toApiStatus(o.status),
+    created_at: o.created_at,
+    expires_at: o.expires_at,
+    qr_code_token: o.qr_code_token,
+  });
+
+  private mapOrderWithItems = (o: any, items: any[], total: number): OrderWithItems => ({
+    ...this.mapOrder(o),
+    items: items.map((it) => ({
+      id: it.id,
+      order_id: it.order_id,
+      product_id: it.product_id,
+      quantity: it.quantity,
+      slot_number: it.slot_number,
+    })),
+    total_price: total,
+  });
 }

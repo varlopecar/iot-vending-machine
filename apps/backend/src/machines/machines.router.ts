@@ -20,7 +20,7 @@ export class MachinesRouter {
   }
 
   @Query({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: machineSchema,
   })
   getMachineById(@Input('id') id: string) {
@@ -52,7 +52,7 @@ export class MachinesRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       data: updateMachineSchema,
     }),
     output: machineSchema,
@@ -66,7 +66,7 @@ export class MachinesRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
     }),
     output: machineSchema,

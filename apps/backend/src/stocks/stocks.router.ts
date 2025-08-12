@@ -21,7 +21,7 @@ export class StocksRouter {
   }
 
   @Query({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: stockSchema,
   })
   getStockById(@Input('id') id: string) {
@@ -29,7 +29,7 @@ export class StocksRouter {
   }
 
   @Query({
-    input: z.object({ machine_id: z.uuid() }),
+    input: z.object({ machine_id: z.string().min(1) }),
     output: z.array(stockWithProductSchema),
   })
   getStocksByMachine(@Input('machine_id') machineId: string) {
@@ -38,8 +38,8 @@ export class StocksRouter {
 
   @Query({
     input: z.object({
-      machine_id: z.uuid(),
-      product_id: z.uuid(),
+      machine_id: z.string().min(1),
+      product_id: z.string().min(1),
     }),
     output: stockSchema.nullable(),
   })
@@ -75,7 +75,7 @@ export class StocksRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       data: updateStockSchema,
     }),
     output: stockSchema,
@@ -86,7 +86,7 @@ export class StocksRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       quantity: z.number().int().min(0),
     }),
     output: stockSchema,
@@ -100,7 +100,7 @@ export class StocksRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       quantity: z.number().int().positive(),
     }),
     output: stockSchema,
@@ -114,7 +114,7 @@ export class StocksRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       quantity: z.number().int().positive(),
     }),
     output: stockSchema,

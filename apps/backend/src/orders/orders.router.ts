@@ -14,7 +14,7 @@ export class OrdersRouter {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Query({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: orderWithItemsSchema,
   })
   getOrderById(@Input('id') id: string) {
@@ -22,7 +22,7 @@ export class OrdersRouter {
   }
 
   @Query({
-    input: z.object({ user_id: z.uuid() }),
+    input: z.object({ user_id: z.string().min(1) }),
     output: z.array(orderWithItemsSchema),
   })
   getOrdersByUserId(@Input('user_id') userId: string) {
@@ -39,7 +39,7 @@ export class OrdersRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       data: updateOrderSchema,
     }),
     output: orderSchema,
@@ -49,7 +49,7 @@ export class OrdersRouter {
   }
 
   @Mutation({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: orderSchema,
   })
   cancelOrder(@Input('id') id: string) {
@@ -65,7 +65,7 @@ export class OrdersRouter {
   }
 
   @Mutation({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: orderSchema,
   })
   useOrder(@Input('id') id: string) {
