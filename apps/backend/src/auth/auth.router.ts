@@ -37,7 +37,7 @@ export class AuthRouter {
   }
 
   @Query({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: userSchema,
   })
   getUserById(@Input('id') id: string) {
