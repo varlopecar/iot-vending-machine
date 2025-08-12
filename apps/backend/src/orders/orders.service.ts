@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import {
   CreateOrderInput,
   UpdateOrderInput,
@@ -34,7 +38,9 @@ export class OrdersService {
           },
         });
         if (!stock || stock.quantity < item.quantity) {
-          const product = await tx.product.findUnique({ where: { id: item.product_id } });
+          const product = await tx.product.findUnique({
+            where: { id: item.product_id },
+          });
           throw new BadRequestException(
             `Insufficient stock for product ${product?.name ?? item.product_id}`,
           );
@@ -79,13 +85,17 @@ export class OrdersService {
   async getOrderById(id: string): Promise<OrderWithItems> {
     const order = await this.prisma.order.findUnique({ where: { id } });
     if (!order) throw new NotFoundException('Order not found');
-    const items = await this.prisma.orderItem.findMany({ where: { order_id: id } });
+    const items = await this.prisma.orderItem.findMany({
+      where: { order_id: id },
+    });
     const total = await this.calculateOrderTotal(items);
     return this.mapOrderWithItems(order, items, total);
   }
 
   async getOrdersByUserId(userId: string): Promise<OrderWithItems[]> {
-    const orders = await this.prisma.order.findMany({ where: { user_id: userId } });
+    const orders = await this.prisma.order.findMany({
+      where: { user_id: userId },
+    });
     const itemsByOrder = await this.prisma.orderItem.findMany({
       where: { order_id: { in: orders.map((o) => o.id) } },
     });
@@ -103,8 +113,12 @@ export class OrdersService {
       const updated = await this.prisma.order.update({
         where: { id },
         data: {
-          ...('status' in updateData ? { status: this.toDbStatus(updateData.status!) } : {}),
-          ...('expires_at' in updateData ? { expires_at: updateData.expires_at! } : {}),
+          ...('status' in updateData
+            ? { status: this.toDbStatus(updateData.status!) }
+            : {}),
+          ...('expires_at' in updateData
+            ? { expires_at: updateData.expires_at! }
+            : {}),
         },
       });
       return this.mapOrder(updated);
@@ -133,18 +147,27 @@ export class OrdersService {
           });
         }
       }
-      return await tx.order.update({ where: { id }, data: { status: 'CANCELLED' } });
+      return await tx.order.update({
+        where: { id },
+        data: { status: 'CANCELLED' },
+      });
     });
 
     return this.mapOrder(updated);
   }
 
   async validateQRCode(qrCodeToken: string): Promise<Order> {
-    const order = await this.prisma.order.findUnique({ where: { qr_code_token: qrCodeToken } });
+    const order = await this.prisma.order.findUnique({
+      where: { qr_code_token: qrCodeToken },
+    });
     if (!order) throw new NotFoundException('Invalid QR code');
-    if (order.status !== 'ACTIVE') throw new BadRequestException('Order is not active');
+    if (order.status !== 'ACTIVE')
+      throw new BadRequestException('Order is not active');
     if (new Date(order.expires_at) < new Date()) {
-      await this.prisma.order.update({ where: { id: order.id }, data: { status: 'EXPIRED' } });
+      await this.prisma.order.update({
+        where: { id: order.id },
+        data: { status: 'EXPIRED' },
+      });
       throw new BadRequestException('Order has expired');
     }
     return this.mapOrder(order);
@@ -152,15 +175,23 @@ export class OrdersService {
 
   async useOrder(id: string): Promise<Order> {
     const order = await this.getOrderById(id);
-    if (order.status !== 'active') throw new BadRequestException('Order cannot be used');
-    const updated = await this.prisma.order.update({ where: { id }, data: { status: 'USED' } });
+    if (order.status !== 'active')
+      throw new BadRequestException('Order cannot be used');
+    const updated = await this.prisma.order.update({
+      where: { id },
+      data: { status: 'USED' },
+    });
     return this.mapOrder(updated);
   }
 
-  private async calculateOrderTotal(items: Array<{ product_id: string; quantity: number }>): Promise<number> {
+  private async calculateOrderTotal(
+    items: Array<{ product_id: string; quantity: number }>,
+  ): Promise<number> {
     let total = 0;
     for (const item of items) {
-      const product = await this.prisma.product.findUnique({ where: { id: item.product_id } });
+      const product = await this.prisma.product.findUnique({
+        where: { id: item.product_id },
+      });
       total += Number(product?.price ?? 0) * item.quantity;
     }
     return total;
@@ -174,7 +205,9 @@ export class OrdersService {
     return db.toLowerCase() as Order['status'];
   }
 
-  private toDbStatus(api: Order['status']): 'PENDING' | 'ACTIVE' | 'EXPIRED' | 'USED' | 'CANCELLED' {
+  private toDbStatus(
+    api: Order['status'],
+  ): 'PENDING' | 'ACTIVE' | 'EXPIRED' | 'USED' | 'CANCELLED' {
     switch (api) {
       case 'pending':
         return 'PENDING';
@@ -199,7 +232,11 @@ export class OrdersService {
     qr_code_token: o.qr_code_token,
   });
 
-  private mapOrderWithItems = (o: any, items: any[], total: number): OrderWithItems => ({
+  private mapOrderWithItems = (
+    o: any,
+    items: any[],
+    total: number,
+  ): OrderWithItems => ({
     ...this.mapOrder(o),
     items: items.map((it) => ({
       id: it.id,

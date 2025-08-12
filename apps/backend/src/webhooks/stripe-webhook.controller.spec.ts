@@ -1,7 +1,10 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { StripeWebhookController } from './stripe-webhook.controller';
 import { StripeWebhookService } from './stripe-webhook.service';
-import { getStripeClient, getStripeWebhookSecret } from '../stripe/stripeClient';
+import {
+  getStripeClient,
+  getStripeWebhookSecret,
+} from '../stripe/stripeClient';
 import { HttpStatus } from '@nestjs/common';
 
 // Mock des modules externes
@@ -74,7 +77,10 @@ describe('StripeWebhookController', () => {
     it('should handle valid webhook successfully', async () => {
       service.handleEvent.mockResolvedValue(true);
 
-      await controller.handleStripeWebhook(mockRequest as any, mockResponse as any);
+      await controller.handleStripeWebhook(
+        mockRequest as any,
+        mockResponse as any,
+      );
 
       expect(mockStripe.webhooks.constructEvent).toHaveBeenCalledWith(
         mockRequest.body,
@@ -96,7 +102,10 @@ describe('StripeWebhookController', () => {
         headers: { 'stripe-signature': 'valid-signature' },
       };
 
-      await controller.handleStripeWebhook(invalidRequest as any, mockResponse as any);
+      await controller.handleStripeWebhook(
+        invalidRequest as any,
+        mockResponse as any,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -110,7 +119,10 @@ describe('StripeWebhookController', () => {
         headers: {},
       };
 
-      await controller.handleStripeWebhook(invalidRequest as any, mockResponse as any);
+      await controller.handleStripeWebhook(
+        invalidRequest as any,
+        mockResponse as any,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -123,7 +135,10 @@ describe('StripeWebhookController', () => {
         throw new Error('Invalid signature');
       });
 
-      await controller.handleStripeWebhook(mockRequest as any, mockResponse as any);
+      await controller.handleStripeWebhook(
+        mockRequest as any,
+        mockResponse as any,
+      );
 
       expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.BAD_REQUEST);
       expect(mockResponse.json).toHaveBeenCalledWith({
@@ -134,9 +149,14 @@ describe('StripeWebhookController', () => {
     it('should return 500 when webhook secret is not configured', async () => {
       (getStripeWebhookSecret as jest.Mock).mockReturnValue(null);
 
-      await controller.handleStripeWebhook(mockRequest as any, mockResponse as any);
+      await controller.handleStripeWebhook(
+        mockRequest as any,
+        mockResponse as any,
+      );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(mockResponse.status).toHaveBeenCalledWith(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
       expect(mockResponse.json).toHaveBeenCalledWith({
         error: 'Configuration webhook manquante',
       });
@@ -145,11 +165,16 @@ describe('StripeWebhookController', () => {
     it('should return 500 when service throws an error', async () => {
       service.handleEvent.mockRejectedValue(new Error('Service error'));
 
-      await controller.handleStripeWebhook(mockRequest as any, mockResponse as any);
+      await controller.handleStripeWebhook(
+        mockRequest as any,
+        mockResponse as any,
+      );
 
-      expect(mockResponse.status).toHaveBeenCalledWith(HttpStatus.INTERNAL_SERVER_ERROR);
+      expect(mockResponse.status).toHaveBeenCalledWith(
+        HttpStatus.INTERNAL_SERVER_ERROR,
+      );
       expect(mockResponse.json).toHaveBeenCalledWith({
-        error: 'Erreur lors du traitement de l\'événement',
+        error: "Erreur lors du traitement de l'événement",
         eventId: mockEvent.id,
       });
     });
@@ -157,7 +182,10 @@ describe('StripeWebhookController', () => {
     it('should extract orderId from event metadata correctly', async () => {
       service.handleEvent.mockResolvedValue(true);
 
-      await controller.handleStripeWebhook(mockRequest as any, mockResponse as any);
+      await controller.handleStripeWebhook(
+        mockRequest as any,
+        mockResponse as any,
+      );
 
       // Vérifier que la méthode privée fonctionne correctement
       const orderId = (controller as any).extractOrderIdFromEvent(mockEvent);

@@ -101,6 +101,7 @@ model Order {
   items   OrderItem[]
   pickups Pickup[]
   payment Payment?    // Relation 1:1 avec Payment
+  actions OrderAction[] // Actions effectuées sur cette commande
 
   @@index([user_id, created_at(sort: Desc)])
   @@index([stripe_payment_intent_id])
@@ -203,7 +204,23 @@ model Refund {
   // Relations
   payment Payment @relation(fields: [payment_id], references: [id], onDelete: Cascade)
 
+  @@index([payment_id, created_at(sort: Desc)])
   @@map("refunds")
+}
+
+// Table pour l'idempotence des actions sur les commandes
+model OrderAction {
+  id         String @id @default(cuid())
+  order_id   String
+  action     String // Nom de l'action (ex: "credit_loyalty", "decrement_stock")
+  created_at String @default(dbgenerated("now()"))
+
+  // Relations
+  order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)
+
+  // Contrainte unique pour éviter les actions dupliquées
+  @@unique([order_id, action], name: "order_id_action")
+  @@map("order_actions")
 }
 
 // Enums

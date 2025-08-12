@@ -1,12 +1,13 @@
 import React, { useState } from "react";
 import { View, Text, ScrollView, TouchableOpacity } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { Stack } from "expo-router";
+import { Stack, useRouter } from "expo-router";
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
 import { useCart } from "../contexts/CartContext";
 
 export default function CartScreen() {
   const { isDark } = useTailwindTheme();
+  const router = useRouter();
   const [isGiftChecked, setIsGiftChecked] = useState(false);
   const {
     cartItems,
@@ -200,8 +201,8 @@ export default function CartScreen() {
           <TouchableOpacity
             className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-4 rounded-lg`}
             onPress={() => {
-              // Navigation vers la page de validation
-              console.log("Valider le panier");
+              // Navigation vers la page de checkout
+              router.push("/(checkout)" as any);
             }}
           >
             <Text

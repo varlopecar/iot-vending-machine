@@ -54,6 +54,16 @@ STRIPE_WEBHOOK_SECRET=whsec_...
 STRIPE_API_VERSION=2024-06-20
 ```
 
+### Sécurité QR Code
+
+```bash
+# Clé secrète pour signer les tokens QR (obligatoire)
+QR_SECRET=change-me-to-a-secure-random-string
+
+# TTL des tokens QR en secondes (optionnel, défaut: 600 = 10 minutes)
+QR_TTL_SECONDS=600
+```
+
 ### Obtention des Clés
 
 1. **Dashboard Stripe** : https://dashboard.stripe.com/apikeys
@@ -107,6 +117,13 @@ STRIPE_API_VERSION=2024-06-20
 - **PaymentEvent** : Chaque événement Stripe est enregistré avec le payload complet
 - **Refunds** : Gestion automatique des remboursements
 - **Audit Trail** : Traçabilité complète de toutes les opérations
+
+### 5. Chaîne de Valeur Post-Paiement
+1. **Paiement Réussi** → `payment_intent.succeeded`
+2. **Décrément Stock** → Transactionnel avec rollback automatique
+3. **QR Code Sécurisé** → Token signé HMAC avec TTL configurable
+4. **Fidélité Idempotente** → Crédit des points via `order_actions`
+5. **Audit Complet** → Toutes les actions tracées et dédupliquées
 
 ### Statuts de Commande Supportés
 - `PENDING` : Commande créée, en attente de paiement
@@ -166,6 +183,69 @@ pnpm db:backfill:payments
 pnpm db:verify:constraints
 ```
 
+### Remboursements
+
+Le système gère les remboursements partiels et totaux via l'API tRPC et les webhooks Stripe.
+
+#### **Mutation tRPC : payments.refund**
+
+```typescript
+// Remboursement total
+const result = await trpc.payments.refund.mutate({
+  orderId: "order-uuid",
+  reason: "requested_by_customer"
+});
+
+// Remboursement partiel
+const result = await trpc.payments.refund.mutate({
+  orderId: "order-uuid",
+  amountCents: 1000, // 10.00 EUR
+  reason: "duplicate"
+});
+```
+
+**Paramètres :**
+- `orderId` : UUID de la commande (obligatoire)
+- `amountCents` : Montant en centimes (optionnel, par défaut : montant total)
+- `reason` : Raison du remboursement (optionnel)
+
+**Raisons supportées :**
+- `duplicate` : Paiement en double
+- `fraudulent` : Fraude détectée
+- `requested_by_customer` : Demande client (défaut)
+
+#### **Webhooks de Synchronisation**
+
+Les webhooks Stripe synchronisent automatiquement les statuts des remboursements :
+
+- **`charge.refunded`** : Création/mise à jour du remboursement
+- **`refund.updated`** : Mise à jour du statut du remboursement
+
+**Statuts des remboursements :**
+- `pending` : En cours de traitement
+- `succeeded` : Remboursement réussi
+- `failed` : Échec du remboursement
+- `canceled` : Remboursement annulé
+
+#### **Gestion Automatique des Commandes**
+
+- **Remboursement partiel** : La commande reste en statut `PAID`
+- **Remboursement total** : La commande passe automatiquement au statut `REFUNDED`
+- **Calcul automatique** : Le système calcule le montant remboursable en temps réel
+
+### Idempotence
+
+Le système utilise plusieurs couches d'idempotence pour garantir la robustesse :
+
+#### **Stripe (Niveau API)**
+- **Idempotency Key** : `"order:" + orderId` pour les PaymentIntents
+- **Webhook Events** : Déduplication par `stripe_event_id` dans `payment_events`
+
+#### **Base de Données (Niveau Métier)**
+- **Order Actions** : Table `order_actions` avec contrainte `UNIQUE(order_id, action)`
+- **Actions Idempotentes** : Crédit fidélité, décrément stock, génération QR
+- **Pattern** : `oncePerOrder(tx, orderId, action, fn)` garantit l'exécution unique
+
 ### Snapshots Immuables
 
 Les `order_items` conservent des **snapshots immuables** des produits :
@@ -178,6 +258,35 @@ Les `order_items` conservent des **snapshots immuables** des produits :
 - Audit trail complet des transactions
 - Calculs de remboursement précis
 - Conformité réglementaire
+
+### QR Codes Sécurisés
+
+Les tokens QR sont maintenant **signés et temporisés** :
+
+#### **Format du Token**
+```typescript
+{
+  data: { orderId, userId, machineId },
+  exp: timestamp_expiration,
+  sig: signature_hmac_sha256
+}
+```
+
+#### **Sécurité**
+- **Signature HMAC-SHA256** avec clé secrète configurable
+- **TTL Configurable** (défaut: 10 minutes)
+- **Base64URL** pour compatibilité mobile
+- **Timing-Safe Comparison** pour éviter les attaques par timing
+
+#### **Utilisation**
+```typescript
+// Génération
+const token = issueQrToken({ orderId, userId, machineId });
+
+// Vérification
+const payload = verifyQrToken(token);
+// Retourne { orderId, userId, machineId } ou throw si invalide/expiré
+```
 
 ## 📱 Intégration Mobile
 

@@ -23,17 +23,22 @@ export class StripeWebhookController {
   /**
    * Endpoint webhook Stripe qui reçoit les événements de paiement
    * IMPORTANT: Doit recevoir le raw body pour la vérification de signature
-   * 
+   *
    * @param req - Requête Express avec raw body
    * @param res - Réponse Express
    * @returns Réponse HTTP appropriée
    */
   @Post('stripe')
-  async handleStripeWebhook(@Req() req: Request, @Res() res: Response): Promise<void> {
+  async handleStripeWebhook(
+    @Req() req: Request,
+    @Res() res: Response,
+  ): Promise<void> {
     try {
       // Vérifier que le raw body est disponible
       if (!req.body || !Buffer.isBuffer(req.body)) {
-        this.logger.error('Raw body non disponible pour la vérification de signature');
+        this.logger.error(
+          'Raw body non disponible pour la vérification de signature',
+        );
         res.status(HttpStatus.BAD_REQUEST).json({
           error: 'Raw body requis pour la vérification de signature',
         });
@@ -65,9 +70,16 @@ export class StripeWebhookController {
       try {
         // Construire l'événement Stripe avec vérification de signature
         const stripe = getStripeClient();
-        event = stripe.webhooks.constructEvent(req.body, signature, webhookSecret);
+        event = stripe.webhooks.constructEvent(
+          req.body,
+          signature,
+          webhookSecret,
+        );
       } catch (error) {
-        this.logger.error('Échec de la vérification de signature webhook:', error);
+        this.logger.error(
+          'Échec de la vérification de signature webhook:',
+          error,
+        );
         res.status(HttpStatus.BAD_REQUEST).json({
           error: 'Signature webhook invalide',
         });
@@ -82,27 +94,30 @@ export class StripeWebhookController {
       // Traiter l'événement via le service
       try {
         await this.stripeWebhookService.handleEvent(event);
-        
+
         // Répondre avec succès
         res.status(HttpStatus.OK).json({
           received: true,
           eventId: event.id,
           eventType: event.type,
         });
-        
+
         this.logger.log(`Événement ${event.id} traité avec succès`);
       } catch (error) {
-        this.logger.error(`Erreur lors du traitement de l'événement ${event.id}:`, error);
-        
+        this.logger.error(
+          `Erreur lors du traitement de l'événement ${event.id}:`,
+          error,
+        );
+
         // Répondre avec une erreur 500 pour que Stripe retry
         res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
-          error: 'Erreur lors du traitement de l\'événement',
+          error: "Erreur lors du traitement de l'événement",
           eventId: event.id,
         });
       }
     } catch (error) {
       this.logger.error('Erreur inattendue dans le webhook Stripe:', error);
-      
+
       // Répondre avec une erreur 500
       res.status(HttpStatus.INTERNAL_SERVER_ERROR).json({
         error: 'Erreur interne du serveur',

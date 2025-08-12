@@ -15,5 +15,3 @@ import { JwtStrategy } from './jwt.strategy';
   exports: [NestJwtModule, PassportModule],
 })
 export class JwtModule {}
-
-

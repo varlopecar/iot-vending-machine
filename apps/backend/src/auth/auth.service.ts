@@ -5,14 +5,22 @@ import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import { CreateUserInput, LoginInput, UpdateUserInput, User } from './auth.schema';
+import {
+  CreateUserInput,
+  LoginInput,
+  UpdateUserInput,
+  User,
+} from './auth.schema';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService, private jwt: JwtService) {}
+  constructor(
+    private prisma: PrismaService,
+    private jwt: JwtService,
+  ) {}
 
   async register(userData: CreateUserInput): Promise<User> {
     // Check if user already exists

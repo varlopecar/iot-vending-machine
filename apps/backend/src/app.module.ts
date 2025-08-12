@@ -12,6 +12,7 @@ import { StripeModule } from './stripe/stripe.module';
 import { CheckoutModule } from './checkout/checkout.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { InventoryModule } from './inventory/inventory.module';
+import { PaymentsModule } from './payments/payments.module';
 
 @Module({
   imports: [
@@ -30,6 +31,7 @@ import { InventoryModule } from './inventory/inventory.module';
     CheckoutModule,
     WebhooksModule,
     InventoryModule,
+    PaymentsModule,
   ],
   controllers: [],
   providers: [],

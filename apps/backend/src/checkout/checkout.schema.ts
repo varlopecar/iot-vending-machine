@@ -38,7 +38,7 @@ export type GetStatusResponse = z.infer<typeof getStatusResponseSchema>;
 
 // Statuts de commande supportés pour le paiement
 export const PAYABLE_ORDER_STATUSES = ['PENDING', 'FAILED'] as const;
-export type PayableOrderStatus = typeof PAYABLE_ORDER_STATUSES[number];
+export type PayableOrderStatus = (typeof PAYABLE_ORDER_STATUSES)[number];
 
 // Statuts de commande après paiement
 export const ORDER_STATUSES = [
@@ -50,4 +50,4 @@ export const ORDER_STATUSES = [
   'EXPIRED',
   'REFUNDED',
 ] as const;
-export type OrderStatus = typeof ORDER_STATUSES[number];
+export type OrderStatus = (typeof ORDER_STATUSES)[number];

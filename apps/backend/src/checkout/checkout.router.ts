@@ -15,7 +15,7 @@ export class CheckoutRouter {
 
   /**
    * Crée une intention de paiement Stripe pour une commande
-   * 
+   *
    * @param input - ID de la commande à payer
    * @param ctx - Contexte tRPC avec l'utilisateur authentifié
    * @returns Informations de paiement pour le client mobile
@@ -57,9 +57,11 @@ export class CheckoutRouter {
           });
         }
 
-        if (error.message.includes('ne permet pas le paiement') ||
-            error.message.includes('a expiré') ||
-            error.message.includes('doit être supérieur à 0')) {
+        if (
+          error.message.includes('ne permet pas le paiement') ||
+          error.message.includes('a expiré') ||
+          error.message.includes('doit être supérieur à 0')
+        ) {
           throw new TRPCError({
             code: 'BAD_REQUEST',
             message: error.message,
@@ -71,14 +73,15 @@ export class CheckoutRouter {
       console.error('Erreur inattendue dans createIntent:', error);
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
-        message: 'Erreur interne lors de la création de l\'intention de paiement',
+        message:
+          "Erreur interne lors de la création de l'intention de paiement",
       });
     }
   }
 
   /**
    * Récupère le statut consolidé d'une commande
-   * 
+   *
    * @param input - ID de la commande
    * @param ctx - Contexte tRPC avec l'utilisateur authentifié
    * @returns Statut consolidé de la commande et du paiement

@@ -1,6 +1,14 @@
-import { Injectable, BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { getStripeClient, getStripePublishableKey } from '../stripe/stripeClient';
+import {
+  getStripeClient,
+  getStripePublishableKey,
+} from '../stripe/stripeClient';
 import type {
   CreateIntentInput,
   CreateIntentResponse,
@@ -13,7 +21,7 @@ import Stripe from 'stripe';
 @Injectable()
 export class CheckoutService {
   constructor(private readonly prisma: PrismaService) {}
-  
+
   private readonly stripe = getStripeClient();
   private readonly publishableKey = getStripePublishableKey();
 
@@ -23,7 +31,10 @@ export class CheckoutService {
    * @param currentUserId - ID de l'utilisateur authentifié
    * @returns Informations de paiement pour le client mobile
    */
-  async createIntent(input: CreateIntentInput, currentUserId: string): Promise<CreateIntentResponse> {
+  async createIntent(
+    input: CreateIntentInput,
+    currentUserId: string,
+  ): Promise<CreateIntentResponse> {
     try {
       // 1. Charger la commande avec ses items
       const order = await this.prisma.order.findUnique({
@@ -53,10 +64,15 @@ export class CheckoutService {
       }
 
       // 5. Recalculer le montant depuis les snapshots
-      const calculatedAmount = order.items.reduce((sum, item) => sum + item.subtotal_cents, 0);
-      
+      const calculatedAmount = order.items.reduce(
+        (sum, item) => sum + item.subtotal_cents,
+        0,
+      );
+
       if (calculatedAmount <= 0) {
-        throw new BadRequestException('Le montant de la commande doit être supérieur à 0');
+        throw new BadRequestException(
+          'Le montant de la commande doit être supérieur à 0',
+        );
       }
 
       // 6. Mettre à jour le montant si différent
@@ -69,15 +85,15 @@ export class CheckoutService {
 
       // 7. Gérer le customer Stripe
       let stripeCustomerId = order.user.stripe_customer_id;
-      
+
       if (!stripeCustomerId) {
         const customer = await this.stripe.customers.create({
           email: order.user.email,
           metadata: { userId: order.user.id },
         });
-        
+
         stripeCustomerId = customer.id;
-        
+
         // Persister l'ID du customer
         await this.prisma.user.update({
           where: { id: order.user.id },
@@ -86,18 +102,21 @@ export class CheckoutService {
       }
 
       // 8. Créer l'intention de paiement avec idempotence
-      const paymentIntent = await this.stripe.paymentIntents.create({
-        amount: calculatedAmount,
-        currency: order.currency.toLowerCase(),
-        customer: stripeCustomerId,
-        automatic_payment_methods: { enabled: true },
-        metadata: {
-          orderId: order.id,
-          userId: currentUserId,
+      const paymentIntent = await this.stripe.paymentIntents.create(
+        {
+          amount: calculatedAmount,
+          currency: order.currency.toLowerCase(),
+          customer: stripeCustomerId,
+          automatic_payment_methods: { enabled: true },
+          metadata: {
+            orderId: order.id,
+            userId: currentUserId,
+          },
         },
-      }, {
-        idempotencyKey: `order:${order.id}`,
-      });
+        {
+          idempotencyKey: `order:${order.id}`,
+        },
+      );
 
       // 9. Créer la clé éphémère
       const ephemeralKey = await this.stripe.ephemeralKeys.create(
@@ -143,23 +162,29 @@ export class CheckoutService {
         customerId: stripeCustomerId,
         ephemeralKey: ephemeralKey.secret!,
       };
-
     } catch (error) {
       // Gestion des erreurs Stripe
       if (error instanceof Stripe.errors.StripeError) {
         this.handleStripeError(error, input.orderId);
       }
-      
+
       // Remonter les erreurs métier
-      if (error instanceof BadRequestException || 
-          error instanceof NotFoundException || 
-          error instanceof ForbiddenException) {
+      if (
+        error instanceof BadRequestException ||
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
         throw error;
       }
 
       // Erreur interne
-      console.error(`Erreur lors de la création de l'intention de paiement pour la commande ${input.orderId}:`, error);
-      throw new BadRequestException('Erreur lors de la création de l\'intention de paiement');
+      console.error(
+        `Erreur lors de la création de l'intention de paiement pour la commande ${input.orderId}:`,
+        error,
+      );
+      throw new BadRequestException(
+        "Erreur lors de la création de l'intention de paiement",
+      );
     }
   }
 
@@ -169,7 +194,10 @@ export class CheckoutService {
    * @param currentUserId - ID de l'utilisateur authentifié
    * @returns Statut consolidé de la commande et du paiement
    */
-  async getStatus(input: GetStatusInput, currentUserId: string): Promise<GetStatusResponse> {
+  async getStatus(
+    input: GetStatusInput,
+    currentUserId: string,
+  ): Promise<GetStatusResponse> {
     try {
       // Charger la commande avec ses relations
       const order = await this.prisma.order.findUnique({
@@ -199,13 +227,18 @@ export class CheckoutService {
         qrCodeToken: order.qr_code_token || null,
         stripePaymentIntentId: order.stripe_payment_intent_id || null,
       };
-
     } catch (error) {
-      if (error instanceof NotFoundException || error instanceof ForbiddenException) {
+      if (
+        error instanceof NotFoundException ||
+        error instanceof ForbiddenException
+      ) {
         throw error;
       }
 
-      console.error(`Erreur lors de la récupération du statut pour la commande ${input.orderId}:`, error);
+      console.error(
+        `Erreur lors de la récupération du statut pour la commande ${input.orderId}:`,
+        error,
+      );
       throw new BadRequestException('Erreur lors de la récupération du statut');
     }
   }
@@ -220,7 +253,10 @@ export class CheckoutService {
   /**
    * Gère les erreurs Stripe et les convertit en erreurs métier
    */
-  private handleStripeError(error: Stripe.errors.StripeError, orderId: string): never {
+  private handleStripeError(
+    error: Stripe.errors.StripeError,
+    orderId: string,
+  ): never {
     console.error(`Erreur Stripe pour la commande ${orderId}:`, {
       type: error.type,
       code: error.code,
@@ -230,19 +266,19 @@ export class CheckoutService {
     switch (error.type) {
       case 'StripeInvalidRequestError':
         throw new BadRequestException('Données de paiement invalides');
-      
+
       case 'StripeAuthenticationError':
-        throw new BadRequestException('Erreur d\'authentification Stripe');
-      
+        throw new BadRequestException("Erreur d'authentification Stripe");
+
       case 'StripeRateLimitError':
         throw new BadRequestException('Limite de taux Stripe dépassée');
-      
+
       case 'StripeAPIError':
         throw new BadRequestException('Erreur API Stripe');
-      
+
       case 'StripeConnectionError':
         throw new BadRequestException('Erreur de connexion Stripe');
-      
+
       default:
         throw new BadRequestException('Erreur de paiement inattendue');
     }

@@ -1,17 +1,23 @@
-import { Injectable, BadRequestException } from '@nestjs/common';
+import { Injectable, BadRequestException, Logger } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import type { Prisma } from '@prisma/client';
 
 @Injectable()
 export class InventoryService {
+  private readonly logger = new Logger(InventoryService.name);
+
   constructor(private readonly prisma: PrismaService) {}
 
   /**
    * Décrémente le stock pour une commande de manière transactionnelle
    * @param tx - Transaction Prisma
    * @param orderId - ID de la commande
-   * @returns true si la décrémentation a réussi
+   * @throws BadRequestException si le stock est insuffisant ou la commande invalide
    */
-  async decrementStockForOrder(tx: any, orderId: string): Promise<boolean> {
+  async decrementStockForOrder(
+    tx: Prisma.TransactionClient,
+    orderId: string,
+  ): Promise<void> {
     try {
       // Récupérer la commande avec ses items et la machine
       const order = await tx.order.findUnique({
@@ -28,7 +34,9 @@ export class InventoryService {
 
       // Vérifier que la machine est en ligne
       if (order.machine.status !== 'ONLINE') {
-        throw new BadRequestException(`Machine ${order.machine.id} n'est pas en ligne`);
+        throw new BadRequestException(
+          `Machine ${order.machine.id} n'est pas en ligne`,
+        );
       }
 
       // Décrémenter le stock pour chaque item
@@ -60,15 +68,16 @@ export class InventoryService {
           data: { quantity: stock.quantity - item.quantity },
         });
 
-        console.log(
+        this.logger.log(
           `Stock décrémenté: produit ${item.product_id}, machine ${order.machine_id}, ` +
-          `ancien: ${stock.quantity}, nouveau: ${stock.quantity - item.quantity}`,
+            `ancien: ${stock.quantity}, nouveau: ${stock.quantity - item.quantity}`,
         );
       }
-
-      return true;
     } catch (error) {
-      console.error(`Erreur lors de la décrémentation du stock pour la commande ${orderId}:`, error);
+      this.logger.error(
+        `Erreur lors de la décrémentation du stock pour la commande ${orderId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -107,7 +116,10 @@ export class InventoryService {
 
       return true;
     } catch (error) {
-      console.error(`Erreur lors de la vérification du stock pour la commande ${orderId}:`, error);
+      this.logger.error(
+        `Erreur lors de la vérification du stock pour la commande ${orderId}:`,
+        error,
+      );
       return false;
     }
   }

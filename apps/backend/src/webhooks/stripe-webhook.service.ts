@@ -1,7 +1,8 @@
 import { Injectable, Logger, BadRequestException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { InventoryService } from '../inventory/inventory.service';
-import { generateOneTimeToken } from '../payments/qr';
+import { issueQrToken } from '../payments/qr';
+import { oncePerOrder } from '../payments/idempotency';
 import {
   extractReceiptUrlFromPaymentIntent,
   extractErrorCodeFromPaymentIntent,
@@ -25,7 +26,9 @@ export class StripeWebhookService {
    */
   async handleEvent(event: Stripe.Event): Promise<boolean> {
     try {
-      this.logger.log(`Traitement de l'événement ${event.id} de type ${event.type}`);
+      this.logger.log(
+        `Traitement de l'événement ${event.id} de type ${event.type}`,
+      );
 
       // Vérifier la déduplication avant traitement
       const existingEvent = await this.prisma.paymentEvent.findUnique({
@@ -41,16 +44,16 @@ export class StripeWebhookService {
       let success = false;
       switch (event.type) {
         case 'payment_intent.succeeded':
-          success = await this.handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+          success = await this.handlePaymentIntentSucceeded(event.data.object);
           break;
         case 'payment_intent.payment_failed':
-          success = await this.handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
+          success = await this.handlePaymentIntentFailed(event.data.object);
           break;
         case 'charge.refunded':
-          success = await this.handleChargeRefunded(event.data.object as Stripe.Charge);
+          success = await this.handleChargeRefunded(event.data.object);
           break;
         case 'refund.updated':
-          success = await this.handleRefundUpdated(event.data.object as Stripe.Refund);
+          success = await this.handleRefundUpdated(event.data.object);
           break;
         default:
           this.logger.log(`Type d'événement non géré: ${event.type}`);
@@ -64,7 +67,10 @@ export class StripeWebhookService {
 
       return success;
     } catch (error) {
-      this.logger.error(`Erreur lors du traitement de l'événement ${event.id}:`, error);
+      this.logger.error(
+        `Erreur lors du traitement de l'événement ${event.id}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -74,15 +80,21 @@ export class StripeWebhookService {
    * @param paymentIntent - PaymentIntent Stripe
    * @returns true si le traitement a réussi
    */
-  private async handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<boolean> {
+  private async handlePaymentIntentSucceeded(
+    paymentIntent: Stripe.PaymentIntent,
+  ): Promise<boolean> {
     try {
       const orderId = paymentIntent.metadata?.orderId;
       if (!orderId) {
-        this.logger.warn(`PaymentIntent ${paymentIntent.id} sans orderId dans les métadonnées`);
+        this.logger.warn(
+          `PaymentIntent ${paymentIntent.id} sans orderId dans les métadonnées`,
+        );
         return false;
       }
 
-      this.logger.log(`Traitement du paiement réussi pour la commande ${orderId}`);
+      this.logger.log(
+        `Traitement du paiement réussi pour la commande ${orderId}`,
+      );
 
       // Récupérer le Payment depuis la base de données
       const payment = await this.prisma.payment.findUnique({
@@ -91,7 +103,9 @@ export class StripeWebhookService {
       });
 
       if (!payment) {
-        this.logger.warn(`Payment introuvable pour PaymentIntent ${paymentIntent.id}`);
+        this.logger.warn(
+          `Payment introuvable pour PaymentIntent ${paymentIntent.id}`,
+        );
         return false;
       }
 
@@ -120,24 +134,21 @@ export class StripeWebhookService {
         // 3. Décrémenter le stock
         await this.inventoryService.decrementStockForOrder(tx, orderId);
 
-        // 4. Générer le QR code token
-        const qrCodeToken = generateOneTimeToken();
+        // 4. Générer le QR code token sécurisé avec TTL
+        const qrCodeToken = issueQrToken({
+          orderId,
+          userId: payment.order.user_id,
+          machineId: payment.order.machine_id,
+        });
         await tx.order.update({
           where: { id: orderId },
           data: { qr_code_token: qrCodeToken },
         });
 
-        // 5. Créditer les points de fidélité (idempotent)
+        // 5. Créditer les points de fidélité (idempotent via order_actions)
         const pointsToAdd = Math.floor(payment.amount_cents / 50);
         if (pointsToAdd > 0) {
-          const existingLog = await tx.loyaltyLog.findFirst({
-            where: {
-              user_id: payment.order.user_id,
-              reason: `order:${orderId}:paid`,
-            },
-          });
-
-          if (!existingLog) {
+          await oncePerOrder(tx, orderId, 'credit_loyalty', async () => {
             await tx.loyaltyLog.create({
               data: {
                 user_id: payment.order.user_id,
@@ -152,7 +163,7 @@ export class StripeWebhookService {
               where: { id: payment.order.user_id },
               data: { points: { increment: pointsToAdd } },
             });
-          }
+          });
         }
       });
 
@@ -172,15 +183,21 @@ export class StripeWebhookService {
    * @param paymentIntent - PaymentIntent Stripe
    * @returns true si le traitement a réussi
    */
-  private async handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): Promise<boolean> {
+  private async handlePaymentIntentFailed(
+    paymentIntent: Stripe.PaymentIntent,
+  ): Promise<boolean> {
     try {
       const orderId = paymentIntent.metadata?.orderId;
       if (!orderId) {
-        this.logger.warn(`PaymentIntent ${paymentIntent.id} sans orderId dans les métadonnées`);
+        this.logger.warn(
+          `PaymentIntent ${paymentIntent.id} sans orderId dans les métadonnées`,
+        );
         return false;
       }
 
-      this.logger.log(`Traitement de l'échec de paiement pour la commande ${orderId}`);
+      this.logger.log(
+        `Traitement de l'échec de paiement pour la commande ${orderId}`,
+      );
 
       // Récupérer le Payment depuis la base de données
       const payment = await this.prisma.payment.findUnique({
@@ -189,7 +206,9 @@ export class StripeWebhookService {
       });
 
       if (!payment) {
-        this.logger.warn(`Payment introuvable pour PaymentIntent ${paymentIntent.id}`);
+        this.logger.warn(
+          `Payment introuvable pour PaymentIntent ${paymentIntent.id}`,
+        );
         return false;
       }
 
@@ -223,29 +242,190 @@ export class StripeWebhookService {
 
       return true;
     } catch (error) {
-      this.logger.error(`Erreur lors du traitement de l'échec de paiement:`, error);
+      this.logger.error(
+        `Erreur lors du traitement de l'échec de paiement:`,
+        error,
+      );
       throw error;
     }
   }
 
   /**
-   * Gère un remboursement de charge (placeholder pour l'étape suivante)
+   * Gère un remboursement de charge
    * @param charge - Charge Stripe
    * @returns true si le traitement a réussi
    */
   private async handleChargeRefunded(charge: Stripe.Charge): Promise<boolean> {
-    this.logger.log(`Événement charge.refunded reçu pour ${charge.id} (non implémenté)`);
-    return true; // Traité pour éviter les retries
+    try {
+      this.logger.log(
+        `Événement charge.refunded reçu pour ${charge.id}`,
+      );
+
+      if (!charge.payment_intent) {
+        this.logger.warn(
+          `Charge ${charge.id} sans payment_intent, ignorée`,
+        );
+        return true;
+      }
+
+      // Récupérer le Payment via stripe_payment_intent_id
+      const payment = await this.prisma.payment.findUnique({
+        where: { stripe_payment_intent_id: charge.payment_intent },
+        include: { order: true },
+      });
+
+      if (!payment) {
+        this.logger.warn(
+          `Payment introuvable pour payment_intent ${charge.payment_intent}`,
+        );
+        return true;
+      }
+
+      // Traitement transactionnel
+      await this.prisma.$transaction(async (tx) => {
+        // Upsert du Refund par stripe_refund_id
+        if (charge.refunds?.data?.[0]) {
+          const stripeRefund = charge.refunds.data[0];
+          await tx.refund.upsert({
+            where: { stripe_refund_id: stripeRefund.id },
+            create: {
+              payment_id: payment.id,
+              stripe_refund_id: stripeRefund.id,
+              amount_cents: stripeRefund.amount,
+              status: stripeRefund.status,
+              reason: stripeRefund.reason || 'requested_by_customer',
+            },
+            update: {
+              status: stripeRefund.status,
+              amount_cents: stripeRefund.amount,
+              reason: stripeRefund.reason || 'requested_by_customer',
+            },
+          });
+
+          this.logger.log(
+            `Refund ${stripeRefund.id} traité pour la commande ${payment.order_id}`,
+          );
+
+          // Vérifier si la commande doit passer au statut REFUNDED
+          await this.checkAndUpdateOrderRefundStatus(payment.order_id);
+        }
+      });
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Erreur lors du traitement de charge.refunded:`,
+        error,
+      );
+      throw error;
+    }
   }
 
   /**
-   * Gère une mise à jour de remboursement (placeholder pour l'étape suivante)
+   * Gère une mise à jour de remboursement
    * @param refund - Refund Stripe
    * @returns true si le traitement a réussi
    */
   private async handleRefundUpdated(refund: Stripe.Refund): Promise<boolean> {
-    this.logger.log(`Événement refund.updated reçu pour ${refund.id} (non implémenté)`);
-    return true; // Traité pour éviter les retries
+    try {
+      this.logger.log(
+        `Événement refund.updated reçu pour ${refund.id}`,
+      );
+
+      if (!refund.payment_intent) {
+        this.logger.warn(
+          `Refund ${refund.id} sans payment_intent, ignoré`,
+        );
+        return true;
+      }
+
+      // Récupérer le Payment via stripe_payment_intent_id
+      const payment = await this.prisma.payment.findUnique({
+        where: { stripe_payment_intent_id: refund.payment_intent },
+        include: { order: true },
+      });
+
+      if (!payment) {
+        this.logger.warn(
+          `Payment introuvable pour payment_intent ${refund.payment_intent}`,
+        );
+        return true;
+      }
+
+      // Traitement transactionnel
+      await this.prisma.$transaction(async (tx) => {
+        // Upsert du Refund par stripe_refund_id
+        await tx.refund.upsert({
+          where: { stripe_refund_id: refund.id },
+          create: {
+            payment_id: payment.id,
+            stripe_refund_id: refund.id,
+            amount_cents: refund.amount,
+            status: refund.status,
+            reason: refund.reason || 'requested_by_customer',
+          },
+          update: {
+            status: refund.status,
+            amount_cents: refund.amount,
+            reason: refund.reason || 'requested_by_customer',
+          },
+        });
+
+        this.logger.log(
+          `Refund ${refund.id} mis à jour pour la commande ${payment.order_id}, statut: ${refund.status}`,
+        );
+
+        // Vérifier si la commande doit passer au statut REFUNDED
+        await this.checkAndUpdateOrderRefundStatus(payment.order_id);
+      });
+
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `Erreur lors du traitement de refund.updated:`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  /**
+   * Vérifie si une commande doit passer au statut REFUNDED
+   */
+  private async checkAndUpdateOrderRefundStatus(orderId: string): Promise<void> {
+    const order = await this.prisma.order.findUnique({
+      where: { id: orderId },
+      include: {
+        payment: {
+          include: {
+            refunds: {
+              where: { status: 'succeeded' },
+            },
+          },
+        },
+      },
+    });
+
+    if (!order?.payment) {
+      return;
+    }
+
+    const totalRefunded = order.payment.refunds.reduce(
+      (sum, refund) => sum + refund.amount_cents,
+      0,
+    );
+
+    // Si le montant total remboursé égale le montant payé, marquer comme remboursé
+    if (totalRefunded >= order.payment.amount_cents) {
+      await this.prisma.order.update({
+        where: { id: orderId },
+        data: { status: 'REFUNDED' },
+      });
+
+      this.logger.log(
+        `Commande ${orderId} marquée comme remboursée (total remboursé: ${totalRefunded} centimes)`,
+      );
+    }
   }
 
   /**
@@ -279,7 +459,10 @@ export class StripeWebhookService {
         });
       }
     } catch (error) {
-      this.logger.error(`Erreur lors de l'enregistrement de l'événement ${event.id}:`, error);
+      this.logger.error(
+        `Erreur lors de l'enregistrement de l'événement ${event.id}:`,
+        error,
+      );
       // Ne pas faire échouer le traitement principal
     }
   }
