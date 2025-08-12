@@ -1,17 +1,17 @@
 import { z } from 'zod';
 
 export const orderItemSchema = z.object({
-  id: z.uuid(),
-  order_id: z.uuid(),
-  product_id: z.uuid(),
+  id: z.string().min(1),
+  order_id: z.string().min(1),
+  product_id: z.string().min(1),
   quantity: z.number().int().positive(),
   slot_number: z.number().int().positive(),
 });
 
 export const orderSchema = z.object({
-  id: z.uuid(),
-  user_id: z.uuid(),
-  machine_id: z.uuid(),
+  id: z.string().min(1),
+  user_id: z.string().min(1),
+  machine_id: z.string().min(1),
   status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
   created_at: z.string(),
   expires_at: z.string(),
@@ -19,11 +19,11 @@ export const orderSchema = z.object({
 });
 
 export const createOrderSchema = z.object({
-  user_id: z.uuid(),
-  machine_id: z.uuid(),
+  user_id: z.string().min(1),
+  machine_id: z.string().min(1),
   items: z.array(
     z.object({
-      product_id: z.uuid(),
+      product_id: z.string().min(1),
       quantity: z.number().int().positive(),
       slot_number: z.number().int().positive(),
     }),

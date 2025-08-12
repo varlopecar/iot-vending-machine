@@ -1,13 +1,14 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { LoyaltyLog, Advantage, HistoryEntry } from './loyalty.schema';
 import { AuthService } from '../auth/auth.service';
-import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class LoyaltyService {
-  private loyaltyLogs: LoyaltyLog[] = [];
-
-  constructor(private readonly authService: AuthService) {}
+  constructor(
+    private readonly authService: AuthService,
+    private readonly prisma: PrismaService,
+  ) {}
 
   async addPoints(
     userId: string,
@@ -17,20 +18,21 @@ export class LoyaltyService {
     // Verify user exists
     const user = await this.authService.getUserById(userId);
 
-    const loyaltyLog: LoyaltyLog = {
-      id: randomUUID(),
-      user_id: userId,
-      change: points,
-      reason,
-      created_at: new Date().toISOString(),
-    };
+    const loyaltyLog = await this.prisma.loyaltyLog.create({
+      data: {
+        user_id: userId,
+        change: points,
+        reason,
+        created_at: new Date().toISOString(),
+      },
+    });
 
-    this.loyaltyLogs.push(loyaltyLog);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { points: user.points + points },
+    });
 
-    // Update user points
-    await this.authService.updatePoints(userId, user.points + points);
-
-    return loyaltyLog;
+    return this.mapLog(loyaltyLog);
   }
 
   async deductPoints(
@@ -45,34 +47,33 @@ export class LoyaltyService {
       throw new Error('Insufficient points');
     }
 
-    const loyaltyLog: LoyaltyLog = {
-      id: randomUUID(),
-      user_id: userId,
-      change: -points,
-      reason,
-      created_at: new Date().toISOString(),
-    };
+    const loyaltyLog = await this.prisma.loyaltyLog.create({
+      data: {
+        user_id: userId,
+        change: -points,
+        reason,
+        created_at: new Date().toISOString(),
+      },
+    });
 
-    this.loyaltyLogs.push(loyaltyLog);
+    await this.prisma.user.update({
+      where: { id: userId },
+      data: { points: user.points - points },
+    });
 
-    // Update user points
-    await this.authService.updatePoints(userId, user.points - points);
-
-    return loyaltyLog;
+    return this.mapLog(loyaltyLog);
   }
 
-  getLoyaltyHistory(userId: string): LoyaltyLog[] {
-    return this.loyaltyLogs
-      .filter((log) => log.user_id === userId)
-      .sort(
-        (a, b) =>
-          new Date(b.created_at).getTime() - new Date(a.created_at).getTime(),
-      );
+  async getLoyaltyHistory(userId: string): Promise<LoyaltyLog[]> {
+    const logs = await this.prisma.loyaltyLog.findMany({
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' },
+    });
+    return logs.map(this.mapLog);
   }
 
-  getLoyaltyHistoryFormatted(userId: string): HistoryEntry[] {
-    const logs = this.getLoyaltyHistory(userId);
-
+  async getLoyaltyHistoryFormatted(userId: string): Promise<HistoryEntry[]> {
+    const logs = await this.getLoyaltyHistory(userId);
     return logs.map((log) => ({
       id: log.id,
       date: new Date(log.created_at).toLocaleDateString('fr-FR'),
@@ -142,8 +143,8 @@ export class LoyaltyService {
   }
 
   async getCurrentPoints(userId: string): Promise<number> {
-    const user = await this.authService.getUserById(userId);
-    return user.points;
+    const user = await this.prisma.user.findUnique({ where: { id: userId } });
+    return user?.points ?? 0;
   }
 
   private extractLocationFromReason(reason: string): string {
@@ -154,4 +155,12 @@ export class LoyaltyService {
     if (reason.includes('Nice')) return 'Nice';
     return 'Unknown';
   }
+
+  private mapLog = (l: any): LoyaltyLog => ({
+    id: l.id,
+    user_id: l.user_id,
+    change: l.change,
+    reason: l.reason,
+    created_at: l.created_at,
+  });
 }

@@ -1,9 +1,9 @@
 import { z } from 'zod';
 
 export const stockSchema = z.object({
-  id: z.uuid(),
-  machine_id: z.uuid(),
-  product_id: z.uuid(),
+  id: z.string().min(1),
+  machine_id: z.string().min(1),
+  product_id: z.string().min(1),
   quantity: z.number().int().min(0),
   slot_number: z.number().int().positive(),
 });

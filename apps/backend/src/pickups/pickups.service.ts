@@ -1,99 +1,117 @@
-import {
-  Injectable,
-  NotFoundException,
-  BadRequestException,
-} from '@nestjs/common';
+import { BadRequestException, Injectable, NotFoundException } from '@nestjs/common';
 import { CreatePickupInput, UpdatePickupInput, Pickup } from './pickups.schema';
-import { OrdersService } from '../orders/orders.service';
-import { randomUUID } from 'crypto';
+import { PrismaService } from '../prisma/prisma.service';
 
 @Injectable()
 export class PickupsService {
-  private pickups: Pickup[] = [];
+  constructor(private readonly prisma: PrismaService) {}
 
-  constructor(private readonly ordersService: OrdersService) {}
-
-  createPickup(pickupData: CreatePickupInput): Pickup {
-    // Validate that the order exists and is active
-    const order = this.ordersService.getOrderById(pickupData.order_id);
-
-    if (order.status !== 'active') {
+  async createPickup(pickupData: CreatePickupInput): Promise<Pickup> {
+    const order = await this.prisma.order.findUnique({ where: { id: pickupData.order_id } });
+    if (!order || order.status !== 'ACTIVE') {
       throw new BadRequestException('Order is not active for pickup');
     }
 
-    const pickup: Pickup = {
-      id: randomUUID(),
-      ...pickupData,
-      picked_up_at: new Date().toISOString(),
-      status: 'pending',
-    };
-
-    this.pickups.push(pickup);
-    return pickup;
+    const created = await this.prisma.pickup.create({
+      data: {
+        order_id: pickupData.order_id,
+        machine_id: pickupData.machine_id,
+        picked_up_at: new Date().toISOString(),
+        status: 'PENDING',
+      },
+    });
+    return this.mapPickup(created);
   }
 
-  getPickupById(id: string): Pickup {
-    const pickup = this.pickups.find((p) => p.id === id);
+  async getPickupById(id: string): Promise<Pickup> {
+    const pickup = await this.prisma.pickup.findUnique({ where: { id } });
     if (!pickup) {
       throw new NotFoundException('Pickup not found');
     }
-    return pickup;
+    return this.mapPickup(pickup);
   }
 
-  getPickupsByOrderId(orderId: string): Pickup[] {
-    return this.pickups.filter((p) => p.order_id === orderId);
+  async getPickupsByOrderId(orderId: string): Promise<Pickup[]> {
+    const list = await this.prisma.pickup.findMany({ where: { order_id: orderId } });
+    return list.map(this.mapPickup);
   }
 
-  getPickupsByMachineId(machineId: string): Pickup[] {
-    return this.pickups.filter((p) => p.machine_id === machineId);
+  async getPickupsByMachineId(machineId: string): Promise<Pickup[]> {
+    const list = await this.prisma.pickup.findMany({ where: { machine_id: machineId } });
+    return list.map(this.mapPickup);
   }
 
-  updatePickup(id: string, updateData: UpdatePickupInput): Pickup {
-    const pickupIndex = this.pickups.findIndex((p) => p.id === id);
-    if (pickupIndex === -1) {
+  async updatePickup(id: string, updateData: UpdatePickupInput): Promise<Pickup> {
+    try {
+      const updated = await this.prisma.pickup.update({
+        where: { id },
+        data: {
+          ...('order_id' in updateData ? { order_id: updateData.order_id! } : {}),
+          ...('machine_id' in updateData ? { machine_id: updateData.machine_id! } : {}),
+          ...('status' in updateData ? { status: this.toDbStatus(updateData.status!) } : {}),
+        },
+      });
+      return this.mapPickup(updated);
+    } catch {
       throw new NotFoundException('Pickup not found');
     }
-
-    this.pickups[pickupIndex] = {
-      ...this.pickups[pickupIndex],
-      ...updateData,
-    };
-
-    return this.pickups[pickupIndex];
   }
 
-  completePickup(id: string): Pickup {
-    const pickup = this.getPickupById(id);
-
+  async completePickup(id: string): Promise<Pickup> {
+    const pickup = await this.getPickupById(id);
     if (pickup.status !== 'pending') {
       throw new BadRequestException('Pickup is not pending');
     }
 
-    // Mark the order as used
-    this.ordersService.useOrder(pickup.order_id);
-
-    return this.updatePickup(id, {
-      status: 'completed',
+    const updated = await this.prisma.$transaction(async (tx) => {
+      await tx.order.update({ where: { id: pickup.order_id }, data: { status: 'USED' } });
+      return await tx.pickup.update({ where: { id }, data: { status: 'COMPLETED' } });
     });
+    return this.mapPickup(updated);
   }
 
-  failPickup(id: string): Pickup {
-    const pickup = this.getPickupById(id);
-
+  async failPickup(id: string): Promise<Pickup> {
+    const pickup = await this.getPickupById(id);
     if (pickup.status !== 'pending') {
       throw new BadRequestException('Pickup is not pending');
     }
-
-    return this.updatePickup(id, {
-      status: 'failed',
+    const updated = await this.prisma.pickup.update({
+      where: { id },
+      data: { status: 'FAILED' },
     });
+    return this.mapPickup(updated);
   }
 
-  getPendingPickups(): Pickup[] {
-    return this.pickups.filter((p) => p.status === 'pending');
+  async getPendingPickups(): Promise<Pickup[]> {
+    const list = await this.prisma.pickup.findMany({ where: { status: 'PENDING' } });
+    return list.map(this.mapPickup);
   }
 
-  getCompletedPickups(): Pickup[] {
-    return this.pickups.filter((p) => p.status === 'completed');
+  async getCompletedPickups(): Promise<Pickup[]> {
+    const list = await this.prisma.pickup.findMany({ where: { status: 'COMPLETED' } });
+    return list.map(this.mapPickup);
   }
+
+  private toApiStatus(db: string): Pickup['status'] {
+    return db.toLowerCase() as Pickup['status'];
+  }
+
+  private toDbStatus(api: Pickup['status']): 'PENDING' | 'COMPLETED' | 'FAILED' {
+    switch (api) {
+      case 'pending':
+        return 'PENDING';
+      case 'completed':
+        return 'COMPLETED';
+      case 'failed':
+        return 'FAILED';
+    }
+  }
+
+  private mapPickup = (p: any): Pickup => ({
+    id: p.id,
+    order_id: p.order_id,
+    machine_id: p.machine_id,
+    picked_up_at: p.picked_up_at,
+    status: this.toApiStatus(p.status),
+  });
 }

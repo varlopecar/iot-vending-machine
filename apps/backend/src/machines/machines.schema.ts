@@ -1,7 +1,7 @@
 import { z } from 'zod';
 
 export const machineSchema = z.object({
-  id: z.uuid(),
+  id: z.string().min(1),
   location: z.string(),
   label: z.string(),
   status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
