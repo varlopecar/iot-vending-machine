@@ -1,0 +1,286 @@
+import { Injectable, Logger, BadRequestException } from '@nestjs/common';
+import { PrismaService } from '../prisma/prisma.service';
+import { InventoryService } from '../inventory/inventory.service';
+import { generateOneTimeToken } from '../payments/qr';
+import {
+  extractReceiptUrlFromPaymentIntent,
+  extractErrorCodeFromPaymentIntent,
+  extractErrorMessageFromPaymentIntent,
+} from '../payments/stripe-utils';
+import type Stripe from 'stripe';
+
+@Injectable()
+export class StripeWebhookService {
+  private readonly logger = new Logger(StripeWebhookService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly inventoryService: InventoryService,
+  ) {}
+
+  /**
+   * Gère un événement Stripe reçu
+   * @param event - Événement Stripe validé
+   * @returns true si l'événement a été traité avec succès
+   */
+  async handleEvent(event: Stripe.Event): Promise<boolean> {
+    try {
+      this.logger.log(`Traitement de l'événement ${event.id} de type ${event.type}`);
+
+      // Vérifier la déduplication avant traitement
+      const existingEvent = await this.prisma.paymentEvent.findUnique({
+        where: { stripe_event_id: event.id },
+      });
+
+      if (existingEvent) {
+        this.logger.log(`Événement ${event.id} déjà traité, ignoré`);
+        return true;
+      }
+
+      // Traiter l'événement selon son type
+      let success = false;
+      switch (event.type) {
+        case 'payment_intent.succeeded':
+          success = await this.handlePaymentIntentSucceeded(event.data.object as Stripe.PaymentIntent);
+          break;
+        case 'payment_intent.payment_failed':
+          success = await this.handlePaymentIntentFailed(event.data.object as Stripe.PaymentIntent);
+          break;
+        case 'charge.refunded':
+          success = await this.handleChargeRefunded(event.data.object as Stripe.Charge);
+          break;
+        case 'refund.updated':
+          success = await this.handleRefundUpdated(event.data.object as Stripe.Refund);
+          break;
+        default:
+          this.logger.log(`Type d'événement non géré: ${event.type}`);
+          success = true; // On considère comme traité pour éviter les retries
+      }
+
+      // Enregistrer l'événement dans la base de données
+      if (success) {
+        await this.recordPaymentEvent(event);
+      }
+
+      return success;
+    } catch (error) {
+      this.logger.error(`Erreur lors du traitement de l'événement ${event.id}:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gère un paiement réussi
+   * @param paymentIntent - PaymentIntent Stripe
+   * @returns true si le traitement a réussi
+   */
+  private async handlePaymentIntentSucceeded(paymentIntent: Stripe.PaymentIntent): Promise<boolean> {
+    try {
+      const orderId = paymentIntent.metadata?.orderId;
+      if (!orderId) {
+        this.logger.warn(`PaymentIntent ${paymentIntent.id} sans orderId dans les métadonnées`);
+        return false;
+      }
+
+      this.logger.log(`Traitement du paiement réussi pour la commande ${orderId}`);
+
+      // Récupérer le Payment depuis la base de données
+      const payment = await this.prisma.payment.findUnique({
+        where: { stripe_payment_intent_id: paymentIntent.id },
+        include: { order: true },
+      });
+
+      if (!payment) {
+        this.logger.warn(`Payment introuvable pour PaymentIntent ${paymentIntent.id}`);
+        return false;
+      }
+
+      // Traitement transactionnel
+      await this.prisma.$transaction(async (tx) => {
+        // 1. Mettre à jour le Payment
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: 'succeeded',
+            updated_at: new Date().toISOString(),
+          },
+        });
+
+        // 2. Mettre à jour l'Order
+        const receiptUrl = extractReceiptUrlFromPaymentIntent(paymentIntent);
+        await tx.order.update({
+          where: { id: orderId },
+          data: {
+            status: 'PAID',
+            paid_at: new Date().toISOString(),
+            receipt_url: receiptUrl,
+          },
+        });
+
+        // 3. Décrémenter le stock
+        await this.inventoryService.decrementStockForOrder(tx, orderId);
+
+        // 4. Générer le QR code token
+        const qrCodeToken = generateOneTimeToken();
+        await tx.order.update({
+          where: { id: orderId },
+          data: { qr_code_token: qrCodeToken },
+        });
+
+        // 5. Créditer les points de fidélité (idempotent)
+        const pointsToAdd = Math.floor(payment.amount_cents / 50);
+        if (pointsToAdd > 0) {
+          const existingLog = await tx.loyaltyLog.findFirst({
+            where: {
+              user_id: payment.order.user_id,
+              reason: `order:${orderId}:paid`,
+            },
+          });
+
+          if (!existingLog) {
+            await tx.loyaltyLog.create({
+              data: {
+                user_id: payment.order.user_id,
+                change: pointsToAdd,
+                reason: `order:${orderId}:paid`,
+                created_at: new Date().toISOString(),
+              },
+            });
+
+            // Mettre à jour les points de l'utilisateur
+            await tx.user.update({
+              where: { id: payment.order.user_id },
+              data: { points: { increment: pointsToAdd } },
+            });
+          }
+        }
+      });
+
+      this.logger.log(
+        `Commande ${orderId} traitée avec succès: PAID, stock décrémenté, QR généré, points crédités`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(`Erreur lors du traitement du paiement réussi:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gère un échec de paiement
+   * @param paymentIntent - PaymentIntent Stripe
+   * @returns true si le traitement a réussi
+   */
+  private async handlePaymentIntentFailed(paymentIntent: Stripe.PaymentIntent): Promise<boolean> {
+    try {
+      const orderId = paymentIntent.metadata?.orderId;
+      if (!orderId) {
+        this.logger.warn(`PaymentIntent ${paymentIntent.id} sans orderId dans les métadonnées`);
+        return false;
+      }
+
+      this.logger.log(`Traitement de l'échec de paiement pour la commande ${orderId}`);
+
+      // Récupérer le Payment depuis la base de données
+      const payment = await this.prisma.payment.findUnique({
+        where: { stripe_payment_intent_id: paymentIntent.id },
+        include: { order: true },
+      });
+
+      if (!payment) {
+        this.logger.warn(`Payment introuvable pour PaymentIntent ${paymentIntent.id}`);
+        return false;
+      }
+
+      // Extraire les informations d'erreur
+      const errorCode = extractErrorCodeFromPaymentIntent(paymentIntent);
+      const errorMessage = extractErrorMessageFromPaymentIntent(paymentIntent);
+
+      // Traitement transactionnel
+      await this.prisma.$transaction(async (tx) => {
+        // 1. Mettre à jour le Payment avec les erreurs
+        await tx.payment.update({
+          where: { id: payment.id },
+          data: {
+            status: 'failed',
+            last_error_code: errorCode,
+            last_error_message: errorMessage,
+            updated_at: new Date().toISOString(),
+          },
+        });
+
+        // 2. Mettre à jour l'Order (ne pas toucher au stock)
+        await tx.order.update({
+          where: { id: orderId },
+          data: { status: 'FAILED' },
+        });
+      });
+
+      this.logger.log(
+        `Commande ${orderId} marquée comme échouée: FAILED, erreurs enregistrées`,
+      );
+
+      return true;
+    } catch (error) {
+      this.logger.error(`Erreur lors du traitement de l'échec de paiement:`, error);
+      throw error;
+    }
+  }
+
+  /**
+   * Gère un remboursement de charge (placeholder pour l'étape suivante)
+   * @param charge - Charge Stripe
+   * @returns true si le traitement a réussi
+   */
+  private async handleChargeRefunded(charge: Stripe.Charge): Promise<boolean> {
+    this.logger.log(`Événement charge.refunded reçu pour ${charge.id} (non implémenté)`);
+    return true; // Traité pour éviter les retries
+  }
+
+  /**
+   * Gère une mise à jour de remboursement (placeholder pour l'étape suivante)
+   * @param refund - Refund Stripe
+   * @returns true si le traitement a réussi
+   */
+  private async handleRefundUpdated(refund: Stripe.Refund): Promise<boolean> {
+    this.logger.log(`Événement refund.updated reçu pour ${refund.id} (non implémenté)`);
+    return true; // Traité pour éviter les retries
+  }
+
+  /**
+   * Enregistre un événement de paiement dans la base de données
+   * @param event - Événement Stripe
+   */
+  private async recordPaymentEvent(event: Stripe.Event): Promise<void> {
+    try {
+      // Récupérer le payment_id depuis les métadonnées ou la base
+      let paymentId: string | null = null;
+
+      if (event.data.object && 'metadata' in event.data.object) {
+        const metadata = (event.data.object as any).metadata;
+        if (metadata?.orderId) {
+          const order = await this.prisma.order.findUnique({
+            where: { id: metadata.orderId },
+            select: { payment: { select: { id: true } } },
+          });
+          paymentId = order?.payment?.id || null;
+        }
+      }
+
+      if (paymentId) {
+        await this.prisma.paymentEvent.create({
+          data: {
+            payment_id: paymentId,
+            stripe_event_id: event.id,
+            type: event.type,
+            payload: event as any,
+          },
+        });
+      }
+    } catch (error) {
+      this.logger.error(`Erreur lors de l'enregistrement de l'événement ${event.id}:`, error);
+      // Ne pas faire échouer le traitement principal
+    }
+  }
+}

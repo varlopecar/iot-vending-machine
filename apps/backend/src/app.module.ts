@@ -10,6 +10,8 @@ import { StocksModule } from './stocks/stocks.module';
 import { PickupsModule } from './pickups/pickups.module';
 import { StripeModule } from './stripe/stripe.module';
 import { CheckoutModule } from './checkout/checkout.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
+import { InventoryModule } from './inventory/inventory.module';
 
 @Module({
   imports: [
@@ -26,6 +28,8 @@ import { CheckoutModule } from './checkout/checkout.module';
     PickupsModule,
     StripeModule,
     CheckoutModule,
+    WebhooksModule,
+    InventoryModule,
   ],
   controllers: [],
   providers: [],
