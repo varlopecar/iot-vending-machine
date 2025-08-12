@@ -11,7 +11,7 @@ const appRouter = t.router({
       email: z.email(),
       password: z.string().min(6),
     })).output(z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       full_name: z.string(),
       email: z.email(),
       points: z.number().int().min(0),
@@ -23,7 +23,7 @@ const appRouter = t.router({
       password: z.string(),
     })).output(z.object({
       user: z.object({
-        id: z.uuid(),
+        id: z.string().min(1),
         full_name: z.string(),
         email: z.email(),
         points: z.number().int().min(0),
@@ -32,8 +32,8 @@ const appRouter = t.router({
       }),
       token: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getUserById: publicProcedure.input(z.object({ id: z.uuid() })).output(z.object({
-      id: z.uuid(),
+    getUserById: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
+      id: z.string().min(1),
       full_name: z.string(),
       email: z.email(),
       points: z.number().int().min(0),
@@ -41,7 +41,7 @@ const appRouter = t.router({
       created_at: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getUserByBarcode: publicProcedure.input(z.object({ barcode: z.string() })).output(z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       full_name: z.string(),
       email: z.email(),
       points: z.number().int().min(0),
@@ -58,7 +58,7 @@ const appRouter = t.router({
         password: true,
       }),
     })).output(z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       full_name: z.string(),
       email: z.email(),
       points: z.number().int().min(0),
@@ -69,7 +69,7 @@ const appRouter = t.router({
       id: z.uuid(),
       points: z.number().int().min(0),
     })).output(z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       full_name: z.string(),
       email: z.email(),
       points: z.number().int().min(0),

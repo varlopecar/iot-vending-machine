@@ -5,18 +5,14 @@ import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import {
-  CreateUserInput,
-  LoginInput,
-  UpdateUserInput,
-  User,
-} from './auth.schema';
+import { CreateUserInput, LoginInput, UpdateUserInput, User } from './auth.schema';
 import { PrismaService } from '../prisma/prisma.service';
 import * as bcrypt from 'bcrypt';
+import { JwtService } from '@nestjs/jwt';
 
 @Injectable()
 export class AuthService {
-  constructor(private prisma: PrismaService) {}
+  constructor(private prisma: PrismaService, private jwt: JwtService) {}
 
   async register(userData: CreateUserInput): Promise<User> {
     // Check if user already exists
@@ -65,7 +61,7 @@ export class AuthService {
       throw new UnauthorizedException('Invalid credentials');
     }
 
-    const token = this.generateToken(user.id);
+    const token = await this.generateJwt(user.id);
 
     return { user, token };
   }
@@ -131,8 +127,7 @@ export class AuthService {
     return Math.random().toString().slice(2, 14);
   }
 
-  private generateToken(userId: string): string {
-    // In a real app, you'd use JWT here
-    return `token_${userId}_${Date.now()}`;
+  private async generateJwt(userId: string): Promise<string> {
+    return await this.jwt.signAsync({ sub: userId });
   }
 }
