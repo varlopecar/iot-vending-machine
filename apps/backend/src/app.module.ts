@@ -8,12 +8,14 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
 import { MachinesModule } from './machines/machines.module';
 import { StocksModule } from './stocks/stocks.module';
 import { PickupsModule } from './pickups/pickups.module';
+import { StripeModule } from './stripe/stripe.module';
+import { CheckoutModule } from './checkout/checkout.module';
 
 @Module({
   imports: [
     PrismaModule,
     TRPCModule.forRoot({
-      autoSchemaFile: '../../packages/trpc/src/server',
+      autoSchemaFile: '../../packages/globals/trpc/src/server',
     }),
     AuthModule,
     ProductsModule,
@@ -22,6 +24,8 @@ import { PickupsModule } from './pickups/pickups.module';
     MachinesModule,
     StocksModule,
     PickupsModule,
+    StripeModule,
+    CheckoutModule,
   ],
   controllers: [],
   providers: [],

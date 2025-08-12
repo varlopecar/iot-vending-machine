@@ -14,13 +14,14 @@ datasource db {
 }
 
 model User {
-  id         String @id @default(cuid())
-  full_name  String
-  email      String @unique
-  password   String
-  points     Int    @default(0)
-  barcode    String @unique
-  created_at String @default(dbgenerated("now()"))
+  id                 String @id @default(cuid())
+  full_name          String
+  email              String @unique
+  password           String
+  points             Int    @default(0)
+  barcode            String @unique
+  stripe_customer_id String? // ID client Stripe pour les paiements récurrents
+  created_at         String @default(dbgenerated("now()"))
 
   // Relations
   orders       Order[]
@@ -74,33 +75,49 @@ model Stock {
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
 
   @@unique([machine_id, product_id])
+  @@unique([machine_id, slot_number]) // Contrainte ajoutée pour éviter les conflits de slots
   @@map("stocks")
 }
 
 model Order {
-  id            String      @id @default(cuid())
-  user_id       String
-  machine_id    String
-  status        OrderStatus @default(PENDING)
-  created_at    String      @default(dbgenerated("now()"))
-  expires_at    String
-  qr_code_token String      @unique
+  id                        String      @id @default(cuid())
+  user_id                   String
+  machine_id                String
+  status                    String      @default("PENDING") // Changé de OrderStatus à String pour compatibilité
+  created_at                String      @default(dbgenerated("now()"))
+  expires_at                String
+  qr_code_token            String      @unique
+  
+  // Nouveaux champs pour les paiements
+  amount_total_cents        Int         @default(0) // Montant total en centimes
+  currency                  String      @default("EUR") @db.VarChar(3)
+  stripe_payment_intent_id  String?     @unique // ID de l'intention de paiement Stripe
+  paid_at                   String?     // Timestamp du paiement réussi
+  receipt_url               String?     // URL du reçu Stripe
 
   // Relations
   user    User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   machine Machine     @relation(fields: [machine_id], references: [id], onDelete: Cascade)
   items   OrderItem[]
   pickups Pickup[]
+  payment Payment?    // Relation 1:1 avec Payment
 
+  @@index([user_id, created_at(sort: Desc)])
+  @@index([stripe_payment_intent_id])
   @@map("orders")
 }
 
 model OrderItem {
-  id          String @id @default(cuid())
-  order_id    String
-  product_id  String
-  quantity    Int
-  slot_number Int
+  id                String @id @default(cuid())
+  order_id          String
+  product_id        String
+  quantity          Int
+  slot_number       Int
+  
+  // Snapshots immuables pour la stabilité des prix
+  unit_price_cents  Int    @default(0) // Prix unitaire au moment de la commande (en centimes)
+  label             String? // Nom du produit au moment de la commande
+  subtotal_cents    Int    @default(0) // Sous-total en centimes (unit_price_cents * quantity)
 
   // Relations
   order   Order   @relation(fields: [order_id], references: [id], onDelete: Cascade)
@@ -134,6 +151,59 @@ model LoyaltyLog {
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
 
   @@map("loyalty_logs")
+}
+
+// Nouvelles tables pour le système de paiement robuste
+
+model Payment {
+  id                        String @id @default(cuid())
+  order_id                  String @unique // Relation 1:1 avec Order
+  stripe_payment_intent_id  String @unique // ID unique de l'intention de paiement Stripe
+  amount_cents              Int    // Montant en centimes
+  currency                  String @db.VarChar(3) // Devise (EUR, USD, etc.)
+  status                    String // Miroir Stripe: requires_payment_method|processing|succeeded|canceled|requires_action|...
+  last_error_code           String? // Code d'erreur Stripe le plus récent
+  last_error_message        String? // Message d'erreur Stripe le plus récent
+  created_at                String @default(dbgenerated("now()"))
+  updated_at                String @default(dbgenerated("now()"))
+
+  // Relations
+  order         Order          @relation(fields: [order_id], references: [id], onDelete: Cascade)
+  paymentEvents PaymentEvent[]
+  refunds       Refund[]
+
+  @@index([stripe_payment_intent_id])
+  @@map("payments")
+}
+
+model PaymentEvent {
+  id                String @id @default(cuid())
+  payment_id        String
+  stripe_event_id   String @unique // ID unique de l'événement Stripe
+  type              String // Type d'événement Stripe
+  payload           Json   // Payload complet de l'événement Stripe
+  created_at        String @default(dbgenerated("now()"))
+
+  // Relations
+  payment Payment @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+
+  @@index([stripe_event_id])
+  @@map("payment_events")
+}
+
+model Refund {
+  id                String @id @default(cuid())
+  payment_id        String
+  stripe_refund_id  String @unique // ID unique du remboursement Stripe
+  amount_cents      Int    // Montant remboursé en centimes
+  status            String // pending|succeeded|failed|canceled
+  reason            String? // Raison du remboursement
+  created_at        String @default(dbgenerated("now()"))
+
+  // Relations
+  payment Payment @relation(fields: [payment_id], references: [id], onDelete: Cascade)
+
+  @@map("refunds")
 }
 
 // Enums

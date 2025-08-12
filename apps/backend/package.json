@@ -18,7 +18,10 @@
     "test:cov": "jest --coverage",
     "test:debug": "node --inspect-brk -r tsconfig-paths/register -r ts-node/register node_modules/.bin/jest --runInBand",
     "test:e2e": "jest --config ./test/jest-e2e.json",
-    "seed": "ts-node prisma/seed.ts"
+    "seed": "ts-node prisma/seed.ts",
+    "migrate:dev": "prisma migrate dev",
+    "db:backfill:payments": "ts-node scripts/backfill_payments_snapshots.ts",
+    "db:verify:constraints": "ts-node scripts/verify_constraints.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -36,6 +39,7 @@
     "prisma": "^6.13.0",
     "reflect-metadata": "^0.2.2",
     "rxjs": "^7.8.1",
+    "stripe": "^18.4.0",
     "zod": "^4.0.15"
   },
   "devDependencies": {
