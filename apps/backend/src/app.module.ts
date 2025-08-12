@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TRPCModule } from 'nestjs-trpc';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -13,6 +13,8 @@ import { CheckoutModule } from './checkout/checkout.module';
 import { WebhooksModule } from './webhooks/webhooks.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { PaymentsModule } from './payments/payments.module';
+import { JobsModule } from './jobs/jobs.module';
+import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middleware';
 
 @Module({
   imports: [
@@ -32,8 +34,15 @@ import { PaymentsModule } from './payments/payments.module';
     WebhooksModule,
     InventoryModule,
     PaymentsModule,
+    JobsModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer
+      .apply(PaymentMonitoringMiddleware)
+      .forRoutes('*');
+  }
+}

@@ -9,6 +9,8 @@ export interface CreatePaymentIntentInput {
     user_id: string;
     machine_id: string;
   };
+  supportsNativePay?: boolean; // Support Apple Pay / Google Pay
+  platform?: 'ios' | 'android' | 'web'; // Plateforme client
 }
 
 export interface PaymentIntentResult {
@@ -18,6 +20,8 @@ export interface PaymentIntentResult {
   currency: string;
   status: string;
   metadata: Record<string, string>;
+  supportsNativePay: boolean; // Support Apple Pay / Google Pay
+  paymentMethodTypes: string[]; // Méthodes de paiement supportées
 }
 
 // Types pour les webhooks

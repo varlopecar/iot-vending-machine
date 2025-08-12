@@ -16,6 +16,8 @@ export class StripeRouter {
         user_id: z.string().min(1),
         machine_id: z.string().min(1),
       }),
+      supportsNativePay: z.boolean().optional(),
+      platform: z.enum(['ios', 'android', 'web']).optional(),
     }),
     output: z.object({
       id: z.string(),
@@ -24,6 +26,8 @@ export class StripeRouter {
       currency: z.string(),
       status: z.string(),
       metadata: z.record(z.string(), z.string()),
+      supportsNativePay: z.boolean(),
+      paymentMethodTypes: z.array(z.string()),
     }),
   })
   createPaymentIntent(@Input() input: CreatePaymentIntentInput) {
@@ -52,5 +56,21 @@ export class StripeRouter {
   })
   cancelPaymentIntent(@Input('id') id: string) {
     return this.stripeService.cancelPaymentIntent(id);
+  }
+
+  @Query({
+    input: z.object({ domain: z.string().optional() }),
+    output: z.object({
+      applePay: z.boolean(),
+      googlePay: z.boolean(),
+    }),
+  })
+  async checkNativePayAvailability(@Input() input: { domain?: string }) {
+    const [applePay, googlePay] = await Promise.all([
+      this.stripeService.checkApplePayAvailability(input.domain || 'localhost'),
+      this.stripeService.checkGooglePayAvailability(),
+    ]);
+
+    return { applePay, googlePay };
   }
 }

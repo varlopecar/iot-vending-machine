@@ -123,6 +123,32 @@ The backend is organized into 7 main modules, each handling specific functionali
 - `completePickup(id)` - Mark pickup as completed
 - `failPickup(id, reason?)` - Mark pickup as failed
 
+## 8. Jobs Module (`jobs`)
+
+### Queries
+
+- `getJobsStatus()` - Get status and schedule information for all jobs
+- `getJobMetrics()` - Get performance metrics for job executions
+
+### Mutations
+
+- `runExpireStaleOrdersManually()` - Manually execute the expire stale orders job
+- `runCleanupStalePaymentIntentsManually()` - Manually execute the cleanup stale payment intents job
+
+#### Job Details
+
+**Expire Stale Orders Job**
+- **Schedule**: Every 5 minutes (`*/5 * * * *`)
+- **Timezone**: Europe/Paris
+- **Purpose**: Expires unpaid orders and releases reserved stock
+- **Actions**: Updates order status to EXPIRED, releases stock reservations, cancels stale PaymentIntents
+
+**Cleanup Stale Payment Intents Job**
+- **Schedule**: Every Sunday at 03:00 (`0 3 * * 0`)
+- **Timezone**: Europe/Paris
+- **Purpose**: Cleans up obsolete PaymentIntents and synchronizes with Stripe
+- **Actions**: Cancels stale PaymentIntents, updates local payment status, logs events
+
 ## Key Features Implemented
 
 ### Stock Management

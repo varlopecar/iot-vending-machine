@@ -28,7 +28,13 @@
     "stripe:trigger:succeeded": "stripe trigger payment_intent.succeeded",
     "stripe:trigger:failed": "stripe trigger payment_intent.payment_failed",
     "qa:refund:partial": "ts-node scripts/qa/refund-partial.ts",
-    "qa:refund:total": "ts-node scripts/qa/refund-total.ts"
+    "qa:refund:total": "ts-node scripts/qa/refund-total.ts",
+    "jobs:run:expire": "ts-node src/jobs/expire-stale-orders.job.ts",
+    "jobs:run:cleanup": "ts-node src/jobs/cleanup-stale-payment-intents.job.ts",
+    "jobs:test": "ts-node scripts/test-jobs.ts",
+    "jobs:test:simple": "ts-node scripts/test-jobs-simple.ts",
+    "jobs:test:minimal": "ts-node scripts/test-jobs-minimal.ts",
+    "check:payments": "ts-node scripts/check-payments-setup.ts"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
@@ -36,6 +42,7 @@
     "@nestjs/jwt": "^11.0.0",
     "@nestjs/passport": "^11.0.5",
     "@nestjs/platform-express": "^11.0.1",
+    "@nestjs/schedule": "^6.0.0",
     "@prisma/client": "^6.13.0",
     "@prisma/extension-accelerate": "^2.0.2",
     "@types/bcrypt": "^6.0.0",

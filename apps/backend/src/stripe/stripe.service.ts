@@ -17,14 +17,31 @@ export class StripeService {
     input: CreatePaymentIntentInput,
   ): Promise<PaymentIntentResult> {
     try {
+      // Configuration des méthodes de paiement selon la plateforme
+      const paymentMethodOptions: any = {
+        automatic_payment_methods: {
+          enabled: true,
+        },
+      };
+
+      // Ajouter le support Apple Pay / Google Pay si demandé
+      if (input.supportsNativePay && input.platform) {
+        if (input.platform === 'ios') {
+          paymentMethodOptions.payment_method_types = ['card', 'apple_pay'];
+        } else if (input.platform === 'android') {
+          paymentMethodOptions.payment_method_types = ['card', 'google_pay'];
+        }
+      }
+
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: input.amount,
         currency: input.currency,
         metadata: input.metadata,
-        automatic_payment_methods: {
-          enabled: true,
-        },
+        ...paymentMethodOptions,
       });
+
+      // Déterminer si le support natif est disponible
+      const supportsNativePay = this.determineNativePaySupport(input);
 
       return {
         id: paymentIntent.id,
@@ -33,6 +50,8 @@ export class StripeService {
         currency: paymentIntent.currency,
         status: paymentIntent.status,
         metadata: paymentIntent.metadata,
+        supportsNativePay,
+        paymentMethodTypes: paymentIntent.payment_method_types || [],
       };
     } catch (error) {
       const stripeError = this.handleStripeError(error);
@@ -73,9 +92,14 @@ export class StripeService {
   /**
    * Annule une intention de paiement
    */
-  async cancelPaymentIntent(paymentIntentId: string) {
+  async cancelPaymentIntent(paymentIntentId: string, cancellationReason?: string) {
     try {
-      return await this.stripe.paymentIntents.cancel(paymentIntentId);
+      const cancelOptions: any = {};
+      if (cancellationReason) {
+        cancelOptions.cancellation_reason = cancellationReason;
+      }
+      
+      return await this.stripe.paymentIntents.cancel(paymentIntentId, cancelOptions);
     } catch (error) {
       const stripeError = this.handleStripeError(error);
       throw new BadRequestException(
@@ -119,5 +143,64 @@ export class StripeService {
       code: 'unknown',
       message: error.message || 'Erreur inconnue',
     };
+  }
+
+  /**
+   * Détermine si le support des paiements natifs est disponible
+   */
+  private determineNativePaySupport(input: CreatePaymentIntentInput): boolean {
+    if (!input.supportsNativePay || !input.platform) {
+      return false;
+    }
+
+    // Vérifier que la devise est supportée par Apple Pay / Google Pay
+    const supportedCurrencies = ['eur', 'usd', 'gbp', 'cad', 'aud', 'chf', 'jpy'];
+    if (!supportedCurrencies.includes(input.currency.toLowerCase())) {
+      return false;
+    }
+
+    // Vérifier que le montant est dans les limites acceptables
+    if (input.amount < 50 || input.amount > 999999) { // 0.50€ à 9999.99€
+      return false;
+    }
+
+    return true;
+  }
+
+  /**
+   * Vérifie la disponibilité d'Apple Pay pour un domaine
+   */
+  async checkApplePayAvailability(domain: string): Promise<boolean> {
+    try {
+      const paymentRequest = await this.stripe.paymentRequest({
+        country: 'FR',
+        currency: 'eur',
+        total: {
+          label: 'Test',
+          amount: 100,
+        },
+        requestPayerName: true,
+        requestPayerEmail: true,
+      });
+
+      return paymentRequest.canMakePayment()?.applePay === true;
+    } catch (error) {
+      console.warn('Erreur lors de la vérification Apple Pay:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Vérifie la disponibilité de Google Pay
+   */
+  async checkGooglePayAvailability(): Promise<boolean> {
+    try {
+      // Google Pay est généralement disponible si configuré dans le dashboard Stripe
+      const account = await this.stripe.accounts.retrieve();
+      return account.charges_enabled === true;
+    } catch (error) {
+      console.warn('Erreur lors de la vérification Google Pay:', error);
+      return false;
+    }
   }
 }
