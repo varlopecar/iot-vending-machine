@@ -130,7 +130,7 @@ export class PaymentsService {
       if (error && typeof error === 'object' && 'type' in error) {
         throw new TRPCError({
           code: 'INTERNAL_SERVER_ERROR',
-          message: `Erreur Stripe: ${(error as any).message || 'Erreur inconnue'}`,
+          message: `Erreur Stripe: ${error.message || 'Erreur inconnue'}`,
           cause: error,
         });
       }

@@ -3,12 +3,12 @@ import { PrismaClient } from '@prisma/client';
 
 export interface StockReservation {
   id: string;
-  product_id: string;
-  machine_id: string;
+  stock_id: string;
   quantity: number;
-  order_id: string;
-  reserved_at: Date;
-  expires_at: Date;
+  order_id: string | null;
+  reserved_at: string;
+  expires_at: string;
+  status: string;
 }
 
 @Injectable()
@@ -18,49 +18,45 @@ export class ReservationsService {
   /**
    * Libère les réservations de stock pour une commande
    * Cette méthode est appelée quand une commande expire ou est annulée
-   * 
+   *
    * @param tx Transaction Prisma
    * @param orderId ID de la commande
    * @returns Nombre de réservations libérées
    */
   async releaseReservedStockForOrder(
-    tx: PrismaClient,
-    orderId: string
+    tx: any,
+    orderId: string,
   ): Promise<number> {
     try {
-      this.logger.log(`🔄 Libération des réservations de stock pour la commande ${orderId}`);
+      this.logger.log(
+        `🔄 Libération des réservations de stock pour la commande ${orderId}`,
+      );
 
       // Récupérer les items de la commande
       const orderItems = await tx.orderItem.findMany({
         where: { order_id: orderId },
-        include: {
-          product: true,
-        },
       });
 
-      if (orderItems.length === 0) {
-        this.logger.log(`ℹ️  Aucun item trouvé pour la commande ${orderId}`);
-        return 0;
-      }
-
       let totalReleased = 0;
-
-      // Traiter chaque item de la commande
       for (const item of orderItems) {
         const released = await this.releaseStockForProduct(
           tx,
           item.product_id,
           item.quantity,
-          orderId
+          orderId,
         );
         totalReleased += released;
       }
 
-      this.logger.log(`✅ ${totalReleased} unités de stock libérées pour la commande ${orderId}`);
+      this.logger.log(
+        `✅ ${totalReleased} unités de stock libérées pour la commande ${orderId}`,
+      );
       return totalReleased;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur lors de la libération du stock pour la commande ${orderId}:`, error);
+      this.logger.error(
+        `❌ Erreur lors de la libération du stock pour la commande ${orderId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -69,18 +65,23 @@ export class ReservationsService {
    * Libère le stock réservé pour un produit spécifique
    */
   private async releaseStockForProduct(
-    tx: PrismaClient,
+    tx: any,
     productId: string,
     quantity: number,
-    orderId: string
+    orderId: string,
   ): Promise<number> {
     try {
       // Vérifier si le produit a des réservations
       const reservations = await tx.stockReservation.findMany({
         where: {
-          product_id: productId,
           order_id: orderId,
           status: 'ACTIVE',
+          stock: {
+            product_id: productId,
+          },
+        },
+        include: {
+          stock: true,
         },
       });
 
@@ -92,29 +93,34 @@ export class ReservationsService {
           },
         });
 
-        if (stock) {
-          await tx.stock.update({
-            where: { id: stock.id },
-            data: {
-              quantity: stock.quantity + quantity,
-            },
-          });
-
-          this.logger.log(`📦 Stock libéré pour le produit ${productId}: +${quantity} unités`);
-          return quantity;
+        if (!stock) {
+          this.logger.warn(
+            `⚠️  Aucun stock trouvé pour le produit ${productId}`,
+          );
+          return 0;
         }
-        return 0;
+
+        await tx.stock.update({
+          where: { id: stock.id },
+          data: {
+            quantity: stock.quantity + quantity,
+          },
+        });
+
+        this.logger.log(
+          `📦 Stock libéré pour le produit ${productId}: +${quantity} unités`,
+        );
+        return quantity;
       }
 
       // Libérer les réservations existantes
       let totalReleased = 0;
       for (const reservation of reservations) {
         if (reservation.quantity > 0) {
-          // Mettre à jour le stock
-          await tx.stock.updateMany({
+          // Mettre à jour le stock via l'ID du stock
+          await tx.stock.update({
             where: {
-              product_id: productId,
-              machine_id: reservation.machine_id,
+              id: reservation.stock_id,
             },
             data: {
               quantity: {
@@ -128,8 +134,6 @@ export class ReservationsService {
             where: { id: reservation.id },
             data: {
               status: 'RELEASED',
-              released_at: new Date(),
-              notes: `Libéré automatiquement - commande ${orderId} expirée`,
             },
           });
 
@@ -137,11 +141,15 @@ export class ReservationsService {
         }
       }
 
-      this.logger.log(`📦 ${totalReleased} unités libérées des réservations pour le produit ${productId}`);
+      this.logger.log(
+        `📦 ${totalReleased} unités libérées des réservations pour le produit ${productId}`,
+      );
       return totalReleased;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur lors de la libération du stock pour le produit ${productId}:`, error);
+      this.logger.error(
+        `❌ Erreur lors de la libération du stock pour le produit ${productId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -150,12 +158,12 @@ export class ReservationsService {
    * Crée une réservation de stock pour une commande
    */
   async createStockReservation(
-    tx: PrismaClient,
+    tx: any,
     productId: string,
     machineId: string,
     quantity: number,
     orderId: string,
-    expiresAt: Date
+    expiresAt: Date,
   ): Promise<StockReservation> {
     try {
       // Vérifier la disponibilité du stock
@@ -167,19 +175,19 @@ export class ReservationsService {
       });
 
       if (!stock || stock.quantity < quantity) {
-        throw new Error(`Stock insuffisant pour le produit ${productId}: ${stock?.quantity || 0} disponible, ${quantity} demandé`);
+        throw new Error(
+          `Stock insuffisant pour le produit ${productId}: ${stock?.quantity || 0} disponible, ${quantity} demandé`,
+        );
       }
 
       // Créer la réservation
       const reservation = await tx.stockReservation.create({
         data: {
-          product_id: productId,
-          machine_id: machineId,
+          stock_id: stock.id,
           quantity,
           order_id: orderId,
           status: 'ACTIVE',
-          reserved_at: new Date(),
-          expires_at: expiresAt,
+          expires_at: expiresAt.toISOString(),
         },
       });
 
@@ -191,21 +199,25 @@ export class ReservationsService {
         },
       });
 
-      this.logger.log(`🔒 Réservation créée: ${quantity} unités du produit ${productId} pour la commande ${orderId}`);
+      this.logger.log(
+        `🔒 Réservation créée: ${quantity} unités du produit ${productId} pour la commande ${orderId}`,
+      );
       return reservation;
-
     } catch (error) {
-      this.logger.error(`❌ Erreur lors de la création de la réservation pour le produit ${productId}:`, error);
+      this.logger.error(
+        `❌ Erreur lors de la création de la réservation pour le produit ${productId}:`,
+        error,
+      );
       throw error;
     }
   }
 
   /**
-   * Vérifie si une réservation est encore valide
+   * Vérifie si une réservation est valide (active et non expirée)
    */
   async isReservationValid(
     tx: PrismaClient,
-    reservationId: string
+    reservationId: string,
   ): Promise<boolean> {
     const reservation = await tx.stockReservation.findUnique({
       where: { id: reservationId },
@@ -215,37 +227,42 @@ export class ReservationsService {
       return false;
     }
 
-    return reservation.status === 'ACTIVE' && reservation.expires_at > new Date();
+    return (
+      reservation.status === 'ACTIVE' &&
+      new Date(reservation.expires_at) > new Date()
+    );
   }
 
   /**
    * Nettoie les réservations expirées
    */
-  async cleanupExpiredReservations(tx: PrismaClient): Promise<number> {
+  async cleanupExpiredReservations(tx: any): Promise<number> {
     try {
       const expiredReservations = await tx.stockReservation.findMany({
         where: {
           status: 'ACTIVE',
           expires_at: {
-            lt: new Date(),
+            lt: new Date().toISOString(),
           },
         },
       });
 
       let cleanedCount = 0;
       for (const reservation of expiredReservations) {
-        await this.releaseStockForProduct(
-          tx,
-          reservation.product_id,
-          reservation.quantity,
-          reservation.order_id
-        );
+        // Libérer le stock directement
+        await tx.stock.update({
+          where: { id: reservation.stock_id },
+          data: {
+            quantity: {
+              increment: reservation.quantity,
+            },
+          },
+        });
 
         await tx.stockReservation.update({
           where: { id: reservation.id },
           data: {
             status: 'EXPIRED',
-            notes: 'Réservation expirée automatiquement',
           },
         });
 
@@ -254,9 +271,11 @@ export class ReservationsService {
 
       this.logger.log(`🧹 ${cleanedCount} réservations expirées nettoyées`);
       return cleanedCount;
-
     } catch (error) {
-      this.logger.error('❌ Erreur lors du nettoyage des réservations expirées:', error);
+      this.logger.error(
+        '❌ Erreur lors du nettoyage des réservations expirées:',
+        error,
+      );
       throw error;
     }
   }

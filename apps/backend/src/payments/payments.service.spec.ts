@@ -148,7 +148,7 @@ describe('PaymentsService', () => {
       });
     });
 
-    it('devrait refuser un remboursement si la commande n\'existe pas', async () => {
+    it("devrait refuser un remboursement si la commande n'existe pas", async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(null);
 
       await expect(
@@ -158,7 +158,7 @@ describe('PaymentsService', () => {
       expect(mockStripe.refunds.create).not.toHaveBeenCalled();
     });
 
-    it('devrait refuser un remboursement si le paiement n\'existe pas', async () => {
+    it("devrait refuser un remboursement si le paiement n'existe pas", async () => {
       mockPrismaService.order.findUnique.mockResolvedValue({
         id: 'order-123',
         payment: null,
@@ -171,7 +171,7 @@ describe('PaymentsService', () => {
       expect(mockStripe.refunds.create).not.toHaveBeenCalled();
     });
 
-    it('devrait refuser un remboursement si le statut du paiement n\'est pas succeeded', async () => {
+    it("devrait refuser un remboursement si le statut du paiement n'est pas succeeded", async () => {
       mockPrismaService.order.findUnique.mockResolvedValue({
         id: 'order-123',
         payment: {
@@ -258,10 +258,11 @@ describe('PaymentsService', () => {
       expect(result).toBe(1000); // 2500 - 1000 - 500
     });
 
-    it('devrait retourner 0 si le paiement n\'existe pas', async () => {
+    it("devrait retourner 0 si le paiement n'existe pas", async () => {
       mockPrismaService.payment.findUnique.mockResolvedValue(null);
 
-      const result = await service.computeRefundableAmount('payment-inexistant');
+      const result =
+        await service.computeRefundableAmount('payment-inexistant');
 
       expect(result).toBe(0);
     });
@@ -285,7 +286,7 @@ describe('PaymentsService', () => {
   });
 
   describe('updateRefundStatus', () => {
-    it('devrait mettre à jour le statut d\'un remboursement', async () => {
+    it("devrait mettre à jour le statut d'un remboursement", async () => {
       mockPrismaService.refund.update = jest.fn().mockResolvedValue({});
 
       await service.updateRefundStatus('re_123', 'succeeded');
@@ -334,7 +335,7 @@ describe('PaymentsService', () => {
       expect(mockPrismaService.order.update).not.toHaveBeenCalled();
     });
 
-    it('ne devrait rien faire si la commande n\'existe pas', async () => {
+    it("ne devrait rien faire si la commande n'existe pas", async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(null);
 
       await service.checkAndUpdateOrderRefundStatus('order-inexistant');

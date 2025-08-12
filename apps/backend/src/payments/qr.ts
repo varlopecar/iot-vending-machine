@@ -139,7 +139,10 @@ export function verifyQrToken(token: string): QrTokenPayload {
   } catch (error) {
     if (error instanceof Error) {
       // Si c'est une erreur de parsing JSON, c'est un token malformé
-      if (error.message.includes('Unexpected token') || error.message.includes('JSON')) {
+      if (
+        error.message.includes('Unexpected token') ||
+        error.message.includes('JSON')
+      ) {
         throw new Error('Invalid QR token format');
       }
       throw error;

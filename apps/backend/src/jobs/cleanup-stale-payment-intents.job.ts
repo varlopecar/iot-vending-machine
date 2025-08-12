@@ -45,21 +45,24 @@ export class CleanupStalePaymentIntentsJob {
     try {
       // Récupérer les PaymentIntents obsolètes
       const stalePayments = await this.getStalePayments();
-      
+
       if (stalePayments.length === 0) {
         this.logger.log('ℹ️  Aucun PaymentIntent obsolète trouvé');
         return this.finalizeResult(result, startTime);
       }
 
-      this.logger.log(`📋 ${stalePayments.length} PaymentIntents obsolètes trouvés`);
+      this.logger.log(
+        `📋 ${stalePayments.length} PaymentIntents obsolètes trouvés`,
+      );
 
       // Traiter les paiements par lots
       await runInBatches(stalePayments, this.BATCH_SIZE, async (batch) => {
         await this.processBatch(batch, result);
       });
 
-      this.logger.log(`✅ Traitement terminé: ${result.paymentIntentsCanceled} PIs annulés, ${result.paymentsUpdated} paiements mis à jour`);
-
+      this.logger.log(
+        `✅ Traitement terminé: ${result.paymentIntentsCanceled} PIs annulés, ${result.paymentsUpdated} paiements mis à jour`,
+      );
     } catch (error) {
       const errorMessage = `Erreur fatale lors de l'exécution du job: ${error.message}`;
       this.logger.error(errorMessage, error);
@@ -90,9 +93,8 @@ export class CleanupStalePaymentIntentsJob {
           },
           {
             OR: [
-              {
-                order_id: null, // Paiement orphelin
-              },
+              // Note: order_id ne peut pas être null selon le schéma
+              // Les paiements orphelins seraient détectés différemment
               {
                 order: {
                   status: {
@@ -102,7 +104,7 @@ export class CleanupStalePaymentIntentsJob {
               },
               {
                 created_at: {
-                  lt: sevenDaysAgo,
+                  lt: sevenDaysAgo.toISOString(),
                 },
               },
             ],
@@ -128,7 +130,7 @@ export class CleanupStalePaymentIntentsJob {
    */
   private async processBatch(
     payments: any[],
-    result: CleanupStalePaymentIntentsResult
+    result: CleanupStalePaymentIntentsResult,
   ): Promise<void> {
     for (const payment of payments) {
       try {
@@ -146,12 +148,16 @@ export class CleanupStalePaymentIntentsJob {
    */
   private async processStalePayment(
     payment: any,
-    result: CleanupStalePaymentIntentsResult
+    result: CleanupStalePaymentIntentsResult,
   ): Promise<void> {
-    this.logger.log(`🔄 Traitement du paiement obsolète ${payment.id} (créé le ${formatDateEuropeParis(payment.created_at)})`);
+    this.logger.log(
+      `🔄 Traitement du paiement obsolète ${payment.id} (créé le ${formatDateEuropeParis(payment.created_at)})`,
+    );
 
     if (!payment.stripe_payment_intent_id) {
-      this.logger.log(`ℹ️  Paiement ${payment.id} sans PaymentIntent Stripe, marqué comme annulé`);
+      this.logger.log(
+        `ℹ️  Paiement ${payment.id} sans PaymentIntent Stripe, marqué comme annulé`,
+      );
       await this.markPaymentAsCanceled(payment, 'no_stripe_pi');
       result.paymentsUpdated++;
       return;
@@ -159,10 +165,14 @@ export class CleanupStalePaymentIntentsJob {
 
     try {
       // Vérifier le statut sur Stripe
-      const stripePI = await this.stripeService.getPaymentIntent(payment.stripe_payment_intent_id);
-      
+      const stripePI = await this.stripeService.getPaymentIntent(
+        payment.stripe_payment_intent_id,
+      );
+
       if (!stripePI) {
-        this.logger.log(`⚠️  PaymentIntent ${payment.stripe_payment_intent_id} non trouvé sur Stripe`);
+        this.logger.log(
+          `⚠️  PaymentIntent ${payment.stripe_payment_intent_id} non trouvé sur Stripe`,
+        );
         await this.markPaymentAsCanceled(payment, 'stripe_not_found');
         result.paymentsUpdated++;
         return;
@@ -174,36 +184,47 @@ export class CleanupStalePaymentIntentsJob {
           // Annuler le PI sur Stripe
           await this.stripeService.cancelPaymentIntent(
             payment.stripe_payment_intent_id,
-            'abandoned'
+            'abandoned',
           );
 
           // Mettre à jour le statut du paiement
           await this.markPaymentAsCanceled(payment, 'abandoned');
-          
+
           result.paymentIntentsCanceled++;
           result.paymentsUpdated++;
-          
-          this.logger.log(`✅ PaymentIntent ${payment.stripe_payment_intent_id} annulé avec succès`);
+
+          this.logger.log(
+            `✅ PaymentIntent ${payment.stripe_payment_intent_id} annulé avec succès`,
+          );
         } catch (cancelError) {
-          this.logger.error(`❌ Erreur lors de l'annulation du PaymentIntent ${payment.stripe_payment_intent_id}:`, cancelError);
-          
+          this.logger.error(
+            `❌ Erreur lors de l'annulation du PaymentIntent ${payment.stripe_payment_intent_id}:`,
+            cancelError,
+          );
+
           // Marquer quand même comme annulé localement
           await this.markPaymentAsCanceled(payment, 'cancel_failed');
           result.paymentsUpdated++;
         }
       } else if (isPaymentIntentFinal(stripePI.status)) {
         // Le PI est dans un état final, synchroniser le statut
-        this.logger.log(`ℹ️  PaymentIntent ${payment.stripe_payment_intent_id} dans un état final: ${stripePI.status}`);
-        
+        this.logger.log(
+          `ℹ️  PaymentIntent ${payment.stripe_payment_intent_id} dans un état final: ${stripePI.status}`,
+        );
+
         await this.syncPaymentStatus(payment, stripePI.status);
         result.paymentsUpdated++;
       } else {
-        this.logger.log(`ℹ️  PaymentIntent ${payment.stripe_payment_intent_id} dans un état non annulable: ${stripePI.status}`);
+        this.logger.log(
+          `ℹ️  PaymentIntent ${payment.stripe_payment_intent_id} dans un état non annulable: ${stripePI.status}`,
+        );
       }
-
     } catch (stripeError) {
-      this.logger.error(`❌ Erreur Stripe pour le paiement ${payment.id}:`, stripeError);
-      
+      this.logger.error(
+        `❌ Erreur Stripe pour le paiement ${payment.id}:`,
+        stripeError,
+      );
+
       // Marquer comme annulé en cas d'erreur Stripe
       await this.markPaymentAsCanceled(payment, 'stripe_error');
       result.paymentsUpdated++;
@@ -215,19 +236,13 @@ export class CleanupStalePaymentIntentsJob {
    */
   private async markPaymentAsCanceled(
     payment: any,
-    reason: string
+    reason: string,
   ): Promise<void> {
     await this.prisma.payment.update({
       where: { id: payment.id },
       data: {
         status: 'canceled',
-        updated_at: nowUtc(),
-        metadata: {
-          ...payment.metadata,
-          canceled_reason: reason,
-          canceled_at: nowUtc().toISOString(),
-          canceled_by: 'cleanup-stale-payment-intents-job',
-        },
+        last_error_message: reason,
       },
     });
 
@@ -241,7 +256,7 @@ export class CleanupStalePaymentIntentsJob {
         canceledReason: reason,
         canceledBy: 'cleanup-stale-payment-intents-job',
       },
-      payment.order_id
+      payment.order_id,
     );
   }
 
@@ -250,12 +265,12 @@ export class CleanupStalePaymentIntentsJob {
    */
   private async syncPaymentStatus(
     payment: any,
-    stripeStatus: string
+    stripeStatus: string,
   ): Promise<void> {
     const statusMapping: Record<string, string> = {
-      'succeeded': 'succeeded',
-      'canceled': 'canceled',
-      'failed': 'failed',
+      succeeded: 'succeeded',
+      canceled: 'canceled',
+      failed: 'failed',
     };
 
     const newStatus = statusMapping[stripeStatus] || payment.status;
@@ -265,17 +280,12 @@ export class CleanupStalePaymentIntentsJob {
         where: { id: payment.id },
         data: {
           status: newStatus,
-          updated_at: nowUtc(),
-          metadata: {
-            ...payment.metadata,
-            synced_with_stripe: true,
-            synced_at: nowUtc().toISOString(),
-            stripe_status: stripeStatus,
-          },
         },
       });
 
-      this.logger.log(`🔄 Statut du paiement ${payment.id} synchronisé: ${payment.status} → ${newStatus}`);
+      this.logger.log(
+        `🔄 Statut du paiement ${payment.id} synchronisé: ${payment.status} → ${newStatus}`,
+      );
     }
   }
 
@@ -284,7 +294,7 @@ export class CleanupStalePaymentIntentsJob {
    */
   private finalizeResult(
     result: CleanupStalePaymentIntentsResult,
-    startTime: Date
+    startTime: Date,
   ): CleanupStalePaymentIntentsResult {
     const endTime = nowUtc();
     result.executionTime = endTime.getTime() - startTime.getTime();
@@ -294,10 +304,10 @@ export class CleanupStalePaymentIntentsJob {
       startTime,
       endTime,
       result.errors.length === 0,
-      result
+      result,
     );
 
-    this.logger.log('📊 Résumé de l\'exécution:', statusInfo);
+    this.logger.log("📊 Résumé de l'exécution:", statusInfo);
 
     return result;
   }
@@ -306,7 +316,9 @@ export class CleanupStalePaymentIntentsJob {
    * Exécute le job en mode manuel (pour les tests)
    */
   async executeManually(): Promise<CleanupStalePaymentIntentsResult> {
-    this.logger.log('🔄 Exécution manuelle du job cleanup-stale-payment-intents');
+    this.logger.log(
+      '🔄 Exécution manuelle du job cleanup-stale-payment-intents',
+    );
     return await this.execute();
   }
 }

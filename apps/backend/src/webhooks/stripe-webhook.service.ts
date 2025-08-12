@@ -257,20 +257,21 @@ export class StripeWebhookService {
    */
   private async handleChargeRefunded(charge: Stripe.Charge): Promise<boolean> {
     try {
-      this.logger.log(
-        `Événement charge.refunded reçu pour ${charge.id}`,
-      );
+      this.logger.log(`Événement charge.refunded reçu pour ${charge.id}`);
 
       if (!charge.payment_intent) {
-        this.logger.warn(
-          `Charge ${charge.id} sans payment_intent, ignorée`,
-        );
+        this.logger.warn(`Charge ${charge.id} sans payment_intent, ignorée`);
         return true;
       }
 
       // Récupérer le Payment via stripe_payment_intent_id
+      const paymentIntentId =
+        typeof charge.payment_intent === 'string'
+          ? charge.payment_intent
+          : charge.payment_intent.id;
+
       const payment = await this.prisma.payment.findUnique({
-        where: { stripe_payment_intent_id: charge.payment_intent },
+        where: { stripe_payment_intent_id: paymentIntentId },
         include: { order: true },
       });
 
@@ -292,11 +293,11 @@ export class StripeWebhookService {
               payment_id: payment.id,
               stripe_refund_id: stripeRefund.id,
               amount_cents: stripeRefund.amount,
-              status: stripeRefund.status,
+              status: stripeRefund.status || 'pending',
               reason: stripeRefund.reason || 'requested_by_customer',
             },
             update: {
-              status: stripeRefund.status,
+              status: stripeRefund.status || 'pending',
               amount_cents: stripeRefund.amount,
               reason: stripeRefund.reason || 'requested_by_customer',
             },
@@ -313,10 +314,7 @@ export class StripeWebhookService {
 
       return true;
     } catch (error) {
-      this.logger.error(
-        `Erreur lors du traitement de charge.refunded:`,
-        error,
-      );
+      this.logger.error(`Erreur lors du traitement de charge.refunded:`, error);
       throw error;
     }
   }
@@ -328,20 +326,21 @@ export class StripeWebhookService {
    */
   private async handleRefundUpdated(refund: Stripe.Refund): Promise<boolean> {
     try {
-      this.logger.log(
-        `Événement refund.updated reçu pour ${refund.id}`,
-      );
+      this.logger.log(`Événement refund.updated reçu pour ${refund.id}`);
 
       if (!refund.payment_intent) {
-        this.logger.warn(
-          `Refund ${refund.id} sans payment_intent, ignoré`,
-        );
+        this.logger.warn(`Refund ${refund.id} sans payment_intent, ignoré`);
         return true;
       }
 
       // Récupérer le Payment via stripe_payment_intent_id
+      const paymentIntentId =
+        typeof refund.payment_intent === 'string'
+          ? refund.payment_intent
+          : refund.payment_intent.id;
+
       const payment = await this.prisma.payment.findUnique({
-        where: { stripe_payment_intent_id: refund.payment_intent },
+        where: { stripe_payment_intent_id: paymentIntentId },
         include: { order: true },
       });
 
@@ -361,11 +360,11 @@ export class StripeWebhookService {
             payment_id: payment.id,
             stripe_refund_id: refund.id,
             amount_cents: refund.amount,
-            status: refund.status,
+            status: refund.status || 'pending',
             reason: refund.reason || 'requested_by_customer',
           },
           update: {
-            status: refund.status,
+            status: refund.status || 'pending',
             amount_cents: refund.amount,
             reason: refund.reason || 'requested_by_customer',
           },
@@ -381,10 +380,7 @@ export class StripeWebhookService {
 
       return true;
     } catch (error) {
-      this.logger.error(
-        `Erreur lors du traitement de refund.updated:`,
-        error,
-      );
+      this.logger.error(`Erreur lors du traitement de refund.updated:`, error);
       throw error;
     }
   }
@@ -392,7 +388,9 @@ export class StripeWebhookService {
   /**
    * Vérifie si une commande doit passer au statut REFUNDED
    */
-  private async checkAndUpdateOrderRefundStatus(orderId: string): Promise<void> {
+  private async checkAndUpdateOrderRefundStatus(
+    orderId: string,
+  ): Promise<void> {
     const order = await this.prisma.order.findUnique({
       where: { id: orderId },
       include: {
@@ -449,9 +447,16 @@ export class StripeWebhookService {
       }
 
       if (paymentId) {
+        // Trouver l'order_id via le payment
+        const payment = await this.prisma.payment.findUnique({
+          where: { id: paymentId },
+          select: { order_id: true },
+        });
+
         await this.prisma.paymentEvent.create({
           data: {
             payment_id: paymentId,
+            order_id: payment?.order_id || 'unknown',
             stripe_event_id: event.id,
             type: event.type,
             payload: event as any,

@@ -59,7 +59,8 @@ describe('JobsRouter', () => {
           name: 'cleanup-stale-payment-intents',
           schedule: '0 3 * * 0',
           timezone: 'Europe/Paris',
-          description: 'Nettoie les PaymentIntents obsolètes tous les dimanches à 03:00',
+          description:
+            'Nettoie les PaymentIntents obsolètes tous les dimanches à 03:00',
         },
       };
 
@@ -107,7 +108,9 @@ describe('JobsRouter', () => {
         errors: [],
       };
 
-      mockJobsService.runExpireStaleOrdersManually.mockResolvedValue(mockResult);
+      mockJobsService.runExpireStaleOrdersManually.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await router.runExpireStaleOrdersManually();
 
@@ -119,7 +122,9 @@ describe('JobsRouter', () => {
       const mockError = new Error('Service error');
       mockJobsService.runExpireStaleOrdersManually.mockRejectedValue(mockError);
 
-      await expect(router.runExpireStaleOrdersManually()).rejects.toThrow('Service error');
+      await expect(router.runExpireStaleOrdersManually()).rejects.toThrow(
+        'Service error',
+      );
       expect(jobsService.runExpireStaleOrdersManually).toHaveBeenCalledTimes(1);
     });
   });
@@ -133,20 +138,30 @@ describe('JobsRouter', () => {
         errors: [],
       };
 
-      mockJobsService.runCleanupStalePaymentIntentsManually.mockResolvedValue(mockResult);
+      mockJobsService.runCleanupStalePaymentIntentsManually.mockResolvedValue(
+        mockResult,
+      );
 
       const result = await router.runCleanupStalePaymentIntentsManually();
 
       expect(result).toEqual(mockResult);
-      expect(jobsService.runCleanupStalePaymentIntentsManually).toHaveBeenCalledTimes(1);
+      expect(
+        jobsService.runCleanupStalePaymentIntentsManually,
+      ).toHaveBeenCalledTimes(1);
     });
 
     it('should handle service errors', async () => {
       const mockError = new Error('Cleanup service error');
-      mockJobsService.runCleanupStalePaymentIntentsManually.mockRejectedValue(mockError);
+      mockJobsService.runCleanupStalePaymentIntentsManually.mockRejectedValue(
+        mockError,
+      );
 
-      await expect(router.runCleanupStalePaymentIntentsManually()).rejects.toThrow('Cleanup service error');
-      expect(jobsService.runCleanupStalePaymentIntentsManually).toHaveBeenCalledTimes(1);
+      await expect(
+        router.runCleanupStalePaymentIntentsManually(),
+      ).rejects.toThrow('Cleanup service error');
+      expect(
+        jobsService.runCleanupStalePaymentIntentsManually,
+      ).toHaveBeenCalledTimes(1);
     });
   });
 
@@ -154,8 +169,18 @@ describe('JobsRouter', () => {
     it('should handle complete workflow', async () => {
       // Setup mocks
       const mockStatus = {
-        expireStaleOrders: { name: 'test', schedule: '*/5 * * * *', timezone: 'UTC', description: 'test' },
-        cleanupStalePaymentIntents: { name: 'test', schedule: '0 3 * * 0', timezone: 'UTC', description: 'test' },
+        expireStaleOrders: {
+          name: 'test',
+          schedule: '*/5 * * * *',
+          timezone: 'UTC',
+          description: 'test',
+        },
+        cleanupStalePaymentIntents: {
+          name: 'test',
+          schedule: '0 3 * * 0',
+          timezone: 'UTC',
+          description: 'test',
+        },
       };
 
       const mockMetrics = {
@@ -176,7 +201,9 @@ describe('JobsRouter', () => {
 
       mockJobsService.getJobsStatus.mockReturnValue(mockStatus);
       mockMetricsService.getMetrics.mockReturnValue(mockMetrics);
-      mockJobsService.runExpireStaleOrdersManually.mockResolvedValue(mockJobResult);
+      mockJobsService.runExpireStaleOrdersManually.mockResolvedValue(
+        mockJobResult,
+      );
 
       // Test all methods
       const status = router.getJobsStatus();

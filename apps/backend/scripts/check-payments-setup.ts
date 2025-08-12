@@ -158,7 +158,7 @@ class PaymentsSetupChecker {
             { status: 'REQUIRES_PAYMENT' }
           ],
           created_at: {
-            lt: twentyFourHoursAgo
+            lt: twentyFourHoursAgo.toISOString()
           }
         },
         select: {

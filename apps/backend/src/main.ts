@@ -1,3 +1,7 @@
+// Configuration dotenv en premier
+import { config } from 'dotenv';
+config();
+
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { validateEnv } from './config/env.schema';

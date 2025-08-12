@@ -18,20 +18,13 @@ export class StripeService {
   ): Promise<PaymentIntentResult> {
     try {
       // Configuration des méthodes de paiement selon la plateforme
+      // Pour les tests, on utilise uniquement automatic_payment_methods
+      // TODO: Réactiver Apple Pay/Google Pay quand le compte Stripe sera configuré
       const paymentMethodOptions: any = {
         automatic_payment_methods: {
           enabled: true,
         },
       };
-
-      // Ajouter le support Apple Pay / Google Pay si demandé
-      if (input.supportsNativePay && input.platform) {
-        if (input.platform === 'ios') {
-          paymentMethodOptions.payment_method_types = ['card', 'apple_pay'];
-        } else if (input.platform === 'android') {
-          paymentMethodOptions.payment_method_types = ['card', 'google_pay'];
-        }
-      }
 
       const paymentIntent = await this.stripe.paymentIntents.create({
         amount: input.amount,
@@ -92,14 +85,20 @@ export class StripeService {
   /**
    * Annule une intention de paiement
    */
-  async cancelPaymentIntent(paymentIntentId: string, cancellationReason?: string) {
+  async cancelPaymentIntent(
+    paymentIntentId: string,
+    cancellationReason?: string,
+  ) {
     try {
       const cancelOptions: any = {};
       if (cancellationReason) {
         cancelOptions.cancellation_reason = cancellationReason;
       }
-      
-      return await this.stripe.paymentIntents.cancel(paymentIntentId, cancelOptions);
+
+      return await this.stripe.paymentIntents.cancel(
+        paymentIntentId,
+        cancelOptions,
+      );
     } catch (error) {
       const stripeError = this.handleStripeError(error);
       throw new BadRequestException(
@@ -154,13 +153,22 @@ export class StripeService {
     }
 
     // Vérifier que la devise est supportée par Apple Pay / Google Pay
-    const supportedCurrencies = ['eur', 'usd', 'gbp', 'cad', 'aud', 'chf', 'jpy'];
+    const supportedCurrencies = [
+      'eur',
+      'usd',
+      'gbp',
+      'cad',
+      'aud',
+      'chf',
+      'jpy',
+    ];
     if (!supportedCurrencies.includes(input.currency.toLowerCase())) {
       return false;
     }
 
     // Vérifier que le montant est dans les limites acceptables
-    if (input.amount < 50 || input.amount > 999999) { // 0.50€ à 9999.99€
+    if (input.amount < 50 || input.amount > 999999) {
+      // 0.50€ à 9999.99€
       return false;
     }
 
@@ -172,18 +180,16 @@ export class StripeService {
    */
   async checkApplePayAvailability(domain: string): Promise<boolean> {
     try {
-      const paymentRequest = await this.stripe.paymentRequest({
-        country: 'FR',
-        currency: 'eur',
-        total: {
-          label: 'Test',
-          amount: 100,
-        },
-        requestPayerName: true,
-        requestPayerEmail: true,
-      });
+      // Apple Pay est généralement disponible si le compte Stripe supporte les paiements
+      // et que les capacités sont activées dans le dashboard
+      const account = await this.stripe.accounts.retrieve();
 
-      return paymentRequest.canMakePayment()?.applePay === true;
+      // Vérifier que le compte peut traiter des paiements
+      const canProcessPayments = account.charges_enabled === true;
+
+      // Pour une vérification plus poussée, on pourrait aussi vérifier
+      // les capabilities du compte pour Apple Pay
+      return canProcessPayments;
     } catch (error) {
       console.warn('Erreur lors de la vérification Apple Pay:', error);
       return false;

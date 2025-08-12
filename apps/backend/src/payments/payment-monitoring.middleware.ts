@@ -74,7 +74,7 @@ export class PaymentMonitoringMiddleware implements NestMiddleware {
       '/trpc/checkout.createIntent',
       '/webhooks/stripe',
     ];
-    return paymentRoutes.some(route => path.includes(route));
+    return paymentRoutes.some((route) => path.includes(route));
   }
 
   private generateRequestId(): string {
@@ -154,7 +154,7 @@ export class PaymentMonitoringMiddleware implements NestMiddleware {
     if (!body) return body;
 
     const sanitized = { ...body };
-    
+
     // Masquer les informations sensibles
     if (sanitized.client_secret) {
       sanitized.client_secret = '***';
@@ -180,12 +180,14 @@ export class PaymentMonitoringMiddleware implements NestMiddleware {
 
     // Garder seulement les 1000 dernières mesures
     if (this.metrics.paymentDurationSeconds.length > 1000) {
-      this.metrics.paymentDurationSeconds = this.metrics.paymentDurationSeconds.slice(-1000);
+      this.metrics.paymentDurationSeconds =
+        this.metrics.paymentDurationSeconds.slice(-1000);
     }
 
     // Calculer la moyenne
     const sum = this.metrics.paymentDurationSeconds.reduce((a, b) => a + b, 0);
-    this.metrics.averagePaymentTime = sum / this.metrics.paymentDurationSeconds.length;
+    this.metrics.averagePaymentTime =
+      sum / this.metrics.paymentDurationSeconds.length;
   }
 
   /**
@@ -200,7 +202,7 @@ export class PaymentMonitoringMiddleware implements NestMiddleware {
    */
   getPrometheusMetrics(): string {
     const metrics = this.getMetrics();
-    
+
     return `# HELP payment_success_total Total des paiements réussis
 # TYPE payment_success_total counter
 payment_success_total ${metrics.paymentSuccessTotal}
@@ -211,11 +213,11 @@ payment_failure_total ${metrics.paymentFailureTotal}
 
 # HELP payment_duration_seconds Durée des paiements en secondes
 # TYPE payment_duration_seconds histogram
-payment_duration_seconds_bucket{le="0.1"} ${metrics.paymentDurationSeconds.filter(d => d <= 0.1).length}
-payment_duration_seconds_bucket{le="0.5"} ${metrics.paymentDurationSeconds.filter(d => d <= 0.5).length}
-payment_duration_seconds_bucket{le="1.0"} ${metrics.paymentDurationSeconds.filter(d => d <= 1.0).length}
-payment_duration_seconds_bucket{le="2.0"} ${metrics.paymentDurationSeconds.filter(d => d <= 2.0).length}
-payment_duration_seconds_bucket{le="5.0"} ${metrics.paymentDurationSeconds.filter(d => d <= 5.0).length}
+payment_duration_seconds_bucket{le="0.1"} ${metrics.paymentDurationSeconds.filter((d) => d <= 0.1).length}
+payment_duration_seconds_bucket{le="0.5"} ${metrics.paymentDurationSeconds.filter((d) => d <= 0.5).length}
+payment_duration_seconds_bucket{le="1.0"} ${metrics.paymentDurationSeconds.filter((d) => d <= 1.0).length}
+payment_duration_seconds_bucket{le="2.0"} ${metrics.paymentDurationSeconds.filter((d) => d <= 2.0).length}
+payment_duration_seconds_bucket{le="5.0"} ${metrics.paymentDurationSeconds.filter((d) => d <= 5.0).length}
 payment_duration_seconds_bucket{le="+Inf"} ${metrics.paymentDurationSeconds.length}
 payment_duration_seconds_sum ${metrics.paymentDurationSeconds.reduce((a, b) => a + b, 0).toFixed(3)}
 payment_duration_seconds_count ${metrics.paymentDurationSeconds.length}

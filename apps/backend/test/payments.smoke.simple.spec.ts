@@ -1,6 +1,6 @@
 /**
  * Tests Smoke Simples pour les Paiements
- * 
+ *
  * Ces tests vérifient les composants individuels sans charger l'AppModule complet
  */
 

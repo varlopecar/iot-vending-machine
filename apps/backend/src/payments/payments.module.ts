@@ -9,7 +9,7 @@ import { PaymentMetricsController } from './payment-metrics.controller';
 @Module({
   imports: [PrismaModule],
   providers: [
-    PaymentsService, 
+    PaymentsService,
     PaymentsRouter,
     PaymentMonitoringMiddleware,
     PaymentMetricsService,

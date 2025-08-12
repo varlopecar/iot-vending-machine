@@ -57,8 +57,9 @@ export class PaymentMetricsController {
   @HttpCode(HttpStatus.OK)
   getHealth() {
     const metrics = this.metricsService.getMetrics();
-    const totalPayments = metrics.paymentSuccessTotal + metrics.paymentFailureTotal;
-    
+    const totalPayments =
+      metrics.paymentSuccessTotal + metrics.paymentFailureTotal;
+
     return {
       status: 'healthy',
       timestamp: new Date().toISOString(),
@@ -73,7 +74,7 @@ export class PaymentMetricsController {
   private calculateSuccessRate(metrics: any): string {
     const total = metrics.paymentSuccessTotal + metrics.paymentFailureTotal;
     if (total === 0) return '0.00%';
-    
+
     const rate = (metrics.paymentSuccessTotal / total) * 100;
     return rate.toFixed(2) + '%';
   }

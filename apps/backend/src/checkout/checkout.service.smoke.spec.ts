@@ -62,7 +62,7 @@ describe('CheckoutService Smoke Tests', () => {
     it('should validate orderId format', () => {
       // Test avec un orderId invalide
       const invalidOrderId = 'invalid-order-id';
-      
+
       // Vérifier que le service peut être instancié
       expect(checkoutService).toBeDefined();
     });
@@ -70,7 +70,7 @@ describe('CheckoutService Smoke Tests', () => {
     it('should handle empty orderId', () => {
       // Test avec un orderId vide
       const emptyOrderId = '';
-      
+
       // Vérifier que le service peut être instancié
       expect(checkoutService).toBeDefined();
     });
@@ -80,7 +80,7 @@ describe('CheckoutService Smoke Tests', () => {
     it('should handle null inputs gracefully', () => {
       // Test avec des entrées null
       const nullInput = null;
-      
+
       // Vérifier que le service peut être instancié
       expect(checkoutService).toBeDefined();
     });
@@ -88,7 +88,7 @@ describe('CheckoutService Smoke Tests', () => {
     it('should handle undefined inputs gracefully', () => {
       // Test avec des entrées undefined
       const undefinedInput = undefined;
-      
+
       // Vérifier que le service peut être instancié
       expect(checkoutService).toBeDefined();
     });

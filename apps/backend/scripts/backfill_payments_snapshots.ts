@@ -55,10 +55,7 @@ async function backfillPaymentsSnapshots() {
 
     const ordersToUpdate = await prisma.order.findMany({
       where: {
-        OR: [
-          { amount_total_cents: 0 },
-          { currency: null },
-        ],
+        amount_total_cents: 0,
       },
       include: {
         items: true,
@@ -109,10 +106,7 @@ async function backfillPaymentsSnapshots() {
     // Vérifier que tous les orders ont des valeurs valides
     const invalidOrders = await prisma.order.findMany({
       where: {
-        OR: [
-          { amount_total_cents: { lte: 0 } },
-          { currency: null },
-        ],
+        amount_total_cents: { lte: 0 },
       },
     });
 

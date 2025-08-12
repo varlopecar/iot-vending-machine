@@ -1,8 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CheckoutService } from './checkout.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { getStripeClient, getStripePublishableKey } from '../stripe/stripeClient';
+import {
+  getStripeClient,
+  getStripePublishableKey,
+} from '../stripe/stripeClient';
 import type Stripe from 'stripe';
 
 // Mock des modules externes

@@ -1,216 +1,232 @@
-import { useState, useCallback, useRef } from 'react';
-import {
-  CheckoutStatus,
-  CheckoutState,
-  CheckoutCreateIntentResponse,
-  CheckoutGetStatusResponse,
-} from '../types/stripe';
+import { useState } from 'react';
+import { useStripe } from '@stripe/stripe-react-native';
+import { Platform, Alert } from 'react-native';
 
-interface UseStripeCheckoutOptions {
+interface CreatePaymentIntentParams {
+  amount: number;
+  currency?: string;
   orderId: string;
-  onSuccess?: () => void;
-  onError?: (error: string) => void;
+  userId: string;
+  machineId: string;
 }
 
-interface UseStripeCheckoutReturn {
-  state: CheckoutState;
-  initializeCheckout: () => Promise<void>;
-  handlePayment: () => Promise<void>;
-  refreshStatus: () => Promise<void>;
-  reset: () => void;
+interface PaymentResult {
+  success: boolean;
+  error?: string;
+  paymentIntentId?: string;
 }
 
-// Mock des appels tRPC - à remplacer par la vraie implémentation
-const mockCheckoutAPI = {
-  createIntent: async (orderId: string): Promise<CheckoutCreateIntentResponse> => {
-    // Simulation d'un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return {
-      publishableKey: 'pk_test_...',
-      paymentIntentClientSecret: 'pi_test_secret_...',
-      customerId: 'cus_test_...',
-      ephemeralKey: 'ek_test_...',
-    };
-  },
-  
-  getStatus: async (orderId: string): Promise<CheckoutGetStatusResponse> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      orderStatus: 'REQUIRES_PAYMENT',
-      paymentStatus: 'requires_payment_method',
-      paidAt: null,
-      receiptUrl: null,
-      amountTotalCents: 2500,
-      currency: 'EUR',
-      qrCodeToken: null,
-      stripePaymentIntentId: null,
-    };
-  },
-};
+export const useStripeCheckout = () => {
+  const { initPaymentSheet, presentPaymentSheet } = useStripe();
+  const [isLoading, setIsLoading] = useState(false);
 
-export const useStripeCheckout = ({
-  orderId,
-  onSuccess,
-  onError,
-}: UseStripeCheckoutOptions): UseStripeCheckoutReturn => {
-  const [state, setState] = useState<CheckoutState>({
-    status: 'loading',
-    isPolling: false,
-  });
-
-  const pollingIntervalRef = useRef<NodeJS.Timeout | null>(null);
-  const timeoutRef = useRef<NodeJS.Timeout | null>(null);
-
-  // Nettoyer les timers
-  const cleanupTimers = useCallback(() => {
-    if (pollingIntervalRef.current) {
-      clearInterval(pollingIntervalRef.current);
-      pollingIntervalRef.current = null;
-    }
-    if (timeoutRef.current) {
-      clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-  }, []);
-
-  // Initialiser le checkout
-  const initializeCheckout = useCallback(async () => {
+  const createPaymentIntent = async (params: CreatePaymentIntentParams) => {
     try {
-      setState(prev => ({ ...prev, status: 'loading' }));
-      
-      const paymentData = await mockCheckoutAPI.createIntent(orderId);
-      
-      setState(prev => ({
-        ...prev,
-        status: 'ready',
-        paymentData,
-      }));
+      setIsLoading(true);
 
+      // Utilisateur de test en dur pour le développement
+      const TEST_USER_ID = 'test-user-123';
+      
+      // Format simple pour l'endpoint tRPC Stripe (sans authentification)
+      const requestBody = {
+        amount: params.amount,
+        currency: params.currency || 'eur',
+        metadata: {
+          order_id: params.orderId,
+          user_id: TEST_USER_ID, // Utilise l'ID de test
+          machine_id: params.machineId,
+        },
+        supportsNativePay: false, // Désactivé temporairement pour les tests
+        platform: Platform.OS,
+      };
+
+      // URL ngrok déployée
+      const NGROK_URL = 'https://36543e156e04.ngrok-free.app';
+      const endpoint = `${NGROK_URL}/trpc/stripe.createPaymentIntent`;
+      
+      console.log('📤 Envoi de la requête vers Stripe:', requestBody);
+      console.log('🔗 URL:', endpoint);
+
+      const response = await fetch(endpoint, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'ngrok-skip-browser-warning': 'true', // Évite la page d'avertissement ngrok
+        },
+        body: JSON.stringify(requestBody),
+      });
+
+      if (!response.ok) {
+        const errorText = await response.text();
+        console.error('Réponse du serveur:', response.status, errorText);
+        throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
+      }
+
+      const data = await response.json();
+      console.log('📥 Réponse reçue de Stripe:', data);
+      console.log('✅ Status HTTP:', response.status);
+      
+      // Format de réponse tRPC : {"result": {"data": ...}}
+      if (data.result?.data) {
+        return data.result.data;
+      } else {
+        console.error('Format de réponse inattendu:', data);
+        throw new Error('Format de réponse invalide du serveur');
+      }
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-      setState(prev => ({
-        ...prev,
-        status: 'error',
-        error: errorMessage,
-      }));
-      onError?.(errorMessage);
+      console.error('Erreur createPaymentIntent:', error);
+      throw error;
+    } finally {
+      setIsLoading(false);
     }
-  }, [orderId, onError]);
+  };
 
-  // Démarrer le polling
-  const startPolling = useCallback(() => {
-    setState(prev => ({ ...prev, isPolling: true }));
-    
-    const interval = setInterval(async () => {
-      try {
-        const status = await mockCheckoutAPI.getStatus(orderId);
+  const initializePaymentSheet = async (clientSecret: string, customerId?: string) => {
+    try {
+      const { error } = await initPaymentSheet({
+        paymentIntentClientSecret: clientSecret,
+        customerId,
+        merchantDisplayName: "Distributeur Automatique",
+        applePay: {
+          merchantCountryCode: 'FR',
+        },
+        googlePay: {
+          merchantCountryCode: 'FR',
+          testEnv: __DEV__, // Mode test en développement
+        },
+        style: 'automatic',
+        appearance: {
+          colors: {
+            primary: '#007AFF',
+            background: '#FFFFFF',
+            componentBackground: '#F8F9FA',
+            componentBorder: '#E1E5E9',
+            componentDivider: '#E1E5E9',
+            text: '#1D1D1F',
+            textSecondary: '#86868B',
+            componentText: '#1D1D1F',
+            placeholderText: '#86868B',
+          },
+          shapes: {
+            borderRadius: 8,
+          },
+        },
+      });
+
+      if (error) {
+        console.error('Erreur initialisation Payment Sheet:', error);
+        throw new Error(`Erreur initialisation: ${error.message}`);
+      }
+
+      return true;
+    } catch (error) {
+      console.error('Erreur configuration paiement:', error);
+      throw error;
+    }
+  };
+
+  const presentPayment = async (): Promise<PaymentResult> => {
+    try {
+      const { error } = await presentPaymentSheet();
+      
+      if (error) {
+        console.error('Erreur paiement:', error);
         
-        if (status.orderStatus === 'PAID' && status.qrCodeToken) {
-          // Paiement confirmé, arrêter le polling
-          cleanupTimers();
-          setState(prev => ({
-            ...prev,
-            status: 'paid',
-            orderStatus: status,
-            isPolling: false,
-          }));
-          onSuccess?.();
-          return;
+        // Gestion spécifique des erreurs utilisateur
+        if (error.code === 'Canceled') {
+          return {
+            success: false,
+            error: 'Paiement annulé par l\'utilisateur'
+          };
         }
         
-        setState(prev => ({ ...prev, orderStatus: status }));
-        
-      } catch (error) {
-        console.error('Erreur lors du polling:', error);
+        return {
+          success: false,
+          error: error.message || 'Erreur lors du paiement'
+        };
       }
-    }, 2000); // Polling toutes les 2 secondes
 
-    pollingIntervalRef.current = interval;
-    
-    // Timeout après 60 secondes
-    timeoutRef.current = setTimeout(() => {
-      if (interval) {
-        cleanupTimers();
-        setState(prev => ({
-          ...prev,
-          isPolling: false,
-          status: 'error',
-          error: 'Délai d\'attente dépassé. Vérifiez le statut manuellement.',
-        }));
-      }
-    }, 60000);
-  }, [orderId, onSuccess, cleanupTimers]);
-
-  // Gérer le paiement
-  const handlePayment = useCallback(async () => {
-    try {
-      setState(prev => ({ ...prev, status: 'processing' }));
-      
-      // Simulation du processus de paiement
-      await new Promise(resolve => setTimeout(resolve, 2000));
-      
-      // Paiement réussi, commencer le polling
-      setState(prev => ({ ...prev, status: 'confirming' }));
-      startPolling();
-
+      return { success: true };
     } catch (error) {
-      const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
-      setState(prev => ({
-        ...prev,
-        status: 'error',
-        error: errorMessage,
-      }));
-      onError?.(errorMessage);
+      console.error('Erreur inattendue:', error);
+      return {
+        success: false,
+        error: 'Erreur inattendue lors du paiement'
+      };
     }
-  }, [startPolling, onError]);
+  };
 
-  // Rafraîchir le statut manuellement
-  const refreshStatus = useCallback(async () => {
+  const processPayment = async (params: CreatePaymentIntentParams): Promise<PaymentResult> => {
     try {
-      const status = await mockCheckoutAPI.getStatus(orderId);
-      setState(prev => ({ ...prev, orderStatus: status }));
+      setIsLoading(true);
+
+      // 1. Créer l'intention de paiement
+      const paymentIntent = await createPaymentIntent(params);
       
-      if (status.orderStatus === 'PAID' && status.qrCodeToken) {
-        cleanupTimers();
-        setState(prev => ({
-          ...prev,
-          status: 'paid',
-          orderStatus: status,
-          isPolling: false,
-        }));
-        onSuccess?.();
+      // 2. Initialiser le Payment Sheet
+      await initializePaymentSheet(
+        paymentIntent.client_secret,
+        paymentIntent.customer_id
+      );
+      
+      // 3. Présenter le Payment Sheet
+      const result = await presentPayment();
+      
+      if (result.success) {
+        return {
+          success: true,
+          paymentIntentId: paymentIntent.id
+        };
       }
+      
+      return result;
     } catch (error) {
-      console.error('Erreur lors du rafraîchissement:', error);
+      console.error('Erreur processus de paiement:', error);
+      return {
+        success: false,
+        error: error instanceof Error ? error.message : 'Erreur inconnue'
+      };
+    } finally {
+      setIsLoading(false);
     }
-  }, [orderId, onSuccess, cleanupTimers]);
+  };
 
-  // Réinitialiser l'état
-  const reset = useCallback(() => {
-    cleanupTimers();
-    setState({
-      status: 'loading',
-      isPolling: false,
-    });
-  }, [cleanupTimers]);
-
-  // Nettoyer au démontage
-  const cleanup = useCallback(() => {
-    cleanupTimers();
-  }, [cleanupTimers]);
-
-  // Nettoyer les timers au démontage
-  useState(() => {
-    return () => cleanup();
-  });
+  const showPaymentResult = (result: PaymentResult, onSuccess?: () => void, onError?: () => void) => {
+    if (result.success) {
+      Alert.alert(
+        'Paiement réussi !',
+        'Votre commande a été confirmée. Vous allez recevoir votre QR code.',
+        [
+          {
+            text: 'OK',
+            onPress: onSuccess
+          }
+        ]
+      );
+    } else {
+      Alert.alert(
+        'Erreur de paiement',
+        result.error || 'Une erreur est survenue lors du paiement.',
+        [
+          {
+            text: 'Réessayer',
+            onPress: onError
+          },
+          {
+            text: 'Annuler',
+            style: 'cancel'
+          }
+        ]
+      );
+    }
+  };
 
   return {
-    state,
-    initializeCheckout,
-    handlePayment,
-    refreshStatus,
-    reset,
+    processPayment,
+    createPaymentIntent,
+    initializePaymentSheet,
+    presentPayment,
+    showPaymentResult,
+    isLoading
   };
 };

@@ -13,7 +13,7 @@ import { PrismaClient } from '@prisma/client';
 export async function runInBatches<T>(
   items: T[],
   size: number,
-  fn: (batch: T[]) => Promise<void>
+  fn: (batch: T[]) => Promise<void>,
 ): Promise<void> {
   for (let i = 0; i < items.length; i += size) {
     const batch = items.slice(i, i + size);
@@ -34,7 +34,9 @@ export function nowUtc(): Date {
  * Utile pour les logs et affichages
  */
 export function nowEuropeParis(): Date {
-  return new Date(new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }));
+  return new Date(
+    new Date().toLocaleString('en-US', { timeZone: 'Europe/Paris' }),
+  );
 }
 
 /**
@@ -71,7 +73,10 @@ export function isExpired(date: Date): boolean {
  * @param date Date à vérifier
  * @param marginMinutes Marge en minutes (défaut: 0)
  */
-export function isExpiredWithMargin(date: Date, marginMinutes: number = 0): boolean {
+export function isExpiredWithMargin(
+  date: Date,
+  marginMinutes: number = 0,
+): boolean {
   const now = nowUtc();
   const marginDate = new Date(now.getTime() + marginMinutes * 60 * 1000);
   return date < marginDate;
@@ -98,24 +103,33 @@ export function getExpirationDate(hoursFromNow: number): Date {
  * Log un événement de paiement local (non Stripe)
  */
 export async function logLocalPaymentEvent(
-  prisma: PrismaClient,
+  prisma: any,
   type: string,
   payload: Record<string, any>,
-  orderId?: string
+  orderId?: string,
 ): Promise<void> {
   try {
-    await prisma.paymentEvent.create({
-      data: {
-        type,
-        payload,
-        order_id: orderId,
-        source: 'local',
-        processed: true,
-        processed_at: nowUtc(),
-      },
+    // Trouver le payment correspondant à cette commande
+    const payment = await prisma.payment.findUnique({
+      where: { order_id: orderId },
     });
+
+    if (payment) {
+      await prisma.paymentEvent.create({
+        data: {
+          payment_id: payment.id,
+          order_id: orderId || 'unknown',
+          stripe_event_id: `local_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
+          type,
+          payload,
+        },
+      });
+    }
   } catch (error) {
-    console.error(`Erreur lors de la création de l'événement local ${type}:`, error);
+    console.error(
+      `Erreur lors de la création de l'événement local ${type}:`,
+      error,
+    );
   }
 }
 
@@ -129,7 +143,7 @@ export function canSafelyCancelPaymentIntent(status: string): boolean {
     'requires_action',
     'processing',
   ];
-  
+
   return safeToCancelStatuses.includes(status);
 }
 
@@ -137,12 +151,8 @@ export function canSafelyCancelPaymentIntent(status: string): boolean {
  * Vérifie si un PaymentIntent est dans un état final
  */
 export function isPaymentIntentFinal(status: string): boolean {
-  const finalStatuses = [
-    'succeeded',
-    'canceled',
-    'failed',
-  ];
-  
+  const finalStatuses = ['succeeded', 'canceled', 'failed'];
+
   return finalStatuses.includes(status);
 }
 
@@ -154,10 +164,10 @@ export function getJobStatusInfo(
   startTime: Date,
   endTime?: Date,
   success?: boolean,
-  details?: Record<string, any>
+  details?: Record<string, any>,
 ) {
   const duration = endTime ? getMinutesDifference(startTime, endTime) : null;
-  
+
   return {
     jobName,
     startTime: formatDateEuropeParis(startTime),

@@ -21,7 +21,7 @@ model User {
   points             Int    @default(0)
   barcode            String @unique
   stripe_customer_id String? // ID client Stripe pour les paiements récurrents
-  created_at         String @default(dbgenerated("now()"))
+  created_at         String @default(dbgenerated("now()::text"))
 
   // Relations
   orders       Order[]
@@ -53,7 +53,7 @@ model Machine {
   location    String
   label       String
   status      MachineStatus @default(ONLINE)
-  last_update String        @default(dbgenerated("now()"))
+  last_update String        @default(dbgenerated("now()::text"))
 
   // Relations
   stocks  Stock[]
@@ -73,10 +73,29 @@ model Stock {
   // Relations
   machine Machine @relation(fields: [machine_id], references: [id], onDelete: Cascade)
   product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  stockReservations StockReservation[]
 
   @@unique([machine_id, product_id])
   @@unique([machine_id, slot_number]) // Contrainte ajoutée pour éviter les conflits de slots
   @@map("stocks")
+}
+
+// Table pour gérer les réservations de stock
+model StockReservation {
+  id          String @id @default(cuid())
+  stock_id    String
+  quantity    Int
+  reserved_at String @default(dbgenerated("now()::text"))
+  expires_at  String
+  status      String @default("ACTIVE") // ACTIVE, EXPIRED, RELEASED
+  order_id    String? // Optionnel, lié à une commande spécifique
+
+  // Relations
+  stock Stock @relation(fields: [stock_id], references: [id], onDelete: Cascade)
+
+  @@index([stock_id, status])
+  @@index([expires_at])
+  @@map("stock_reservations")
 }
 
 model Order {
@@ -84,7 +103,7 @@ model Order {
   user_id                   String
   machine_id                String
   status                    String      @default("PENDING") // Changé de OrderStatus à String pour compatibilité
-  created_at                String      @default(dbgenerated("now()"))
+  created_at                String      @default(dbgenerated("now()::text"))
   expires_at                String
   qr_code_token            String      @unique
   
@@ -131,7 +150,7 @@ model Pickup {
   id           String       @id @default(cuid())
   order_id     String
   machine_id   String
-  picked_up_at String       @default(dbgenerated("now()"))
+  picked_up_at String       @default(dbgenerated("now()::text"))
   status       PickupStatus @default(PENDING)
 
   // Relations
@@ -146,7 +165,7 @@ model LoyaltyLog {
   user_id    String
   change     Int // Positive for points earned, negative for points spent
   reason     String
-  created_at String @default(dbgenerated("now()"))
+  created_at String @default(dbgenerated("now()::text"))
 
   // Relations
   user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
@@ -165,8 +184,8 @@ model Payment {
   status                    String // Miroir Stripe: requires_payment_method|processing|succeeded|canceled|requires_action|...
   last_error_code           String? // Code d'erreur Stripe le plus récent
   last_error_message        String? // Message d'erreur Stripe le plus récent
-  created_at                String @default(dbgenerated("now()"))
-  updated_at                String @default(dbgenerated("now()"))
+  created_at                String @default(dbgenerated("now()::text"))
+  updated_at                String @default(dbgenerated("now()::text"))
 
   // Relations
   order         Order          @relation(fields: [order_id], references: [id], onDelete: Cascade)
@@ -180,10 +199,11 @@ model Payment {
 model PaymentEvent {
   id                String @id @default(cuid())
   payment_id        String
+  order_id          String // Ajout du champ order_id manquant
   stripe_event_id   String @unique // ID unique de l'événement Stripe
   type              String // Type d'événement Stripe
   payload           Json   // Payload complet de l'événement Stripe
-  created_at        String @default(dbgenerated("now()"))
+  created_at        String @default(dbgenerated("now()::text"))
 
   // Relations
   payment Payment @relation(fields: [payment_id], references: [id], onDelete: Cascade)
@@ -199,7 +219,7 @@ model Refund {
   amount_cents      Int    // Montant remboursé en centimes
   status            String // pending|succeeded|failed|canceled
   reason            String? // Raison du remboursement
-  created_at        String @default(dbgenerated("now()"))
+  created_at        String @default(dbgenerated("now()::text"))
 
   // Relations
   payment Payment @relation(fields: [payment_id], references: [id], onDelete: Cascade)
@@ -213,7 +233,7 @@ model OrderAction {
   id         String @id @default(cuid())
   order_id   String
   action     String // Nom de l'action (ex: "credit_loyalty", "decrement_stock")
-  created_at String @default(dbgenerated("now()"))
+  created_at String @default(dbgenerated("now()::text"))
 
   // Relations
   order Order @relation(fields: [order_id], references: [id], onDelete: Cascade)

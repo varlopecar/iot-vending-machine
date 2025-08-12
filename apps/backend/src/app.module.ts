@@ -41,8 +41,6 @@ import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middl
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer
-      .apply(PaymentMonitoringMiddleware)
-      .forRoutes('*');
+    consumer.apply(PaymentMonitoringMiddleware).forRoutes('*');
   }
 }

@@ -34,6 +34,14 @@ export const envSchema = z.object({
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
     .default('2024-06-20'),
+
+  // QR Code Security
+  QR_SECRET: z.string().min(1),
+  QR_TTL_SECONDS: z
+    .string()
+    .transform(Number)
+    .pipe(z.number().positive())
+    .default(() => 600),
 });
 
 export type EnvConfig = z.infer<typeof envSchema>;

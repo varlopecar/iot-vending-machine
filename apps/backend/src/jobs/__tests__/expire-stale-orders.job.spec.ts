@@ -120,12 +120,14 @@ describe('ExpireStaleOrdersJob', () => {
       });
 
       // Vérifier que le stock a été libéré
-      expect(mockReservationsService.releaseReservedStockForOrder).toHaveBeenCalledTimes(2);
+      expect(
+        mockReservationsService.releaseReservedStockForOrder,
+      ).toHaveBeenCalledTimes(2);
 
       // Vérifier que les PaymentIntents ont été annulés
       expect(mockStripeService.cancelPaymentIntent).toHaveBeenCalledWith(
         'pi_test_1',
-        'abandoned'
+        'abandoned',
       );
     });
 
@@ -146,7 +148,7 @@ describe('ExpireStaleOrdersJob', () => {
     it('should handle errors gracefully', async () => {
       // Mock d'une erreur
       mockPrismaService.order.findMany.mockRejectedValue(
-        new Error('Database connection failed')
+        new Error('Database connection failed'),
       );
 
       // Exécuter le job
@@ -172,7 +174,7 @@ describe('ExpireStaleOrdersJob', () => {
 
       mockPrismaService.order.findMany.mockResolvedValue(mockExpiredOrders);
       mockPrismaService.$transaction.mockRejectedValue(
-        new Error('Transaction failed')
+        new Error('Transaction failed'),
       );
 
       // Exécuter le job

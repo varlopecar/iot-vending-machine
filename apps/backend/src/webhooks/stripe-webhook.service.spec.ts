@@ -251,7 +251,8 @@ describe('StripeWebhookService', () => {
         return await fn(mockTransaction);
       });
 
-      const result = await service['handlePaymentIntentSucceeded'](mockPaymentIntent);
+      const result =
+        await service['handlePaymentIntentSucceeded'](mockPaymentIntent);
 
       expect(result).toBe(true);
       // Vérifier que le statut est mis à jour, sans vérifier le timestamp exact
@@ -292,7 +293,8 @@ describe('StripeWebhookService', () => {
 
       mockPrismaService.payment.findUnique.mockResolvedValue(null);
 
-      const result = await service['handlePaymentIntentSucceeded'](mockPaymentIntent);
+      const result =
+        await service['handlePaymentIntentSucceeded'](mockPaymentIntent);
 
       expect(result).toBe(false);
       expect(mockPrismaService.$transaction).not.toHaveBeenCalled();
@@ -323,7 +325,8 @@ describe('StripeWebhookService', () => {
         return await fn(mockTransaction);
       });
 
-      const result = await service['handlePaymentIntentFailed'](mockPaymentIntent);
+      const result =
+        await service['handlePaymentIntentFailed'](mockPaymentIntent);
 
       expect(result).toBe(true);
       // Vérifier que le statut est mis à jour, sans vérifier le timestamp exact
@@ -375,7 +378,7 @@ describe('StripeWebhookService', () => {
       const result = await service.handleEvent(mockEvent);
 
       expect(result).toBe(true);
-      
+
       // Vérifier que le QR token est généré avec les bonnes données
       expect(mockIssueQrToken).toHaveBeenCalledWith({
         orderId: 'order-integration',
@@ -412,7 +415,7 @@ describe('StripeWebhookService', () => {
 
       // Premier appel - événement traité
       mockPrismaService.paymentEvent.findUnique.mockResolvedValue(null);
-      
+
       const mockPayment = {
         id: 'payment-duplicate',
         order_id: 'order-duplicate',

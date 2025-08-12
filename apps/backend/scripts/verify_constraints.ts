@@ -76,10 +76,7 @@ async function verifyConstraints() {
     
     const invalidOrders = await prisma.order.findMany({
       where: {
-        OR: [
-          { amount_total_cents: { lte: 0 } },
-          { currency: null },
-        ],
+        amount_total_cents: { lte: 0 },
       },
     });
 

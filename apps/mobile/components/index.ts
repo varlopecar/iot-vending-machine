@@ -18,8 +18,7 @@ export {
   PageSkeleton
 } from './SkeletonLoader';
 
-// Stripe components
-export { StripeProvider, useStripeContext } from './StripeProvider';
-export { CheckoutScreen } from './CheckoutScreen';
-export { PaymentQRView } from './PaymentQRView';
-export { StripeTestScreen } from './StripeTestScreen';
+// Stripe components - temporairement commentés pour debug
+// export { PaymentQRView } from './PaymentQRView';
+// export { NativePaymentButton } from './stripe/NativePaymentButton';
+// export { StripeCheckout } from './stripe/StripeCheckout';

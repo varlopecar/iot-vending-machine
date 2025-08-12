@@ -39,7 +39,9 @@ describe('CleanupStalePaymentIntentsJob', () => {
       ],
     }).compile();
 
-    job = module.get<CleanupStalePaymentIntentsJob>(CleanupStalePaymentIntentsJob);
+    job = module.get<CleanupStalePaymentIntentsJob>(
+      CleanupStalePaymentIntentsJob,
+    );
     prismaService = module.get<PrismaService>(PrismaService);
     stripeService = module.get<StripeService>(StripeService);
   });
@@ -92,7 +94,7 @@ describe('CleanupStalePaymentIntentsJob', () => {
       // Vérifier que le PaymentIntent a été annulé
       expect(mockStripeService.cancelPaymentIntent).toHaveBeenCalledWith(
         'pi_test_1',
-        'abandoned'
+        'abandoned',
       );
     });
 
@@ -112,7 +114,7 @@ describe('CleanupStalePaymentIntentsJob', () => {
     it('should handle errors gracefully', async () => {
       // Mock d'une erreur
       mockPrismaService.payment.findMany.mockRejectedValue(
-        new Error('Database connection failed')
+        new Error('Database connection failed'),
       );
 
       // Exécuter le job
@@ -139,7 +141,7 @@ describe('CleanupStalePaymentIntentsJob', () => {
 
       mockPrismaService.payment.findMany.mockResolvedValue(mockStalePayments);
       mockStripeService.getPaymentIntent.mockRejectedValue(
-        new Error('Stripe API error')
+        new Error('Stripe API error'),
       );
 
       // Exécuter le job
@@ -273,7 +275,7 @@ describe('CleanupStalePaymentIntentsJob', () => {
         status: 'requires_payment_method',
       });
       mockStripeService.cancelPaymentIntent.mockRejectedValue(
-        new Error('Cancellation failed')
+        new Error('Cancellation failed'),
       );
       mockPrismaService.paymentEvent.create.mockResolvedValue({});
 

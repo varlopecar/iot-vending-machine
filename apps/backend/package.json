@@ -47,6 +47,7 @@
     "@prisma/extension-accelerate": "^2.0.2",
     "@types/bcrypt": "^6.0.0",
     "bcrypt": "^6.0.0",
+    "dotenv": "^17.2.1",
     "nestjs-trpc": "^1.6.1",
     "passport": "^0.7.0",
     "passport-jwt": "^4.0.1",

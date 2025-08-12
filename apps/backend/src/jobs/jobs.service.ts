@@ -22,12 +22,17 @@ export class JobsService {
   })
   async handleExpireStaleOrders() {
     this.logger.log('🚀 Démarrage du job expire-stale-orders');
-    
+
     try {
       const result = await this.expireStaleOrdersJob.execute();
-      this.logger.log(`✅ Job expire-stale-orders terminé avec succès: ${result.ordersExpired} commandes expirées`);
+      this.logger.log(
+        `✅ Job expire-stale-orders terminé avec succès: ${result.ordersExpired} commandes expirées`,
+      );
     } catch (error) {
-      this.logger.error('❌ Erreur lors de l\'exécution du job expire-stale-orders', error);
+      this.logger.error(
+        "❌ Erreur lors de l'exécution du job expire-stale-orders",
+        error,
+      );
     }
   }
 
@@ -41,12 +46,17 @@ export class JobsService {
   })
   async handleCleanupStalePaymentIntents() {
     this.logger.log('🚀 Démarrage du job cleanup-stale-payment-intents');
-    
+
     try {
       const result = await this.cleanupStalePaymentIntentsJob.execute();
-      this.logger.log(`✅ Job cleanup-stale-payment-intents terminé avec succès: ${result.paymentIntentsCanceled} PIs annulés`);
+      this.logger.log(
+        `✅ Job cleanup-stale-payment-intents terminé avec succès: ${result.paymentIntentsCanceled} PIs annulés`,
+      );
     } catch (error) {
-      this.logger.error('❌ Erreur lors de l\'exécution du job cleanup-stale-payment-intents', error);
+      this.logger.error(
+        "❌ Erreur lors de l'exécution du job cleanup-stale-payment-intents",
+        error,
+      );
     }
   }
 
@@ -62,7 +72,9 @@ export class JobsService {
    * Méthode pour exécuter manuellement le job de nettoyage
    */
   async runCleanupStalePaymentIntentsManually() {
-    this.logger.log('🔄 Exécution manuelle du job cleanup-stale-payment-intents');
+    this.logger.log(
+      '🔄 Exécution manuelle du job cleanup-stale-payment-intents',
+    );
     return await this.cleanupStalePaymentIntentsJob.execute();
   }
 
@@ -81,7 +93,8 @@ export class JobsService {
         name: 'cleanup-stale-payment-intents',
         schedule: '0 3 * * 0',
         timezone: 'Europe/Paris',
-        description: 'Nettoie les PaymentIntents obsolètes tous les dimanches à 03:00',
+        description:
+          'Nettoie les PaymentIntents obsolètes tous les dimanches à 03:00',
       },
     };
   }

@@ -48,7 +48,7 @@ export class ExpireStaleOrdersJob {
     try {
       // Récupérer les commandes expirées
       const expiredOrders = await this.getExpiredOrders();
-      
+
       if (expiredOrders.length === 0) {
         this.logger.log('ℹ️  Aucune commande expirée trouvée');
         return this.finalizeResult(result, startTime);
@@ -61,8 +61,9 @@ export class ExpireStaleOrdersJob {
         await this.processBatch(batch, result);
       });
 
-      this.logger.log(`✅ Traitement terminé: ${result.ordersExpired} commandes expirées, ${result.paymentIntentsCanceled} PIs annulés`);
-
+      this.logger.log(
+        `✅ Traitement terminé: ${result.ordersExpired} commandes expirées, ${result.paymentIntentsCanceled} PIs annulés`,
+      );
     } catch (error) {
       const errorMessage = `Erreur fatale lors de l'exécution du job: ${error.message}`;
       this.logger.error(errorMessage, error);
@@ -82,18 +83,12 @@ export class ExpireStaleOrdersJob {
           in: ['PENDING', 'REQUIRES_PAYMENT'],
         },
         expires_at: {
-          lt: nowUtc(),
+          lt: nowUtc().toISOString(),
         },
       },
       include: {
         items: true,
-        payments: {
-          where: {
-            status: {
-              not: 'succeeded',
-            },
-          },
-        },
+        payment: true,
       },
       orderBy: {
         expires_at: 'asc',
@@ -106,7 +101,7 @@ export class ExpireStaleOrdersJob {
    */
   private async processBatch(
     orders: any[],
-    result: ExpireStaleOrdersResult
+    result: ExpireStaleOrdersResult,
   ): Promise<void> {
     for (const order of orders) {
       try {
@@ -124,9 +119,11 @@ export class ExpireStaleOrdersJob {
    */
   private async processExpiredOrder(
     order: any,
-    result: ExpireStaleOrdersResult
+    result: ExpireStaleOrdersResult,
   ): Promise<void> {
-    this.logger.log(`🔄 Traitement de la commande expirée ${order.id} (expirée le ${formatDateEuropeParis(order.expires_at)})`);
+    this.logger.log(
+      `🔄 Traitement de la commande expirée ${order.id} (expirée le ${formatDateEuropeParis(order.expires_at)})`,
+    );
 
     await this.prisma.$transaction(async (tx) => {
       // 1. Marquer la commande comme expirée
@@ -134,15 +131,15 @@ export class ExpireStaleOrdersJob {
         where: { id: order.id },
         data: {
           status: 'EXPIRED',
-          updated_at: nowUtc(),
         },
       });
 
       // 2. Libérer les réservations de stock
-      const stockReleased = await this.reservationsService.releaseReservedStockForOrder(
-        tx,
-        order.id
-      );
+      const stockReleased =
+        await this.reservationsService.releaseReservedStockForOrder(
+          tx,
+          order.id,
+        );
       result.stockReleased += stockReleased;
 
       // 3. Annuler les PaymentIntents Stripe si possible
@@ -159,7 +156,7 @@ export class ExpireStaleOrdersJob {
           stockReleased,
           paymentIntentsCanceled: pisCanceled,
         },
-        order.id
+        order.id,
       );
     });
 
@@ -172,22 +169,32 @@ export class ExpireStaleOrdersJob {
    */
   private async cancelStalePaymentIntents(
     order: any,
-    tx: any
+    tx: any,
   ): Promise<number> {
     let canceledCount = 0;
 
-    for (const payment of order.payments) {
-      try {
-        if (payment.stripe_payment_intent_id && canSafelyCancelPaymentIntent(payment.status)) {
+    // Vérifier s'il y a un paiement associé
+    if (!order.payment) {
+      return 0;
+    }
+
+    const payment = order.payment;
+    try {
+        if (
+          payment.stripe_payment_intent_id &&
+          canSafelyCancelPaymentIntent(payment.status)
+        ) {
           // Vérifier si le PI existe encore sur Stripe
           try {
-            const stripePI = await this.stripeService.getPaymentIntent(payment.stripe_payment_intent_id);
-            
+            const stripePI = await this.stripeService.getPaymentIntent(
+              payment.stripe_payment_intent_id,
+            );
+
             if (stripePI && canSafelyCancelPaymentIntent(stripePI.status)) {
               // Annuler le PI sur Stripe
               await this.stripeService.cancelPaymentIntent(
                 payment.stripe_payment_intent_id,
-                'abandoned'
+                'abandoned',
               );
 
               // Mettre à jour le statut du paiement
@@ -195,35 +202,27 @@ export class ExpireStaleOrdersJob {
                 where: { id: payment.id },
                 data: {
                   status: 'canceled',
-                  updated_at: nowUtc(),
-                  metadata: {
-                    ...payment.metadata,
-                    canceled_reason: 'abandoned',
-                    canceled_at: nowUtc().toISOString(),
-                    canceled_by: 'expire-stale-orders-job',
-                  },
+                  last_error_message: 'Commande expirée - PaymentIntent annulé',
                 },
               });
 
               canceledCount++;
-              this.logger.log(`💳 PaymentIntent ${payment.stripe_payment_intent_id} annulé avec succès`);
+              this.logger.log(
+                `💳 PaymentIntent ${payment.stripe_payment_intent_id} annulé avec succès`,
+              );
             }
           } catch (stripeError) {
             // Le PI n'existe plus sur Stripe ou erreur d'API
-            this.logger.warn(`⚠️  Impossible d'annuler le PaymentIntent ${payment.stripe_payment_intent_id}: ${stripeError.message}`);
-            
+            this.logger.warn(
+              `⚠️  Impossible d'annuler le PaymentIntent ${payment.stripe_payment_intent_id}: ${stripeError.message}`,
+            );
+
             // Marquer quand même comme annulé localement
             await tx.payment.update({
               where: { id: payment.id },
               data: {
                 status: 'canceled',
-                updated_at: nowUtc(),
-                metadata: {
-                  ...payment.metadata,
-                  canceled_reason: 'stripe_not_found',
-                  canceled_at: nowUtc().toISOString(),
-                  canceled_by: 'expire-stale-orders-job',
-                },
+                last_error_message: 'PaymentIntent introuvable sur Stripe',
               },
             });
 
@@ -231,9 +230,11 @@ export class ExpireStaleOrdersJob {
           }
         }
       } catch (error) {
-        this.logger.error(`❌ Erreur lors de l'annulation du PaymentIntent pour la commande ${order.id}:`, error);
+        this.logger.error(
+          `❌ Erreur lors de l'annulation du PaymentIntent pour la commande ${order.id}:`,
+          error,
+        );
       }
-    }
 
     return canceledCount;
   }
@@ -243,7 +244,7 @@ export class ExpireStaleOrdersJob {
    */
   private finalizeResult(
     result: ExpireStaleOrdersResult,
-    startTime: Date
+    startTime: Date,
   ): ExpireStaleOrdersResult {
     const endTime = nowUtc();
     result.executionTime = endTime.getTime() - startTime.getTime();
@@ -253,10 +254,10 @@ export class ExpireStaleOrdersJob {
       startTime,
       endTime,
       result.errors.length === 0,
-      result
+      result,
     );
 
-    this.logger.log('📊 Résumé de l\'exécution:', statusInfo);
+    this.logger.log("📊 Résumé de l'exécution:", statusInfo);
 
     return result;
   }

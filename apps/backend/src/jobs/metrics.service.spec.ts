@@ -73,7 +73,7 @@ describe('MetricsService', () => {
     it('should update job execution time and last execution time', () => {
       const executionTime = 15000; // 15 seconds
       service.updateJobExecutionTime(executionTime);
-      
+
       const metrics = service.getMetrics();
       expect(metrics.jobExecutionTime).toBe(executionTime);
       expect(metrics.lastExecutionTime).toBeInstanceOf(Date);
@@ -85,7 +85,7 @@ describe('MetricsService', () => {
       service.incrementExpiredOrders(5);
       const metrics1 = service.getMetrics();
       const metrics2 = service.getMetrics();
-      
+
       expect(metrics1).toEqual(metrics2);
       expect(metrics1).not.toBe(metrics2); // Different references
     });
@@ -121,13 +121,13 @@ describe('MetricsService', () => {
 
     it('should create new lastExecutionTime on reset', async () => {
       const originalTime = service.getMetrics().lastExecutionTime;
-      
+
       // Wait a bit longer to ensure time difference
-      await new Promise(resolve => setTimeout(resolve, 100));
-      
+      await new Promise((resolve) => setTimeout(resolve, 100));
+
       service.resetMetrics();
       const newTime = service.getMetrics().lastExecutionTime;
-      
+
       expect(newTime).not.toEqual(originalTime);
     });
   });
@@ -135,12 +135,12 @@ describe('MetricsService', () => {
   describe('integration', () => {
     it('should track complete job execution', () => {
       const startTime = Date.now();
-      
+
       // Simulate job execution
       service.incrementExpiredOrders(3);
       service.incrementCanceledPaymentIntents(2);
       service.incrementReleasedStock(15);
-      
+
       const executionTime = Date.now() - startTime;
       service.updateJobExecutionTime(executionTime);
 

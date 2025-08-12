@@ -90,7 +90,9 @@ describe('Idempotency System', () => {
       const uniqueConstraintError = new Error(
         'Unique constraint failed on order_id_action',
       );
-      mockTransaction.orderAction.create.mockRejectedValue(uniqueConstraintError);
+      mockTransaction.orderAction.create.mockRejectedValue(
+        uniqueConstraintError,
+      );
 
       const result = await oncePerOrder(
         mockTransaction as any,
@@ -166,14 +168,22 @@ describe('Idempotency System', () => {
         created_at: '2024-01-01T00:00:00Z',
       });
 
-      const result = await isActionAlreadyPerformed(prismaService, orderId, action);
+      const result = await isActionAlreadyPerformed(
+        prismaService,
+        orderId,
+        action,
+      );
       expect(result).toBe(true);
     });
 
     it('should return false when action does not exist', async () => {
       mockPrismaService.orderAction.findUnique.mockResolvedValue(null);
 
-      const result = await isActionAlreadyPerformed(prismaService, orderId, action);
+      const result = await isActionAlreadyPerformed(
+        prismaService,
+        orderId,
+        action,
+      );
       expect(result).toBe(false);
     });
 
@@ -234,8 +244,12 @@ describe('Idempotency System', () => {
     });
 
     it('should handle different order IDs', async () => {
-      const mockActions1 = [{ action: 'action1', created_at: '2024-01-01T00:00:00Z' }];
-      const mockActions2 = [{ action: 'action2', created_at: '2024-01-01T00:00:00Z' }];
+      const mockActions1 = [
+        { action: 'action1', created_at: '2024-01-01T00:00:00Z' },
+      ];
+      const mockActions2 = [
+        { action: 'action2', created_at: '2024-01-01T00:00:00Z' },
+      ];
 
       mockPrismaService.orderAction.findMany
         .mockResolvedValueOnce(mockActions1)
@@ -277,7 +291,9 @@ describe('Idempotency System', () => {
       const uniqueConstraintError = new Error(
         'Unique constraint failed on order_id_action',
       );
-      mockTransaction.orderAction.create.mockRejectedValue(uniqueConstraintError);
+      mockTransaction.orderAction.create.mockRejectedValue(
+        uniqueConstraintError,
+      );
 
       const result2 = await oncePerOrder(
         mockTransaction as any,
@@ -295,12 +311,19 @@ describe('Idempotency System', () => {
 
       // Toutes les actions sont créées avec succès
       for (let i = 0; i < actions.length; i++) {
-        mockTransaction.orderAction.create.mockResolvedValueOnce({ id: `action-${i}` });
+        mockTransaction.orderAction.create.mockResolvedValueOnce({
+          id: `action-${i}`,
+        });
       }
 
       const results = await Promise.all(
         actions.map((actionName) =>
-          oncePerOrder(mockTransaction as any, orderId, actionName, mockActionFn),
+          oncePerOrder(
+            mockTransaction as any,
+            orderId,
+            actionName,
+            mockActionFn,
+          ),
         ),
       );
 

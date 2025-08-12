@@ -1,6 +1,6 @@
 /**
  * Tests Smoke pour les Paiements
- * 
+ *
  * Ces tests vérifient les chemins critiques du système de paiement
  * sans nécessiter l'application mobile complète.
  */
@@ -146,10 +146,7 @@ describe('Payments Smoke Tests', () => {
       const wrongUserId = 'user-wrong-456';
 
       await expect(
-        checkoutService.createIntent(
-          { orderId: testOrder.id },
-          wrongUserId,
-        ),
+        checkoutService.createIntent({ orderId: testOrder.id }, wrongUserId),
       ).rejects.toThrow('Accès non autorisé à cette commande');
     });
 
@@ -164,10 +161,7 @@ describe('Payments Smoke Tests', () => {
       });
 
       await expect(
-        checkoutService.createIntent(
-          { orderId: expiredOrder.id },
-          testUser.id,
-        ),
+        checkoutService.createIntent({ orderId: expiredOrder.id }, testUser.id),
       ).rejects.toThrow('La commande a expiré');
     });
   });
@@ -463,15 +457,12 @@ describe('Payments Smoke Tests', () => {
 
     it('should handle database connection errors gracefully', async () => {
       // Simuler une erreur de base de données
-      jest.spyOn(prisma.order, 'findUnique').mockRejectedValue(
-        new Error('Database connection failed'),
-      );
+      jest
+        .spyOn(prisma.order, 'findUnique')
+        .mockRejectedValue(new Error('Database connection failed'));
 
       await expect(
-        checkoutService.createIntent(
-          { orderId: testOrder.id },
-          testUser.id,
-        ),
+        checkoutService.createIntent({ orderId: testOrder.id }, testUser.id),
       ).rejects.toThrow();
 
       jest.restoreAllMocks();

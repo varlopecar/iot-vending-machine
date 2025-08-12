@@ -163,9 +163,9 @@ describe('StripeService', () => {
 
       mockStripe.paymentIntents.confirm.mockRejectedValue(stripeError);
 
-      await expect(service.confirmPaymentIntent(paymentIntentId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.confirmPaymentIntent(paymentIntentId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -196,9 +196,9 @@ describe('StripeService', () => {
 
       mockStripe.paymentIntents.cancel.mockRejectedValue(stripeError);
 
-      await expect(service.cancelPaymentIntent(paymentIntentId)).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.cancelPaymentIntent(paymentIntentId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 

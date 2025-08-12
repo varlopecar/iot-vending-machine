@@ -26,6 +26,7 @@
       },
       "edgeToEdgeEnabled": true,
       "package": "com.vendingmachine.mobile",
+      "jsEngine": "jsc",
       "intentFilters": [
         {
           "action": "VIEW",

@@ -1,6 +1,6 @@
 /**
  * Tests Smoke Très Simples pour le Checkout
- * 
+ *
  * Ces tests vérifient uniquement la compilation et la structure
  * sans dépendances NestJS complexes
  */
@@ -148,7 +148,10 @@ describe('Checkout Smoke Tests - Simple', () => {
 
     it('should validate input sanitization', () => {
       const input = '<script>alert("xss")</script>';
-      const sanitized = input.replace(/<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi, '');
+      const sanitized = input.replace(
+        /<script\b[^<]*(?:(?!<\/script>)<[^<]*)*<\/script>/gi,
+        '',
+      );
 
       expect(sanitized).not.toContain('<script>');
       expect(sanitized).not.toContain('alert');
@@ -158,13 +161,13 @@ describe('Checkout Smoke Tests - Simple', () => {
   describe('Performance', () => {
     it('should handle basic operations quickly', () => {
       const start = Date.now();
-      
+
       // Opération simple
       let result = 0;
       for (let i = 0; i < 1000; i++) {
         result += i;
       }
-      
+
       const end = Date.now();
       const duration = end - start;
 

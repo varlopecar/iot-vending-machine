@@ -8,7 +8,7 @@ import { PrismaClient } from '@prisma/client';
 beforeAll(async () => {
   // Vérifier que la base de données est accessible
   const prisma = new PrismaClient();
-  
+
   try {
     await prisma.$connect();
     console.log('✅ Base de données connectée pour les tests smoke');
@@ -52,7 +52,8 @@ jest.mock('../src/stripe/stripeClient', () => ({
 
 // Configuration des variables d'environnement de test
 process.env.NODE_ENV = 'test';
-process.env.DATABASE_URL = process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
+process.env.DATABASE_URL =
+  process.env.TEST_DATABASE_URL || process.env.DATABASE_URL;
 process.env.STRIPE_SECRET_KEY = 'sk_test_mock';
 process.env.STRIPE_PUBLISHABLE_KEY = 'pk_test_mock';
 process.env.STRIPE_WEBHOOK_SECRET = 'whsec_mock';
