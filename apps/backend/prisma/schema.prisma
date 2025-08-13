@@ -14,18 +14,20 @@ datasource db {
 }
 
 model User {
-  id                 String @id @default(cuid())
+  id                 String   @id @default(cuid())
   full_name          String
-  email              String @unique
+  email              String   @unique
   password           String
-  points             Int    @default(0)
-  barcode            String @unique
-  stripe_customer_id String? // ID client Stripe pour les paiements récurrents
-  created_at         String @default(dbgenerated("now()::text"))
+  points             Int      @default(0)
+  barcode            String   @unique
+  stripe_customer_id String?  // ID client Stripe pour les paiements récurrents
+  role               UserRole @default(CUSTOMER) // Nouveau: rôle de l'utilisateur
+  created_at         String   @default(dbgenerated("now()::text"))
 
   // Relations
   orders       Order[]
   loyalty_logs LoyaltyLog[]
+  restocks     Restock[] // Nouveaux: restocks effectués par cet utilisateur (si ADMIN/OPERATOR)
 
   @@map("users")
 }
@@ -35,48 +37,61 @@ model Product {
   name              String
   description       String
   price             Decimal @db.Decimal(10, 2)
+  sku               String? // Nouveau: identifiant unique produit pour import CSV
   ingredients       String
   allergens         String
   nutritional_value String
   image_url         String
   is_active         Boolean @default(true)
+  created_at        String  @default(dbgenerated("now()::text"))
 
   // Relations
   stocks      Stock[]
   order_items OrderItem[]
 
+  @@unique([sku]) // SKU doit être unique si fourni
   @@map("products")
 }
 
 model Machine {
-  id          String        @id @default(cuid())
-  location    String
-  label       String
-  status      MachineStatus @default(ONLINE)
-  last_update String        @default(dbgenerated("now()::text"))
+  id           String        @id @default(cuid())
+  location     String
+  label        String
+  status       MachineStatus @default(ONLINE)
+  last_sync_at String?       // Nouveau: dernière synchronisation pour affichage online/offline
+  created_at   String        @default(dbgenerated("now()::text"))
+  last_update  String        @default(dbgenerated("now()::text"))
 
   // Relations
-  stocks  Stock[]
-  orders  Order[]
-  pickups Pickup[]
+  stocks   Stock[]
+  orders   Order[]
+  pickups  Pickup[]
+  restocks Restock[] // Nouveau: historique des restocks de cette machine
+  alerts   Alert[]   // Nouveau: alertes générées par cette machine
 
   @@map("machines")
 }
 
 model Stock {
-  id          String @id @default(cuid())
-  machine_id  String
-  product_id  String
-  quantity    Int    @default(0)
-  slot_number Int
+  id            String @id @default(cuid())
+  machine_id    String
+  product_id    String
+  quantity      Int    @default(0)
+  slot_number   Int
+  max_capacity  Int    @default(10) // Nouveau: capacité maximale du slot
+  low_threshold Int    @default(2)  // Nouveau: seuil d'alerte stock faible
+  created_at    String @default(dbgenerated("now()::text"))
+  updated_at    String @default(dbgenerated("now()::text"))
 
   // Relations
-  machine Machine @relation(fields: [machine_id], references: [id], onDelete: Cascade)
-  product Product @relation(fields: [product_id], references: [id], onDelete: Cascade)
+  machine           Machine            @relation(fields: [machine_id], references: [id], onDelete: Cascade)
+  product           Product            @relation(fields: [product_id], references: [id], onDelete: Cascade)
   stockReservations StockReservation[]
+  restockItems      RestockItem[]      // Nouveau: items de restock pour ce slot
+  alerts            Alert[]            // Nouveau: alertes liées à ce slot
 
-  @@unique([machine_id, product_id])
   @@unique([machine_id, slot_number]) // Contrainte ajoutée pour éviter les conflits de slots
+  @@index([machine_id, product_id])
   @@map("stocks")
 }
 
@@ -243,7 +258,91 @@ model OrderAction {
   @@map("order_actions")
 }
 
+// Nouveaux modèles pour le back-office
+
+model Restock {
+  id          String @id @default(cuid())
+  machine_id  String
+  user_id     String // Utilisateur qui a effectué le restock (ADMIN/OPERATOR)
+  created_at  String @default(dbgenerated("now()::text"))
+  notes       String? // Notes optionnelles sur le restock
+
+  // Relations
+  machine Machine       @relation(fields: [machine_id], references: [id], onDelete: Cascade)
+  user    User          @relation(fields: [user_id], references: [id], onDelete: SetNull)
+  items   RestockItem[] // Détails des produits/slots restockés
+
+  @@index([machine_id, created_at(sort: Desc)])
+  @@map("restocks")
+}
+
+model RestockItem {
+  id               String @id @default(cuid())
+  restock_id       String
+  stock_id         String // Référence au slot (Stock)
+  quantity_before  Int    // Quantité avant restock
+  quantity_after   Int    // Quantité après restock
+  quantity_added   Int    // Quantité ajoutée (quantity_after - quantity_before)
+
+  // Relations
+  restock Restock @relation(fields: [restock_id], references: [id], onDelete: Cascade)
+  stock   Stock   @relation(fields: [stock_id], references: [id], onDelete: Cascade)
+
+  @@index([restock_id])
+  @@map("restock_items")
+}
+
+model Alert {
+  id         String      @id @default(cuid())
+  machine_id String
+  stock_id   String?     // Nouveau: FK optionnel vers Stock pour alertes de stock
+  type       AlertType   @default(LOW_STOCK)
+  message    String?
+  level      AlertLevel  @default(WARNING)
+  status     AlertStatus @default(OPEN)
+  created_at String      @default(dbgenerated("now()::text"))
+  resolved_at String?    // Quand l'alerte a été résolue
+  
+  // Métadonnées spécifiques selon le type d'alerte
+  metadata   Json?       // Par exemple: {"slot_number": 1, "current_quantity": 1, "threshold": 2}
+
+  // Relations
+  machine Machine @relation(fields: [machine_id], references: [id], onDelete: Cascade)
+  stock   Stock?  @relation(fields: [stock_id], references: [id], onDelete: SetNull)
+
+  @@index([machine_id, status, created_at(sort: Desc)])
+  @@index([type, status])
+  @@index([stock_id, status])
+  @@map("alerts")
+}
+
 // Enums
+enum UserRole {
+  CUSTOMER  // Client normal
+  OPERATOR  // Opérateur - peut gérer stocks et machines
+  ADMIN     // Administrateur - accès complet
+}
+
+enum AlertType {
+  LOW_STOCK    // Stock faible
+  EMPTY        // Slot vide
+  MACHINE_OFFLINE // Machine hors ligne
+  MAINTENANCE_REQUIRED // Maintenance requise
+}
+
+enum AlertLevel {
+  INFO     // Information
+  WARNING  // Avertissement
+  ERROR    // Erreur
+  CRITICAL // Critique
+}
+
+enum AlertStatus {
+  OPEN     // Ouverte
+  RESOLVED // Résolue
+  IGNORED  // Ignorée
+}
+
 enum MachineStatus {
   ONLINE
   OFFLINE

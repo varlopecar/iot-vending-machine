@@ -6,11 +6,15 @@ const prisma = new PrismaClient();
 async function main() {
   console.log('🌱 Starting database seeding...');
 
-  // Clear existing data
+  // Clear existing data (ordre important pour les foreign keys)
+  await prisma.restockItem.deleteMany();
+  await prisma.restock.deleteMany();
+  await prisma.alert.deleteMany();
   await prisma.loyaltyLog.deleteMany();
   await prisma.pickup.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
+  await prisma.stockReservation.deleteMany();
   await prisma.stock.deleteMany();
   await prisma.product.deleteMany();
   await prisma.machine.deleteMany();
@@ -20,8 +24,32 @@ async function main() {
 
   // Create users
   const hashedPassword = await bcrypt.hash('password123', 10);
+  const adminPassword = await bcrypt.hash('admin123', 10);
 
   const users = await Promise.all([
+    // Admin user for back-office
+    prisma.user.create({
+      data: {
+        full_name: 'Admin User',
+        email: 'admin@vendingmachine.com',
+        password: adminPassword,
+        points: 0,
+        barcode: 'ADMIN_000001',
+        role: 'ADMIN',
+      },
+    }),
+    // Operator user
+    prisma.user.create({
+      data: {
+        full_name: 'Operator Dupont',
+        email: 'operator@vendingmachine.com',
+        password: hashedPassword,
+        points: 0,
+        barcode: 'OP_000001',
+        role: 'OPERATOR',
+      },
+    }),
+    // Regular customers
     prisma.user.create({
       data: {
         full_name: 'John Doe',
@@ -29,6 +57,7 @@ async function main() {
         password: hashedPassword,
         points: 150,
         barcode: '123456789012',
+        role: 'CUSTOMER',
       },
     }),
     prisma.user.create({
@@ -38,6 +67,7 @@ async function main() {
         password: hashedPassword,
         points: 75,
         barcode: '234567890123',
+        role: 'CUSTOMER',
       },
     }),
     prisma.user.create({
@@ -47,6 +77,7 @@ async function main() {
         password: hashedPassword,
         points: 300,
         barcode: '345678901234',
+        role: 'CUSTOMER',
       },
     }),
   ]);
@@ -54,13 +85,16 @@ async function main() {
   console.log('👥 Created users');
 
   // Create machines
+  const now = new Date().toISOString();
   const machines = await Promise.all([
     prisma.machine.create({
       data: {
         location: 'Building A - Ground Floor',
         label: 'Vending Machine A1',
         status: 'ONLINE',
-        last_update: new Date().toISOString(),
+        last_sync_at: now,
+        created_at: now,
+        last_update: now,
       },
     }),
     prisma.machine.create({
@@ -68,7 +102,9 @@ async function main() {
         location: 'Building B - 2nd Floor',
         label: 'Vending Machine B2',
         status: 'ONLINE',
-        last_update: new Date().toISOString(),
+        last_sync_at: now,
+        created_at: now,
+        last_update: now,
       },
     }),
     prisma.machine.create({
@@ -76,7 +112,9 @@ async function main() {
         location: 'Cafeteria',
         label: 'Vending Machine C1',
         status: 'MAINTENANCE',
-        last_update: new Date().toISOString(),
+        last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago
+        created_at: now,
+        last_update: now,
       },
     }),
   ]);
@@ -90,12 +128,14 @@ async function main() {
         name: 'Coca-Cola',
         description: 'Refreshing cola drink',
         price: 2.5,
+        sku: 'COCA_001',
         ingredients:
           'Carbonated water, sugar, caramel, phosphoric acid, natural flavors, caffeine',
         allergens: 'None',
         nutritional_value: '140 calories per 330ml',
         image_url: 'https://example.com/coca-cola.jpg',
         is_active: true,
+        created_at: now,
       },
     }),
     prisma.product.create({
@@ -103,11 +143,13 @@ async function main() {
         name: 'Chips Classic',
         description: 'Crispy potato chips',
         price: 1.8,
+        sku: 'CHIPS_001',
         ingredients: 'Potatoes, vegetable oil, salt',
         allergens: 'None',
         nutritional_value: '160 calories per 30g',
         image_url: 'https://example.com/chips.jpg',
         is_active: true,
+        created_at: now,
       },
     }),
     prisma.product.create({
@@ -115,11 +157,13 @@ async function main() {
         name: 'Water Bottle',
         description: 'Pure spring water',
         price: 1.2,
+        sku: 'WATER_001',
         ingredients: 'Spring water',
         allergens: 'None',
         nutritional_value: '0 calories per 500ml',
         image_url: 'https://example.com/water.jpg',
         is_active: true,
+        created_at: now,
       },
     }),
     prisma.product.create({
@@ -127,12 +171,14 @@ async function main() {
         name: 'Kinder Bueno',
         description: 'Chocolate bar with hazelnut cream',
         price: 2.8,
+        sku: 'KINDER_001',
         ingredients:
           'Sugar, vegetable fats, hazelnuts, cocoa mass, skimmed milk powder',
         allergens: 'Milk, hazelnuts',
         nutritional_value: '180 calories per 43g',
         image_url: 'https://example.com/kinder.jpg',
         is_active: true,
+        created_at: now,
       },
     }),
     prisma.product.create({
@@ -140,18 +186,20 @@ async function main() {
         name: 'Energy Bar',
         description: 'High protein energy bar',
         price: 3.2,
+        sku: 'ENERGY_001',
         ingredients: 'Oats, honey, nuts, dried fruits, protein isolate',
         allergens: 'Nuts',
         nutritional_value: '220 calories per 60g',
         image_url: 'https://example.com/energy-bar.jpg',
         is_active: true,
+        created_at: now,
       },
     }),
   ]);
 
   console.log('🍫 Created products');
 
-  // Create stocks
+  // Create stocks (slots) avec nouvelles propriétés
   const stocks = await Promise.all([
     // Machine A1 stocks
     prisma.stock.create({
@@ -160,14 +208,22 @@ async function main() {
         product_id: products[0].id, // Coca-Cola
         quantity: 15,
         slot_number: 1,
+        max_capacity: 20,
+        low_threshold: 3,
+        created_at: now,
+        updated_at: now,
       },
     }),
     prisma.stock.create({
       data: {
         machine_id: machines[0].id,
         product_id: products[1].id, // Chips
-        quantity: 8,
+        quantity: 1, // Stock faible pour générer une alerte
         slot_number: 2,
+        max_capacity: 15,
+        low_threshold: 2,
+        created_at: now,
+        updated_at: now,
       },
     }),
     prisma.stock.create({
@@ -176,6 +232,10 @@ async function main() {
         product_id: products[2].id, // Water
         quantity: 20,
         slot_number: 3,
+        max_capacity: 25,
+        low_threshold: 5,
+        created_at: now,
+        updated_at: now,
       },
     }),
     // Machine B2 stocks
@@ -185,14 +245,22 @@ async function main() {
         product_id: products[0].id, // Coca-Cola
         quantity: 12,
         slot_number: 1,
+        max_capacity: 20,
+        low_threshold: 3,
+        created_at: now,
+        updated_at: now,
       },
     }),
     prisma.stock.create({
       data: {
         machine_id: machines[1].id,
         product_id: products[3].id, // Kinder Bueno
-        quantity: 10,
+        quantity: 0, // Slot vide pour générer une alerte
         slot_number: 2,
+        max_capacity: 12,
+        low_threshold: 2,
+        created_at: now,
+        updated_at: now,
       },
     }),
     prisma.stock.create({
@@ -201,6 +269,23 @@ async function main() {
         product_id: products[4].id, // Energy Bar
         quantity: 5,
         slot_number: 3,
+        max_capacity: 10,
+        low_threshold: 2,
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    // Démonstration: même produit sur plusieurs slots
+    prisma.stock.create({
+      data: {
+        machine_id: machines[1].id,
+        product_id: products[0].id, // Coca-Cola aussi sur slot 4
+        quantity: 8,
+        slot_number: 4,
+        max_capacity: 20,
+        low_threshold: 3,
+        created_at: now,
+        updated_at: now,
       },
     }),
   ]);
@@ -305,16 +390,119 @@ async function main() {
 
   console.log('📦 Created pickup');
 
+  // Create some alerts based on low stock levels
+  const alerts = await Promise.all([
+    // Alerte stock faible pour chips dans machine A1
+    prisma.alert.create({
+      data: {
+        machine_id: machines[0].id,
+        stock_id: stocks[1].id, // Lié au slot Chips
+        type: 'LOW_STOCK',
+        message: `Stock faible: Chips Classic (Slot 2) - ${stocks[1].quantity}/${stocks[1].max_capacity}`,
+        level: 'WARNING',
+        status: 'OPEN',
+        created_at: now,
+        metadata: {
+          slot_number: 2,
+          current_quantity: stocks[1].quantity,
+          threshold: stocks[1].low_threshold,
+          product_name: 'Chips Classic'
+        }
+      },
+    }),
+    // Alerte slot vide pour Kinder Bueno dans machine B2
+    prisma.alert.create({
+      data: {
+        machine_id: machines[1].id,
+        stock_id: stocks[4].id, // Lié au slot Kinder Bueno (machine B2, slot 2)
+        type: 'EMPTY',
+        message: `Slot vide: Kinder Bueno (Slot 2) - Ravitaillement requis`,
+        level: 'ERROR',
+        status: 'OPEN',
+        created_at: now,
+        metadata: {
+          slot_number: 2,
+          current_quantity: 0,
+          threshold: stocks[4].low_threshold,
+          product_name: 'Kinder Bueno'
+        }
+      },
+    }),
+    // Alerte machine hors ligne pour la machine C1 (pas de stock_id)
+    prisma.alert.create({
+      data: {
+        machine_id: machines[2].id,
+        type: 'MACHINE_OFFLINE',
+        message: `Machine hors ligne depuis plus de 2 heures`,
+        level: 'CRITICAL',
+        status: 'OPEN',
+        created_at: now,
+        metadata: {
+          last_sync: machines[2].last_sync_at,
+          offline_duration_hours: 2
+        }
+      },
+    }),
+  ]);
+
+  console.log('🚨 Created alerts');
+
+  // Create some restock history
+  const restocks = await Promise.all([
+    prisma.restock.create({
+      data: {
+        machine_id: machines[0].id,
+        user_id: users[1].id, // Operator
+        created_at: new Date(Date.now() - 24 * 60 * 60 * 1000).toISOString(), // 1 day ago
+        notes: 'Ravitaillement hebdomadaire programmé',
+      },
+    }),
+  ]);
+
+  // Create restock items for the above restock
+  const restockItems = await Promise.all([
+    prisma.restockItem.create({
+      data: {
+        restock_id: restocks[0].id,
+        stock_id: stocks[0].id, // Coca-Cola slot
+        quantity_before: 5,
+        quantity_after: 20,
+        quantity_added: 15,
+      },
+    }),
+    prisma.restockItem.create({
+      data: {
+        restock_id: restocks[0].id,
+        stock_id: stocks[1].id, // Chips slot
+        quantity_before: 0,
+        quantity_after: 10,
+        quantity_added: 10,
+      },
+    }),
+  ]);
+
+  console.log('🔄 Created restock history');
+
   console.log('✅ Database seeding completed!');
   console.log('\n📊 Summary:');
-  console.log(`- ${users.length} users created`);
+  console.log(`- ${users.length} users created (1 admin, 1 operator, 3 customers)`);
   console.log(`- ${machines.length} machines created`);
   console.log(`- ${products.length} products created`);
-  console.log(`- ${stocks.length} stock entries created`);
+  console.log(`- ${stocks.length} stock entries created (incluant produit dupliqué)`);
   console.log(`- ${orders.length} orders created`);
   console.log(`- ${orderItems.length} order items created`);
   console.log(`- ${loyaltyLogs.length} loyalty logs created`);
   console.log(`- 1 pickup created`);
+  console.log(`- ${alerts.length} alerts created (avec relations stock_id)`);
+  console.log(`- ${restocks.length} restocks created`);
+  console.log(`- ${restockItems.length} restock items created`);
+  console.log('\n🔑 Admin credentials:');
+  console.log('Email: admin@vendingmachine.com');
+  console.log('Password: admin123');
+  console.log('\n💡 Features demonstrated:');
+  console.log('- Same product on multiple slots (Coca-Cola on slots 1 & 4 of machine B2)');
+  console.log('- Stock-linked alerts (LOW_STOCK, EMPTY with stock_id)');
+  console.log('- Machine-only alerts (MACHINE_OFFLINE without stock_id)');
 }
 
 main()
