@@ -1,29 +1,21 @@
 "use client";
 
-import { useState } from "react";
+import React, { useState } from "react";
 import { motion } from "framer-motion";
-import {
-  Search,
-  Filter,
-  Plus,
-  Edit,
-  Trash2,
-  Package,
-  Euro,
-  Tag,
-} from "lucide-react";
+import { Plus } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
   Button,
-  Input,
-  Badge,
 } from "@/components/ui";
+import { ProductCard, Product } from "./product-card";
+import { ProductFilters } from "./product-filters";
+import { AddProductModal } from "./add-product-modal";
 
-// Mock data pour l'exemple
-const mockProducts = [
+// Mock data avec images et status
+const initialMockProducts: Product[] = [
   {
     id: "PROD-001",
     name: "Coca-Cola 33cl",
@@ -33,8 +25,7 @@ const mockProducts = [
     margin: 1.3,
     stock: 245,
     sold: 89,
-    image: "/coca.png",
-    status: "active",
+    image: "/assets/images/coca.png",
   },
   {
     id: "PROD-002",
@@ -45,8 +36,7 @@ const mockProducts = [
     margin: 0.9,
     stock: 156,
     sold: 67,
-    image: "/chips.png",
-    status: "active",
+    image: "/assets/images/chips.png",
   },
   {
     id: "PROD-003",
@@ -57,8 +47,7 @@ const mockProducts = [
     margin: 0.9,
     stock: 89,
     sold: 134,
-    image: "/eau.png",
-    status: "low_stock",
+    image: "/assets/images/eau.png",
   },
   {
     id: "PROD-004",
@@ -69,18 +58,26 @@ const mockProducts = [
     margin: 1.1,
     stock: 0,
     sold: 45,
-    image: "/kinder.png",
-    status: "out_of_stock",
+    image: "/assets/images/kinder.png",
   },
 ];
 
-const categories = ["Toutes", "Boissons", "Snacks", "Confiseries", "Sandwichs"];
+const categories = [
+  "Toutes",
+  "Boissons",
+  "Snacks",
+  "Confiseries",
+  "Sandwichs",
+  "Autres",
+];
 
 export function ProductList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Toutes");
-  const [products] = useState(mockProducts);
+  const [products, setProducts] = useState<Product[]>(initialMockProducts);
+  const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  // Filter products based on search and category
   const filteredProducts = products.filter((product) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
@@ -90,191 +87,131 @@ export function ProductList() {
     return matchesSearch && matchesCategory;
   });
 
-  const getStatusBadge = (status: string, stock: number) => {
-    if (status === "out_of_stock" || stock === 0) {
-      return <Badge variant="destructive">Rupture</Badge>;
+  // Generate new product ID
+  const generateProductId = () => {
+    const maxId = products.reduce((max, product) => {
+      const num = parseInt(product.id.split("-")[1] || "0");
+      return num > max ? num : max;
+    }, 0);
+    return `PROD-${String(maxId + 1).padStart(3, "0")}`;
+  };
+
+  // Handle adding new product
+  const handleAddProduct = (newProductData: Omit<Product, "id" | "sold">) => {
+    const newProduct: Product = {
+      ...newProductData,
+      id: generateProductId(),
+      sold: 0,
+    };
+
+    setProducts((prev) => [newProduct, ...prev]);
+  };
+
+  // Handle editing product
+  const handleEditProduct = (product: Product) => {
+    // TODO: Implement edit functionality
+    console.log("Edit product:", product);
+  };
+
+  // Handle deleting product
+  const handleDeleteProduct = (productId: string) => {
+    if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
+      setProducts((prev) => prev.filter((p) => p.id !== productId));
     }
-    if (status === "low_stock" || stock < 100) {
-      return <Badge variant="warning">Stock faible</Badge>;
-    }
-    return <Badge variant="success">En stock</Badge>;
   };
 
   return (
     <div className="space-y-6">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+      <motion.div
+        initial={{ opacity: 0, y: -20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
+      >
         <div>
           <h1 className="text-3xl font-bold tracking-tight">Produits</h1>
-          <p className="text-muted-foreground">
+          <p className="text-light-textSecondary dark:text-dark-textSecondary">
             Gérez votre catalogue de produits
           </p>
         </div>
-        <Button className="flex items-center gap-2">
+        <Button
+          onClick={() => setIsAddModalOpen(true)}
+          className="flex items-center gap-2"
+          aria-label="Ajouter un nouveau produit"
+        >
           <Plus className="h-4 w-4" />
           Ajouter un produit
         </Button>
-      </div>
+      </motion.div>
 
       {/* Filters */}
-      <Card>
-        <CardContent className="p-6">
-          <div className="flex flex-col lg:flex-row gap-4">
-            <div className="flex-1">
-              <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                <Input
-                  placeholder="Rechercher un produit..."
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
-                />
-              </div>
-            </div>
-            <div className="flex gap-2 flex-wrap">
-              {categories.map((category) => (
-                <Button
-                  key={category}
-                  variant={
-                    selectedCategory === category ? "primary" : "outline"
-                  }
-                  size="sm"
-                  onClick={() => setSelectedCategory(category)}
-                >
-                  {category}
-                </Button>
-              ))}
-            </div>
-          </div>
-        </CardContent>
-      </Card>
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.2 }}
+      >
+        <ProductFilters
+          searchTerm={searchTerm}
+          onSearchChange={setSearchTerm}
+          selectedCategory={selectedCategory}
+          onCategoryChange={setSelectedCategory}
+          categories={categories}
+        />
+      </motion.div>
 
       {/* Products Grid */}
-      <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-        {filteredProducts.map((product, index) => (
-          <motion.div
-            key={product.id}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: index * 0.1 }}
-          >
-            <Card className="group hover:shadow-lg transition-all duration-200">
-              <CardHeader className="pb-3">
-                <div className="flex items-start justify-between">
-                  <div className="flex-1">
-                    <CardTitle className="text-lg mb-1">
-                      {product.name}
-                    </CardTitle>
-                    <div className="flex items-center gap-2 mb-2">
-                      <Badge variant="outline" className="text-xs">
-                        <Tag className="h-3 w-3 mr-1" />
-                        {product.category}
-                      </Badge>
-                      {getStatusBadge(product.status, product.stock)}
-                    </div>
-                  </div>
-                  <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
-                    <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                      <Edit className="h-4 w-4" />
-                    </Button>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="h-8 w-8 p-0 text-red-500"
-                    >
-                      <Trash2 className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                {/* Pricing */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div>
-                    <div className="text-muted-foreground">Prix de vente</div>
-                    <div className="font-semibold text-lg">
-                      {product.price.toFixed(2)}€
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Marge</div>
-                    <div className="font-semibold text-lg text-green-600">
-                      {product.margin.toFixed(2)}€
-                    </div>
-                  </div>
-                </div>
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.3 }}
+      >
+        {filteredProducts.length > 0 ? (
+          <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+            {filteredProducts.map((product, index) => (
+              <ProductCard
+                key={product.id}
+                product={product}
+                onEdit={handleEditProduct}
+                onDelete={handleDeleteProduct}
+                index={index}
+              />
+            ))}
+          </div>
+        ) : (
+          <Card>
+            <CardContent className="flex flex-col items-center justify-center py-12">
+              <div className="text-light-textSecondary dark:text-dark-textSecondary text-center">
+                <div className="text-4xl mb-4">📦</div>
+                <h3 className="text-lg font-medium mb-2">
+                  Aucun produit trouvé
+                </h3>
+                <p className="text-sm">
+                  {searchTerm || selectedCategory !== "Toutes"
+                    ? "Aucun produit ne correspond à vos critères de recherche."
+                    : "Commencez par ajouter votre premier produit."}
+                </p>
+                {!searchTerm && selectedCategory === "Toutes" && (
+                  <Button
+                    onClick={() => setIsAddModalOpen(true)}
+                    className="mt-4"
+                    aria-label="Ajouter votre premier produit"
+                  >
+                    <Plus className="h-4 w-4 mr-2" />
+                    Ajouter un produit
+                  </Button>
+                )}
+              </div>
+            </CardContent>
+          </Card>
+        )}
+      </motion.div>
 
-                {/* Stock and Sales */}
-                <div className="grid grid-cols-2 gap-4 text-sm">
-                  <div className="flex items-center gap-2">
-                    <Package className="h-4 w-4 text-muted-foreground" />
-                    <div>
-                      <div className="text-muted-foreground">Stock</div>
-                      <div className="font-medium">{product.stock} unités</div>
-                    </div>
-                  </div>
-                  <div>
-                    <div className="text-muted-foreground">Vendus</div>
-                    <div className="font-medium">{product.sold} ce mois</div>
-                  </div>
-                </div>
-
-                {/* Stock Level Bar */}
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">
-                      Niveau de stock
-                    </span>
-                    <span
-                      className={
-                        product.stock === 0
-                          ? "text-red-600"
-                          : product.stock < 100
-                            ? "text-yellow-600"
-                            : "text-green-600"
-                      }
-                    >
-                      {product.stock > 0
-                        ? product.stock < 100
-                          ? "Faible"
-                          : "Bon"
-                        : "Vide"}
-                    </span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        product.stock === 0
-                          ? "bg-red-500"
-                          : product.stock < 100
-                            ? "bg-yellow-500"
-                            : "bg-green-500"
-                      }`}
-                      style={{
-                        width: `${Math.min((product.stock / 300) * 100, 100)}%`,
-                      }}
-                    />
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-
-      {filteredProducts.length === 0 && (
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          className="text-center py-12"
-        >
-          <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
-          <h3 className="text-lg font-medium mb-2">Aucun produit trouvé</h3>
-          <p className="text-muted-foreground">
-            Aucun produit ne correspond à vos critères de recherche.
-          </p>
-        </motion.div>
-      )}
+      {/* Add Product Modal */}
+      <AddProductModal
+        isOpen={isAddModalOpen}
+        onClose={() => setIsAddModalOpen(false)}
+        onAddProduct={handleAddProduct}
+      />
     </div>
   );
 }

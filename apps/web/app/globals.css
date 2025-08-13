@@ -16,4 +16,37 @@
   .text-balance {
     text-wrap: balance;
   }
+  
+  .line-clamp-1 {
+    overflow: hidden;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+  }
+  
+  .line-clamp-2 {
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-box-orient: vertical;
+    -webkit-line-clamp: 2;
+  }
+  
+  .placeholder-gray::placeholder {
+    color: #666666 !important;
+    opacity: 1 !important;
+  }
+  
+  .placeholder-gray::-webkit-input-placeholder {
+    color: #666666 !important;
+    opacity: 1 !important;
+  }
+  
+  .placeholder-gray::-moz-placeholder {
+    color: #666666 !important;
+    opacity: 1 !important;
+  }
+  
+  .placeholder-gray:-ms-input-placeholder {
+    color: #666666 !important;
+    opacity: 1 !important;
+  }
 }
