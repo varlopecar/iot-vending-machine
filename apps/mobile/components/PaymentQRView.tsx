@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity, Alert } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import { CheckoutGetStatusResponse } from '../types/stripe';
+import { useTailwindTheme } from '../hooks/useTailwindTheme';
 
 interface PaymentQRViewProps {
   qrCodeToken: string;
@@ -16,6 +17,7 @@ export const PaymentQRView: React.FC<PaymentQRViewProps> = ({
   orderStatus,
   onRefreshStatus,
 }) => {
+  const { isDark } = useTailwindTheme();
   const handleRefreshStatus = () => {
     Alert.alert(
       'Rafraîchir le statut',
@@ -33,22 +35,22 @@ export const PaymentQRView: React.FC<PaymentQRViewProps> = ({
   };
 
   return (
-    <View className="flex-1 items-center justify-center p-6 bg-white">
+    <View className={`flex-1 items-center justify-center p-6 ${isDark ? 'bg-dark-background' : 'bg-light-background'}`}>
       {/* En-tête avec montant */}
       <View className="mb-8 items-center">
-        <Text className="text-2xl font-bold text-gray-900 mb-2">
+        <Text className={`text-2xl font-bold mb-2 ${isDark ? 'text-dark-textSecondary' : 'text-light-text'}`}>
           Paiement confirmé !
         </Text>
-        <Text className="text-lg text-gray-600 mb-1">
+        <Text className={`text-lg mb-1 ${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'}`}>
           Montant payé : {formatAmount(orderStatus.amountTotalCents, orderStatus.currency)}
         </Text>
-        <Text className="text-sm text-gray-500">
+        <Text className={`text-sm ${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'}`}>
           Commande #{orderId.slice(0, 8)}
         </Text>
       </View>
 
       {/* QR Code */}
-      <View className="mb-8 p-4 bg-gray-50 rounded-2xl">
+      <View className={`mb-8 p-4 rounded-2xl ${isDark ? 'bg-white' : 'bg-white'}`}>
         <QRCode
           value={qrCodeToken}
           size={200}
@@ -59,10 +61,10 @@ export const PaymentQRView: React.FC<PaymentQRViewProps> = ({
 
       {/* Instructions */}
       <View className="mb-8 items-center">
-        <Text className="text-lg font-semibold text-gray-900 mb-3 text-center">
+        <Text className={`text-lg font-semibold mb-3 text-center ${isDark ? 'text-dark-textSecondary' : 'text-light-text'}`}>
           Présentez ce QR code au distributeur
         </Text>
-        <Text className="text-sm text-gray-600 text-center leading-5">
+        <Text className={`text-sm text-center leading-5 ${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'}`}>
           Scannez ce code sur la machine pour récupérer vos produits.
           Ce QR code est valide pendant 15 minutes.
         </Text>
@@ -71,18 +73,18 @@ export const PaymentQRView: React.FC<PaymentQRViewProps> = ({
       {/* Bouton rafraîchir */}
       <TouchableOpacity
         onPress={handleRefreshStatus}
-        className="bg-blue-500 px-6 py-3 rounded-full"
+        className={`${isDark ? 'bg-dark-secondary' : 'bg-light-secondary'} px-6 py-3 rounded-full`}
         activeOpacity={0.8}
       >
-        <Text className="text-white font-semibold text-base">
+        <Text className={`font-semibold text-base ${isDark ? 'text-dark-buttonText' : 'text-white'}`}>
           Rafraîchir l'état
         </Text>
       </TouchableOpacity>
 
-      {/* Informations supplémentaires */}
-      <View className="mt-6 p-4 bg-blue-50 rounded-xl w-full">
-        <Text className="text-sm text-blue-800 text-center">
-          💡 Conseil : Gardez cette page ouverte jusqu'à la récupération de vos produits
+      {/* Informations rassurantes */}
+      <View className={`mt-6 p-4 rounded-xl w-full ${isDark ? 'bg-dark-secondary' : 'bg-light-secondary'}`}>
+        <Text className={`text-sm text-center ${isDark ? 'text-dark-buttonText' : 'text-white'}`}>
+          ✅ Pas de souci ! Vous pouvez fermer cette page et retrouver votre QR code dans l'onglet "Commandes"
         </Text>
       </View>
     </View>

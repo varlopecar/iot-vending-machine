@@ -3,11 +3,11 @@ import { View, Text, Animated } from "react-native";
 import { useRouter } from "expo-router";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 import { HeaderSkeleton, OrderListSkeleton } from "../../components";
-import { mockOrders } from "../../data/mockProducts";
 import { Order } from "../../types/product";
 import { SafeContainer, SectionTitle } from "../../components/ui";
 import { useCart } from "../../contexts/CartContext";
 import { Header } from "../../components/Header";
+import { useOrders } from "../../contexts/OrdersContext";
 
 // Lazy loading des composants
 const OrderCard = React.lazy(() => import("../../components/OrderCard"));
@@ -17,7 +17,9 @@ export default function CommandesScreen() {
   const router = useRouter();
   const { isDark } = useTailwindTheme();
   const { getTotalItems, getTotalPrice } = useCart();
-  const [orders, setOrders] = useState<Order[]>(mockOrders);
+  const { orders } = useOrders();
+  const [localOrders, setLocalOrders] = useState<Order[]>(orders);
+  const [tick, setTick] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -31,16 +33,16 @@ export default function CommandesScreen() {
   }, []);
 
   useEffect(() => {
-    const interval = setInterval(() => {
-      setOrders((prevOrders) =>
-        prevOrders.map((order) => ({
-          ...order,
-          expiresAt: new Date(order.expiresAt.getTime() - 60000), // Décrémente d'1 minute
-        }))
-      );
-    }, 60000); // Met à jour toutes les minutes
+    setLocalOrders(orders);
+  }, [orders]);
 
-    return () => clearInterval(interval);
+  // Déclenche un re-render toutes les minutes pour rafraîchir le compte à rebours
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTick((t) => t + 1);
+      setLocalOrders((prev) => [...prev]);
+    }, 60000);
+    return () => clearInterval(id);
   }, []);
 
   const handleOrderPress = (order: Order) => {
@@ -93,7 +95,7 @@ export default function CommandesScreen() {
           {/* Orders List */}
           <View className="">
             <React.Suspense fallback={<OrderListSkeleton />}>
-              {orders.map((order) => (
+              {localOrders.map((order) => (
                 <OrderCard
                   key={order.id}
                   order={order}

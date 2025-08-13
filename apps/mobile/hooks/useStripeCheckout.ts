@@ -41,7 +41,7 @@ export const useStripeCheckout = () => {
       };
 
       // URL ngrok déployée
-      const NGROK_URL = 'https://36543e156e04.ngrok-free.app';
+const NGROK_URL = 'https://a849cdd6a381.ngrok-free.app';
       const endpoint = `${NGROK_URL}/trpc/stripe.createPaymentIntent`;
       
       console.log('📤 Envoi de la requête vers Stripe:', requestBody);
@@ -86,6 +86,7 @@ export const useStripeCheckout = () => {
       const { error } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
         customerId,
+        returnURL: 'mobile://stripe-redirect',
         merchantDisplayName: "Distributeur Automatique",
         applePay: {
           merchantCountryCode: 'FR',
@@ -130,15 +131,15 @@ export const useStripeCheckout = () => {
       const { error } = await presentPaymentSheet();
       
       if (error) {
-        console.error('Erreur paiement:', error);
-        
         // Gestion spécifique des erreurs utilisateur
         if (error.code === 'Canceled') {
           return {
             success: false,
-            error: 'Paiement annulé par l\'utilisateur'
+            error: undefined // Pas d'erreur pour les annulations utilisateur
           };
         }
+        
+        console.error('Erreur paiement:', error);
         
         return {
           success: false,

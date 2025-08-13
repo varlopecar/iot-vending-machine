@@ -3,6 +3,7 @@ import { Stack } from "expo-router";
 import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { CartProvider } from "../contexts/CartContext";
+import { OrdersProvider } from "../contexts/OrdersContext";
 import * as Notifications from "expo-notifications";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
 import { StripeProvider } from "@stripe/stripe-react-native";
@@ -27,6 +28,7 @@ export default function RootLayout() {
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <CartProvider>
+            <OrdersProvider>
             <Stack screenOptions={{ headerBackTitle: "" }}>
               <Stack.Screen name="login" options={{ headerShown: false }} />
               <Stack.Screen name="register" options={{ headerShown: false }} />
@@ -55,6 +57,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
+            </OrdersProvider>
           </CartProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>

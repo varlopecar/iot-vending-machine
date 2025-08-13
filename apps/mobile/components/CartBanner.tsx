@@ -20,27 +20,15 @@ export default function CartBanner({
 
   if (itemCount === 0) return null;
 
-  const handlePayNow = () => {
-    // Naviguer directement vers l'écran de checkout Stripe
-    router.push({
-      pathname: "/checkout",
-      params: {
-        amount: Math.round(totalPrice * 100).toString(), // Convertir en centimes
-        currency: "eur",
-        orderId: `order_${Date.now()}`,
-        userId: `test_user_${Date.now()}`,
-        machineId: `machine_01`,
-      },
-    });
-  };
+
 
   return (
     <TabBarSpacer>
       <View
-        className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-4`}
+        className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-3`}
       >
         {/* Ligne du panier */}
-        <TouchableOpacity onPress={onPress} className="mb-3">
+        <TouchableOpacity onPress={onPress}>
           <View className="flex-row items-center justify-between">
             <View className="relative">
               <Image
@@ -69,21 +57,7 @@ export default function CartBanner({
           </View>
         </TouchableOpacity>
 
-        {/* Bouton de paiement Stripe */}
-        <TouchableOpacity
-          onPress={handlePayNow}
-          className="bg-green-600 rounded-lg py-3 px-4"
-          activeOpacity={0.8}
-        >
-          <View className="flex-row items-center justify-center">
-            <Text className="text-white font-semibold text-base mr-2">
-              💳 Payer maintenant
-            </Text>
-            <Text className="text-white font-bold text-base">
-              {totalPrice.toFixed(2)}€
-            </Text>
-          </View>
-        </TouchableOpacity>
+
       </View>
     </TabBarSpacer>
   );

@@ -3,16 +3,22 @@ import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useTailwindTheme } from '../hooks/useTailwindTheme';
 import { QRCodeDisplay } from '../components';
-import { mockOrders } from '../data/mockProducts';
+import { useOrders } from '../contexts/OrdersContext';
+import QRCode from 'react-native-qrcode-svg';
 
 export default function QRCodeScreen() {
   const { isDark } = useTailwindTheme();
   const router = useRouter();
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
-  
-  const [order, setOrder] = useState(() => {
-    return mockOrders.find(o => o.id === orderId) || null;
-  });
+  const { getOrderById, setOrderStatus } = useOrders();
+  const [order, setOrder] = useState(() => getOrderById(orderId || "") || null);
+
+  // Sync si ordre arrive plus tard
+  React.useEffect(() => {
+    if (!orderId) return;
+    const found = getOrderById(orderId);
+    if (found) setOrder(found);
+  }, [orderId]);
 
   const handleHelpPress = () => {
     Alert.alert(
@@ -32,7 +38,10 @@ export default function QRCodeScreen() {
           text: 'Oui', 
           style: 'destructive',
           onPress: () => {
-            // Ici on pourrait appeler une API pour annuler la commande
+            if (order) {
+              setOrderStatus(order.id, 'cancelled');
+              setOrder({ ...order, status: 'cancelled' });
+            }
             Alert.alert('Commande annulée', 'Votre commande a été annulée avec succès.');
             router.back();
           }
@@ -53,6 +62,8 @@ export default function QRCodeScreen() {
     );
   }
 
+  const isCancelable = order.status === 'active';
+
   return (
     <>
       <Stack.Screen
@@ -71,12 +82,25 @@ export default function QRCodeScreen() {
       />
       <View className={`${isDark ? 'bg-dark-background' : 'bg-light-background'} flex-1`}>
         <ScrollView className="flex-1 p-4">
-          {/* QR Code */}
-          <QRCodeDisplay
-            qrCodeImage={order.qrCode}
-            expiresAt={order.expiresAt}
-            onHelpPress={handleHelpPress}
-          />
+          {/* QR Code - image mock ou token dynamique */}
+          {order.qrCodeToken ? (
+            <View className="items-center mb-6">
+              <Text
+                className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-xl font-bold mb-4`}
+              >
+                Ton QR code
+              </Text>
+              <View className={`p-4 rounded-xl mb-4 ${isDark ? 'bg-white' : 'bg-white'}`}>
+                <QRCode value={order.qrCodeToken} size={256} color="black" backgroundColor="white" />
+              </View>
+            </View>
+          ) : (
+            <QRCodeDisplay
+              qrCodeImage={order.qrCodeImage}
+              expiresAt={order.expiresAt}
+              onHelpPress={handleHelpPress}
+            />
+          )}
 
           {/* Détails de la commande */}
           <View className="mb-6">
@@ -117,12 +141,13 @@ export default function QRCodeScreen() {
         {/* Bouton d'annulation */}
         <View className="p-4 pb-8">
           <TouchableOpacity
-            onPress={handleCancelOrder}
-            className={`border-2 border-red-500 rounded-lg py-4 px-6 items-center`}
+            onPress={isCancelable ? handleCancelOrder : undefined}
+            disabled={!isCancelable}
+            className={`border-2 ${isCancelable ? 'border-red-500' : 'border-gray-400'} rounded-lg py-4 px-6 items-center`}
             activeOpacity={0.7}
           >
-            <Text className="text-red-500 text-lg font-semibold">
-              Annuler la commande
+            <Text className={`${isCancelable ? 'text-red-500' : 'text-gray-400'} text-lg font-semibold`}>
+              {isCancelable ? 'Annuler la commande' : 'Commande annulée'}
             </Text>
           </TouchableOpacity>
         </View>
