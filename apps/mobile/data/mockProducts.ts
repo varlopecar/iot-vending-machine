@@ -69,7 +69,7 @@ export const mockOrders: Order[] = [
       { id: '2', name: 'Eau minérale', price: 1.50, image: require('../assets/images/eau.png'), quantity: 1 },
     ],
     totalPrice: 4.00,
-    qrCode: require('../assets/images/qrcodeExample.png'),
+    qrCodeImage: require('../assets/images/qrcodeExample.png'),
     expiresAt: new Date(Date.now() + 10 * 60 * 1000), // 10 minutes
     status: 'active',
   },
@@ -80,7 +80,7 @@ export const mockOrders: Order[] = [
       { id: '3', name: 'Chips nature', price: 2.00, image: require('../assets/images/chips.png'), quantity: 2 },
     ],
     totalPrice: 4.00,
-    qrCode: require('../assets/images/qrcodeExample.png'),
+    qrCodeImage: require('../assets/images/qrcodeExample.png'),
     expiresAt: new Date(Date.now() + 5 * 60 * 1000), // 5 minutes
     status: 'active',
   },
@@ -92,7 +92,7 @@ export const mockOrders: Order[] = [
       { id: '1', name: 'Coca-Cola', price: 2.50, image: require('../assets/images/coca.png'), quantity: 1 },
     ],
     totalPrice: 5.50,
-    qrCode: require('../assets/images/qrcodeExample.png'),
+    qrCodeImage: require('../assets/images/qrcodeExample.png'),
     expiresAt: new Date(Date.now() + 15 * 60 * 1000), // 15 minutes
     status: 'active',
   },

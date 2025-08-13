@@ -197,20 +197,51 @@ export default function CartScreen() {
             </View>
           </TouchableOpacity>
 
-          {/* Validate Button */}
-          <TouchableOpacity
-            className={`${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-4 rounded-lg`}
-            onPress={() => {
-              // Navigation vers la page de checkout
-              router.push("/(checkout)" as any);
-            }}
-          >
-            <Text
-              className={`${isDark ? "text-dark-buttonText" : "text-white"} text-lg font-bold text-center`}
-            >
-              Valider mon panier
-            </Text>
-          </TouchableOpacity>
+          {/* Pay / Free order Button */}
+          {(() => {
+            const total = getTotalPrice();
+            const hasItems = cartItems.length > 0;
+            const isFree = total === 0 && hasItems;
+            const disabled = !hasItems;
+            const btnClasses = `${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-4 rounded-lg ${disabled ? "opacity-60" : "opacity-100"}`;
+            const labelClasses = `${isDark ? "text-dark-buttonText" : "text-white"} text-lg font-bold text-center`;
+
+            const handlePress = () => {
+              if (disabled) return;
+              if (isFree) {
+                // Bypass Stripe: aller directement à l'écran de succès qui génère le QR et crée la commande
+                router.push({
+                  pathname: "/payment-success",
+                  params: {
+                    orderId: `order_${Date.now()}`,
+                    paymentIntentId: "free",
+                    amount: "0",
+                    currency: "eur",
+                  },
+                });
+                return;
+              }
+              // Flux Stripe classique
+              router.push({
+                pathname: "/checkout",
+                params: {
+                  amount: Math.round(total * 100).toString(),
+                  currency: "eur",
+                  orderId: `order_${Date.now()}`,
+                  userId: `user_${Date.now()}`,
+                  machineId: `machine_${Date.now()}`,
+                },
+              });
+            };
+
+            return (
+              <TouchableOpacity className={btnClasses} onPress={handlePress} disabled={disabled}>
+                <Text className={labelClasses}>
+                  {disabled ? "Panier vide" : isFree ? "Commander gratuitement" : "Payer maintenant"}
+                </Text>
+              </TouchableOpacity>
+            );
+          })()}
         </View>
       </View>
     </>
