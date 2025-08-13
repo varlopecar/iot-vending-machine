@@ -17,3 +17,8 @@ export {
   OrderListSkeleton,
   PageSkeleton
 } from './SkeletonLoader';
+
+// Stripe components - temporairement commentés pour debug
+// export { PaymentQRView } from './PaymentQRView';
+// export { NativePaymentButton } from './stripe/NativePaymentButton';
+// export { StripeCheckout } from './stripe/StripeCheckout';

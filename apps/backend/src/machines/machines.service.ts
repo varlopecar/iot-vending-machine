@@ -45,7 +45,9 @@ export class MachinesService {
       const updated = await this.prisma.machine.update({
         where: { id },
         data: {
-          ...('location' in updateData ? { location: updateData.location } : {}),
+          ...('location' in updateData
+            ? { location: updateData.location }
+            : {}),
           ...('label' in updateData ? { label: updateData.label } : {}),
           ...('status' in updateData
             ? { status: this.toDbStatus(updateData.status!) }
@@ -85,7 +87,9 @@ export class MachinesService {
     return db.toLowerCase() as Machine['status'];
   }
 
-  private toDbStatus(api: Machine['status']): 'ONLINE' | 'OFFLINE' | 'MAINTENANCE' | 'OUT_OF_SERVICE' {
+  private toDbStatus(
+    api: Machine['status'],
+  ): 'ONLINE' | 'OFFLINE' | 'MAINTENANCE' | 'OUT_OF_SERVICE' {
     switch (api) {
       case 'online':
         return 'ONLINE';

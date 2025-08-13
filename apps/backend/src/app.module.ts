@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, NestModule, MiddlewareConsumer } from '@nestjs/common';
 import { TRPCModule } from 'nestjs-trpc';
 import { PrismaModule } from './prisma/prisma.module';
 import { AuthModule } from './auth/auth.module';
@@ -8,12 +8,19 @@ import { LoyaltyModule } from './loyalty/loyalty.module';
 import { MachinesModule } from './machines/machines.module';
 import { StocksModule } from './stocks/stocks.module';
 import { PickupsModule } from './pickups/pickups.module';
+import { StripeModule } from './stripe/stripe.module';
+import { CheckoutModule } from './checkout/checkout.module';
+import { WebhooksModule } from './webhooks/webhooks.module';
+import { InventoryModule } from './inventory/inventory.module';
+import { PaymentsModule } from './payments/payments.module';
+import { JobsModule } from './jobs/jobs.module';
+import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middleware';
 
 @Module({
   imports: [
     PrismaModule,
     TRPCModule.forRoot({
-      autoSchemaFile: '../../packages/trpc/src/server',
+      autoSchemaFile: '../../packages/globals/trpc/src/server',
     }),
     AuthModule,
     ProductsModule,
@@ -22,8 +29,18 @@ import { PickupsModule } from './pickups/pickups.module';
     MachinesModule,
     StocksModule,
     PickupsModule,
+    StripeModule,
+    CheckoutModule,
+    WebhooksModule,
+    InventoryModule,
+    PaymentsModule,
+    JobsModule,
   ],
   controllers: [],
   providers: [],
 })
-export class AppModule {}
+export class AppModule implements NestModule {
+  configure(consumer: MiddlewareConsumer) {
+    consumer.apply(PaymentMonitoringMiddleware).forRoutes('*');
+  }
+}
