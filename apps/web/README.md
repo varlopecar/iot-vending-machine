@@ -1,36 +1,127 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/create-next-app).
+# VendingAdmin - Back-office
 
-## Getting Started
+Interface d'administration pour la gestion des machines de distribution connectées.
 
-First, run the development server:
+## 🚀 Fonctionnalités
+
+### Tableau de bord
+- Vue d'ensemble des statistiques globales
+- Aperçu des commandes récentes
+- État en temps réel des machines
+- Indicateurs de performance clés
+
+### Gestion des produits
+- Catalogue complet des produits
+- Édition des prix et informations
+- Gestion des catégories
+- Suivi des stocks par produit
+
+### Gestion des machines
+- Liste de toutes les machines
+- Statut de connectivité et fonctionnement
+- Informations de localisation
+- Métriques de performance par machine
+
+### Gestion des stocks
+- Vue globale des niveaux de stock
+- Alertes de stock faible et ruptures
+- Prévisions de consommation
+- Gestion des ravitaillements
+
+### Commandes
+- Liste complète des commandes
+- Filtrage par statut et période
+- Détails des transactions
+- Gestion des QR codes
+
+### Statistiques avancées
+- Revenus et tendances
+- Produits les plus vendus
+- Performance comparative des machines
+- Analyses de conversion
+
+## 🛠 Technologies utilisées
+
+- **Next.js 15** - Framework React avec App Router
+- **TypeScript** - Type safety
+- **Tailwind CSS** - Styling moderne et responsive
+- **Framer Motion** - Animations fluides
+- **tRPC** - Communication type-safe avec le backend
+- **Lucide React** - Icônes modernes
+
+## 🎨 Design
+
+Le design s'inspire de l'application mobile avec :
+- **Palette de couleurs cohérente** (thèmes clair/sombre)
+- **Animations fluides** respectant les préférences d'accessibilité
+- **Interface responsive** pour tous les écrans
+- **Navigation intuitive** avec sidebar
+
+### Thème clair
+- Primaire: `#F9F4EC` (beige doux)
+- Secondaire: `#5B715F` (vert sauge)
+- Tertiaire: `#E3E8E4` (gris vert)
+
+### Thème sombre
+- Primaire: `#2C2221` (brun foncé)
+- Secondaire: `#FD9BD9` (rose)
+- Tertiaire: `#FECDEC` (rose clair)
+
+## 📱 Pages disponibles
+
+- `/` - Tableau de bord principal
+- `/products` - Gestion des produits
+- `/machines` - Gestion des machines
+- `/stocks` - Gestion des stocks
+- `/orders` - Liste des commandes
+- `/analytics` - Statistiques et analyses
+- `/settings` - Paramètres du système
+
+## 🚀 Démarrage rapide
 
 ```bash
-npm run dev
-# or
-yarn dev
-# or
+# Installer les dépendances
+pnpm install
+
+# Démarrer le serveur de développement
 pnpm dev
-# or
-bun dev
+
+# Accéder au back-office
+http://localhost:3001
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## 🔧 Configuration
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+### Variables d'environnement
+```env
+NEXT_PUBLIC_TRPC_URL=http://localhost:3000/api/trpc
+```
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load Inter, a custom Google Font.
+### Communication avec le backend
+Le back-office communique avec le backend NestJS via tRPC pour :
+- Récupérer les données des produits, machines, stocks
+- Gérer les commandes et transactions
+- Obtenir les statistiques et métriques
+- Synchroniser les données en temps réel
 
-## Learn More
+## 📋 TODO pour l'intégration réelle
 
-To learn more about Next.js, take a look at the following resources:
+- [ ] Connecter les endpoints tRPC réels du backend
+- [ ] Implémenter l'authentification admin
+- [ ] Ajouter la validation des formulaires
+- [ ] Intégrer les données temps réel via WebSockets
+- [ ] Ajouter la pagination pour les grandes listes
+- [ ] Implémenter les exports CSV/PDF
+- [ ] Ajouter les tests unitaires et e2e
 
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
+## 🎯 Prochaines étapes
 
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
+1. **Authentification** : Système de login sécurisé pour les administrateurs
+2. **Temps réel** : WebSockets pour les mises à jour live
+3. **Notifications** : Système d'alertes push
+4. **Rapports** : Génération de rapports PDF/Excel
+5. **Multi-tenant** : Support de plusieurs clients
 
-## Deploy on Vercel
+## 🤝 Contribution
 
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+Ce back-office fait partie du projet IoT Vending Machine. Consultez le README principal pour les guidelines de contribution.
