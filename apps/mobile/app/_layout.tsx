@@ -4,6 +4,7 @@ import "react-native-reanimated";
 import { SafeAreaProvider } from "react-native-safe-area-context";
 import { CartProvider } from "../contexts/CartContext";
 import { OrdersProvider } from "../contexts/OrdersContext";
+import { MachineProvider } from "../contexts/MachineContext";
 import { AuthProvider } from "../contexts/AuthContext";
 import * as Notifications from "expo-notifications";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
@@ -34,6 +35,7 @@ export default function RootLayout() {
               // Injection du AuthProvider pour fournir le contexte d'auth à toute l'app
             }
             <AuthProvider>
+            <MachineProvider>
             <Stack screenOptions={{ headerBackTitle: "" }}>
               <Stack.Screen name="login" options={{ headerShown: false }} />
               <Stack.Screen name="register" options={{ headerShown: false }} />
@@ -62,6 +64,7 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
+            </MachineProvider>
             </AuthProvider>
             </OrdersProvider>
           </CartProvider>

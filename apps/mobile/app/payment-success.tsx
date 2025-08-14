@@ -1,11 +1,5 @@
 import React, { useState, useEffect } from "react";
-import {
-  View,
-  Text,
-  SafeAreaView,
-  TouchableOpacity,
-  Alert,
-} from "react-native";
+import { View, Text, SafeAreaView, TouchableOpacity, Alert, Modal } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { PaymentQRView } from "../components/PaymentQRView";
 import { CheckoutGetStatusResponse } from "../types/stripe";
@@ -29,6 +23,7 @@ export default function PaymentSuccessScreen() {
   type StepStatus = 'idle' | 'pending' | 'done' | 'skip' | 'error';
   const [createOrderStep, setCreateOrderStep] = useState<StepStatus>('idle');
   const [fetchQrStep, setFetchQrStep] = useState<StepStatus>('idle');
+  const [errorModal, setErrorModal] = useState<{ visible: boolean; message: string }>({ visible: false, message: '' });
 
   // Récupérer le QR code réel depuis le backend pour l'orderId
   useEffect(() => {
@@ -102,6 +97,8 @@ export default function PaymentSuccessScreen() {
         console.error("[PaymentSuccess] Erreur chargement order:", e);
         if (createOrderStep === 'pending') setCreateOrderStep('error');
         if (fetchQrStep === 'pending') setFetchQrStep('error');
+        const message = e instanceof Error ? e.message : 'Erreur inconnue lors de la création de la commande';
+        setErrorModal({ visible: true, message });
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -178,6 +175,27 @@ export default function PaymentSuccessScreen() {
 
   return (
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-dark-background' : 'bg-light-background'}`}>
+      <Modal
+        transparent
+        visible={errorModal.visible}
+        animationType="fade"
+        onRequestClose={() => setErrorModal({ visible: false, message: '' })}
+      >
+        <View className="flex-1 bg-black/50 justify-center items-center px-6">
+          <View className={`w-full rounded-2xl p-5 ${isDark ? 'bg-dark-background' : 'bg-white'}`}>
+            <Text className={`${isDark ? 'text-dark-text' : 'text-gray-900'} text-lg font-semibold mb-2`}>Erreur</Text>
+            <Text className={`${isDark ? 'text-dark-textSecondary' : 'text-gray-700'} mb-4`}>{errorModal.message}</Text>
+            <View className="flex-row justify-end gap-3">
+              <TouchableOpacity onPress={() => setErrorModal({ visible: false, message: '' })} className={`px-4 py-2 rounded-lg ${isDark ? 'bg-gray-600' : 'bg-gray-200'}`}>
+                <Text className={`${isDark ? 'text-white' : 'text-gray-800'}`}>Fermer</Text>
+              </TouchableOpacity>
+              <TouchableOpacity onPress={handleGoToHome} className={`${isDark ? 'bg-dark-secondary' : 'bg-light-secondary'} px-4 py-2 rounded-lg`}>
+                <Text className={`${isDark ? 'text-dark-buttonText' : 'text-white'} font-semibold`}>Accueil</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
       <PaymentQRView
         qrCodeToken={orderStatus.qrCodeToken || ""}
         orderId={(orderIdState as string)}
