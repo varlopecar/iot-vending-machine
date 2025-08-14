@@ -1,16 +1,21 @@
 import React, { useState } from "react";
-import { View, Text, ScrollView, TouchableOpacity } from "react-native";
+import { View, Text, ScrollView, TouchableOpacity, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
+import { useMachine } from "../contexts/MachineContext";
+import { getAllProducts } from "../lib/products";
+import { getStockByMachineAndProduct } from "../lib/stocks";
+import { resolveServerProductId } from "../lib/productMapping";
 // Création de commande déplacée après paiement (écran payment-success)
 
 export default function CartScreen() {
   const { isDark } = useTailwindTheme();
   const router = useRouter();
   const { user, token } = useAuth();
+  const { selectedMachineId } = useMachine();
   const [isGiftChecked, setIsGiftChecked] = useState(false);
   const {
     cartItems,
@@ -20,6 +25,48 @@ export default function CartScreen() {
     getTotalPrice,
     removeOffer,
   } = useCart();
+
+  const [errorModal, setErrorModal] = useState({ visible: false, title: '', message: '' });
+
+  // Valide les stocks en agrégeant les quantités par produit (inclut les items offerts)
+  const validateStockBeforeCheckout = async (machineId: string) => {
+    try {
+      const serverProducts = await getAllProducts();
+      // Agrégation des quantités demandées par produit serveur
+      const demandByServerId = new Map<string, { name: string; qty: number }>();
+      for (const ci of cartItems) {
+        const serverId = resolveServerProductId(serverProducts, ci.name);
+        if (!serverId) {
+          return {
+            ok: false,
+            message: `Produit introuvable: ${ci.name}`,
+          } as const;
+        }
+        const entry = demandByServerId.get(serverId) || { name: ci.name, qty: 0 };
+        entry.qty += ci.quantity;
+        demandByServerId.set(serverId, entry);
+      }
+
+      for (const [serverId, { name, qty }] of demandByServerId.entries()) {
+        const stock = await getStockByMachineAndProduct(machineId, serverId);
+        const remaining = stock?.quantity ?? 0;
+        if (remaining < qty) {
+          const sRestant = remaining > 1 ? 'restants' : 'restant';
+          const sDemande = qty > 1 ? 'demandés' : 'demandé';
+          return {
+            ok: false,
+            message: `${name}: ${remaining} ${sRestant}, ${qty} ${sDemande}.`,
+          } as const;
+        }
+      }
+      return { ok: true } as const;
+    } catch {
+      return {
+        ok: false,
+        message: 'Validation du stock impossible. Réessayez.',
+      } as const;
+    }
+  };
 
   return (
     <>
@@ -157,6 +204,21 @@ export default function CartScreen() {
           </View>
         </ScrollView>
 
+        {/* Modal d'erreur */}
+        <Modal transparent animationType="fade" visible={errorModal.visible} onRequestClose={() => setErrorModal({ visible: false, title: '', message: '' })}>
+          <View className="flex-1 bg-black/50 justify-center items-center px-6">
+            <View className={`${isDark ? 'bg-dark-background' : 'bg-white'} w-full rounded-2xl p-5`}>
+              <Text className={`${isDark ? 'text-dark-text' : 'text-gray-900'} text-lg font-semibold mb-2`}>{errorModal.title || 'Erreur'}</Text>
+              <Text className={`${isDark ? 'text-dark-textSecondary' : 'text-gray-700'} mb-4`}>{errorModal.message}</Text>
+              <View className="flex-row justify-end">
+                <TouchableOpacity onPress={() => setErrorModal({ visible: false, title: '', message: '' })} className={`${isDark ? 'bg-dark-secondary' : 'bg-light-secondary'} px-4 py-2 rounded-lg`}>
+                  <Text className={`${isDark ? 'text-dark-buttonText' : 'text-white'} font-semibold`}>Fermer</Text>
+                </TouchableOpacity>
+              </View>
+            </View>
+          </View>
+        </Modal>
+
         {/* Footer */}
         <View
           className={`${isDark ? "bg-dark-surface" : "bg-light-surface"} p-4 pb-8 border-t border-gray-300`}
@@ -214,10 +276,28 @@ export default function CartScreen() {
               if (isFree) {
                 // Nouveau flux: création de commande après paiement (même pour gratuit)
                 if (!user || !token) {
-                  console.error('[Commande] Connexion requise: utilisateur ou token manquant');
+                  setErrorModal({
+                    visible: true,
+                    title: 'Connexion requise',
+                    message: 'Veuillez vous connecter pour commander gratuitement.',
+                  });
                   return;
                 }
-                const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
+                const MACHINE_ID = selectedMachineId || '';
+                if (!MACHINE_ID) {
+                  setErrorModal({
+                    visible: true,
+                    title: 'Erreur',
+                    message: 'Aucune machine sélectionnée. Veuillez en sélectionner une.',
+                  });
+                  return;
+                }
+                // Pré-validation du stock côté serveur (gratuit)
+                const checkFree = await validateStockBeforeCheckout(MACHINE_ID);
+                if (!checkFree.ok) {
+                  setErrorModal({ visible: true, title: 'Stock insuffisant', message: checkFree.message });
+                  return;
+                }
                 router.push({
                   pathname: '/payment-success',
                   params: {
@@ -232,10 +312,28 @@ export default function CartScreen() {
               }
               // Paiement d'abord, commande après succès
               if (!user || !token) {
-                console.error('[Commande] Connexion requise: utilisateur ou token manquant');
+                setErrorModal({
+                  visible: true,
+                  title: 'Connexion requise',
+                  message: 'Veuillez vous connecter pour effectuer le paiement.',
+                });
                 return;
               }
-              const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
+                const MACHINE_ID = selectedMachineId || '';
+                if (!MACHINE_ID) {
+                  setErrorModal({
+                    visible: true,
+                    title: 'Erreur',
+                    message: 'Aucune machine sélectionnée. Veuillez en sélectionner une.',
+                  });
+                  return;
+                }
+              // Pré-validation du stock côté serveur (payant)
+              const checkPaid = await validateStockBeforeCheckout(MACHINE_ID);
+              if (!checkPaid.ok) {
+                setErrorModal({ visible: true, title: 'Stock insuffisant', message: checkPaid.message });
+                return;
+              }
               router.push({
                 pathname: '/checkout',
                 params: {
