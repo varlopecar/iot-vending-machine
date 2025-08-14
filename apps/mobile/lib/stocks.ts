@@ -18,6 +18,16 @@ export async function getStockByMachineAndProduct(machine_id: string, product_id
 export type StockWithProduct = Stock & {
   product_name: string;
   product_price: number;
+  product_image_url?: string;
+  product_ingredients_list?: string[];
+  product_allergens_list?: string[];
+  product_nutritional?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    serving?: string;
+  };
 };
 
 export async function getStocksByMachine(machine_id: string) {

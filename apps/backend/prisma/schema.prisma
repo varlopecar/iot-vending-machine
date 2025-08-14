@@ -39,8 +39,11 @@ model Product {
   price             Decimal @db.Decimal(10, 2)
   sku               String? // Nouveau: identifiant unique produit pour import CSV
   ingredients       String
+  ingredients_list  String[]  // Liste structurée des ingrédients
   allergens         String
+  allergens_list    String[]  // Liste structurée des allergènes
   nutritional_value String
+  nutritional       Json?     // Valeurs nutritionnelles structurées {calories, protein, carbs, fat}
   image_url         String
   is_active         Boolean @default(true)
   created_at        String  @default(dbgenerated("now()::text"))

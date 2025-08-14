@@ -44,6 +44,10 @@ export class StocksService {
       slot_number: s.slot_number,
       product_name: s.product.name,
       product_price: Number(s.product.price),
+      product_image_url: s.product.image_url,
+      product_ingredients_list: s.product.ingredients_list ?? [],
+      product_allergens_list: s.product.allergens_list ?? [],
+      product_nutritional: (s.product as any).nutritional ?? undefined,
     }));
   }
 
@@ -102,6 +106,10 @@ export class StocksService {
       slot_number: s.slot_number,
       product_name: s.product.name,
       product_price: Number(s.product.price),
+      product_image_url: s.product.image_url,
+      product_ingredients_list: s.product.ingredients_list ?? [],
+      product_allergens_list: s.product.allergens_list ?? [],
+      product_nutritional: (s.product as any).nutritional ?? undefined,
     }));
   }
 

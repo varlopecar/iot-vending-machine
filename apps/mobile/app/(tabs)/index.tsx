@@ -41,17 +41,23 @@ export default function IndexScreen() {
     async function load() {
       try {
         setIsLoading(true);
-        const MACHINE_ID = 'cmeay7efo003v0tkj1azob9ei';
+        const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
         const stocks = await getStocksByMachine(MACHINE_ID);
         // Mapper les stocks -> Product[] pour la liste
         const mapped: Product[] = stocks.map((s: StockWithProduct) => ({
           id: s.product_id,
           name: displayNameFromServerName(s.product_name),
           price: s.product_price,
-          image: null,
-          ingredients: [],
-          allergens: [],
-          nutritionalValues: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+          image: s.product_image_url ? { uri: s.product_image_url } : null,
+          stockQty: s.quantity,
+          ingredients: s.product_ingredients_list || [],
+          allergens: s.product_allergens_list || [],
+          nutritionalValues: {
+            calories: s.product_nutritional?.calories ?? 0,
+            protein: s.product_nutritional?.protein ?? 0,
+            carbs: s.product_nutritional?.carbs ?? 0,
+            fat: s.product_nutritional?.fat ?? 0,
+          },
         }));
         if (!cancelled) setProducts(mapped);
       } catch (e) {

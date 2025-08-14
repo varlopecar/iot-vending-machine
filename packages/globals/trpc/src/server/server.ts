@@ -84,8 +84,19 @@ const appRouter = t.router({
       description: z.string(),
       price: z.number().positive(),
       ingredients: z.string(),
+      ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
+      allergens_list: z.array(z.string()).optional(),
       nutritional_value: z.string(),
+      nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
       image_url: z.url(),
       is_active: z.boolean(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -95,8 +106,19 @@ const appRouter = t.router({
       description: z.string(),
       price: z.number().positive(),
       ingredients: z.string(),
+      ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
+      allergens_list: z.array(z.string()).optional(),
       nutritional_value: z.string(),
+      nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
       image_url: z.url(),
       is_active: z.boolean(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -106,8 +128,19 @@ const appRouter = t.router({
       description: z.string(),
       price: z.number().positive(),
       ingredients: z.string(),
+      ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
+      allergens_list: z.array(z.string()).optional(),
       nutritional_value: z.string(),
+      nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
       image_url: z.url(),
       is_active: z.boolean(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -117,8 +150,19 @@ const appRouter = t.router({
       description: z.string(),
       price: z.number().positive(),
       ingredients: z.string(),
+      ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
+      allergens_list: z.array(z.string()).optional(),
       nutritional_value: z.string(),
+      nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
       image_url: z.url(),
       is_active: z.boolean(),
     }).omit({
@@ -129,8 +173,19 @@ const appRouter = t.router({
       description: z.string(),
       price: z.number().positive(),
       ingredients: z.string(),
+      ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
+      allergens_list: z.array(z.string()).optional(),
       nutritional_value: z.string(),
+      nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
       image_url: z.url(),
       is_active: z.boolean(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -142,8 +197,19 @@ const appRouter = t.router({
         description: z.string(),
         price: z.number().positive(),
         ingredients: z.string(),
+        ingredients_list: z.array(z.string()).optional(),
         allergens: z.string(),
+        allergens_list: z.array(z.string()).optional(),
         nutritional_value: z.string(),
+        nutritional: z
+          .object({
+            calories: z.number().optional(),
+            protein: z.number().optional(),
+            carbs: z.number().optional(),
+            fat: z.number().optional(),
+            serving: z.string().optional(),
+          })
+          .optional(),
         image_url: z.url(),
         is_active: z.boolean(),
       }).omit({
@@ -155,8 +221,19 @@ const appRouter = t.router({
       description: z.string(),
       price: z.number().positive(),
       ingredients: z.string(),
+      ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
+      allergens_list: z.array(z.string()).optional(),
       nutritional_value: z.string(),
+      nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
       image_url: z.url(),
       is_active: z.boolean(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -296,6 +373,18 @@ const appRouter = t.router({
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
+      product_image_url: z.string().optional(),
+      product_ingredients_list: z.array(z.string()).optional(),
+      product_allergens_list: z.array(z.string()).optional(),
+      product_nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getStockByMachineAndProduct: publicProcedure.input(z.object({
       machine_id: z.string().min(1),
@@ -316,6 +405,18 @@ const appRouter = t.router({
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
+      product_image_url: z.string().optional(),
+      product_ingredients_list: z.array(z.string()).optional(),
+      product_allergens_list: z.array(z.string()).optional(),
+      product_nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getOutOfStockItems: publicProcedure.output(z.array(z.object({
       id: z.string().min(1),
@@ -326,6 +427,18 @@ const appRouter = t.router({
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
+      product_image_url: z.string().optional(),
+      product_ingredients_list: z.array(z.string()).optional(),
+      product_allergens_list: z.array(z.string()).optional(),
+      product_nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     createStock: publicProcedure.input(z.object({
       id: z.string().min(1),

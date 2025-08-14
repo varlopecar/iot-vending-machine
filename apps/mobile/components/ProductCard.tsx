@@ -42,6 +42,13 @@ export default function ProductCard({
             >
               {product.price.toFixed(2)}€
             </Text>
+            {typeof product.stockQty === 'number' && (
+              <Text
+                className={`${isDark ? "text-dark-textSecondary" : "text-light-text-secondary"} text-xs mt-1`}
+              >
+                Stock: {product.stockQty}
+              </Text>
+            )}
           </View>
         </View>
         <TouchableOpacity

@@ -12,6 +12,7 @@ export interface Product {
     carbs: number;
     fat: number;
   };
+  stockQty?: number;
 }
 
 export interface CartItem {

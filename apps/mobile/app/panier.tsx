@@ -217,7 +217,7 @@ export default function CartScreen() {
                   console.error('[Commande] Connexion requise: utilisateur ou token manquant');
                   return;
                 }
-                const MACHINE_ID = 'cmeay7efo003v0tkj1azob9ei';
+                const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
                 router.push({
                   pathname: '/payment-success',
                   params: {
@@ -235,7 +235,7 @@ export default function CartScreen() {
                 console.error('[Commande] Connexion requise: utilisateur ou token manquant');
                 return;
               }
-              const MACHINE_ID = 'cmeay7efo003v0tkj1azob9ei';
+              const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
               router.push({
                 pathname: '/checkout',
                 params: {

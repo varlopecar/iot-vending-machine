@@ -6,8 +6,19 @@ export const productSchema = z.object({
   description: z.string(),
   price: z.number().positive(),
   ingredients: z.string(),
+  ingredients_list: z.array(z.string()).optional(),
   allergens: z.string(),
+  allergens_list: z.array(z.string()).optional(),
   nutritional_value: z.string(),
+  nutritional: z
+    .object({
+      calories: z.number().optional(),
+      protein: z.number().optional(),
+      carbs: z.number().optional(),
+      fat: z.number().optional(),
+      serving: z.string().optional(),
+    })
+    .optional(),
   image_url: z.url(),
   is_active: z.boolean(),
 });
