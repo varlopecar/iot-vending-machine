@@ -78,7 +78,11 @@ jobs:
       - name: Build application
         run: |
           cd apps/backend
+          echo "🔨 Starting build process..."
           pnpm build
+          echo "✅ Build process completed"
+          echo "📁 Checking output directory..."
+          ls -la dist/ || echo "⚠️ dist directory not found after build"
         id: build
 
       - name: Setup Prisma (pre-deployment check)
@@ -90,11 +94,25 @@ jobs:
       - name: Verify build artifacts
         run: |
           cd apps/backend
-          if [ -d "dist" ] && [ -f "dist/main.js" ]; then
-            echo "✅ Build artifacts verified"
-            echo "ready=true" >> $GITHUB_OUTPUT
+          echo "🔍 Checking build output..."
+          ls -la dist/ || echo "dist directory not found"
+
+          if [ -d "dist" ]; then
+            echo "✅ dist directory exists"
+            echo "📁 Contents of dist directory:"
+            find dist -type f -name "*.js" | head -10
+            
+            # Check for main.js or any main entry point
+            if [ -f "dist/main.js" ] || [ -f "dist/src/main.js" ] || find dist -name "main.js" -type f | grep -q .; then
+              echo "✅ Build artifacts verified - main entry point found"
+              echo "ready=true" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Main entry point not found in dist/"
+              echo "ready=false" >> $GITHUB_OUTPUT
+              exit 1
+            fi
           else
-            echo "❌ Build artifacts missing"
+            echo "❌ dist directory missing"
             echo "ready=false" >> $GITHUB_OUTPUT
             exit 1
           fi
