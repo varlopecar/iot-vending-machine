@@ -41,8 +41,25 @@ export const restockToMaxSchema = z.object({
   notes: z.string().optional(),
 });
 
+// Schéma pour ravitaillement d'un slot au maximum
+export const restockSlotToMaxSchema = z.object({
+  stock_id: z.string().min(1),
+  user_id: z.string().min(1).optional(), // Optionnel - sera déterminé automatiquement
+  notes: z.string().optional(),
+});
+
+// Schéma pour ravitaillement manuel d'un slot (garde pour compatibilité)
+export const manualRestockSchema = z.object({
+  stock_id: z.string().min(1),
+  quantity: z.number().int().positive(),
+  user_id: z.string().min(1).optional(), // Optionnel - sera déterminé automatiquement
+  notes: z.string().optional(),
+});
+
 export type CreateRestockInput = z.infer<typeof createRestockSchema>;
 export type RestockToMaxInput = z.infer<typeof restockToMaxSchema>;
+export type RestockSlotToMaxInput = z.infer<typeof restockSlotToMaxSchema>;
+export type ManualRestockInput = z.infer<typeof manualRestockSchema>;
 export type Restock = z.infer<typeof restockSchema>;
 export type RestockItem = z.infer<typeof restockItemSchema>;
 export type RestockWithItems = z.infer<typeof restockWithItemsSchema>;

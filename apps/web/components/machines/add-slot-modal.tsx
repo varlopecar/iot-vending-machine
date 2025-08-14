@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button, Input } from "../ui";
 import { api } from "../../lib/trpc/client";
 
@@ -26,22 +26,41 @@ export function AddSlotModal({
     api.products.getAllProducts.useQuery();
 
   // Récupérer le prochain slot disponible (si l'endpoint existe)
-  const { data: nextSlotNumber } =
+  const { data: nextSlotNumber, refetch: refetchNextSlot } =
     api.stocks.getNextAvailableSlotNumber?.useQuery(
       { machine_id: machineId },
       { enabled: isOpen }
-    ) || { data: undefined };
+    ) || { data: undefined, refetch: () => Promise.resolve() };
+
+  // Utils pour invalider les queries
+  const utils = api.useUtils();
 
   // Mutation pour ajouter un slot
   const addSlotMutation = api.stocks.addSlot.useMutation({
+    retry: 3, // Retry automatique 3 fois en cas d'erreur de connexion
+    retryDelay: 1000, // Attendre 1 seconde entre les tentatives
     onSuccess: () => {
       onSlotAdded?.();
+      // Invalider et refetch les queries liées
+      utils.stocks.getNextAvailableSlotNumber.invalidate({
+        machine_id: machineId,
+      });
       onClose();
       resetForm();
     },
     onError: (error) => {
       console.error("Erreur lors de l'ajout du slot:", error);
-      alert("Erreur: " + error.message);
+      // Message plus informatif selon le type d'erreur
+      if (
+        error.message.includes("Server has closed") ||
+        error.message.includes("connection")
+      ) {
+        alert(
+          "Erreur de connexion. Le serveur redémarre peut-être. Réessayez dans quelques secondes."
+        );
+      } else {
+        alert("Erreur: " + error.message);
+      }
     },
   });
 
@@ -50,6 +69,13 @@ export function AddSlotModal({
     setSlotNumber(1);
     setInitialQuantity(0);
   };
+
+  // Refetch le prochain slot disponible quand le modal s'ouvre
+  useEffect(() => {
+    if (isOpen && refetchNextSlot) {
+      refetchNextSlot();
+    }
+  }, [isOpen, refetchNextSlot]);
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();

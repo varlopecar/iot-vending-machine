@@ -20,6 +20,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "../ui";
 import { SlotCard } from "./slot-card";
+import { EmptySlotCard } from "./empty-slot-card";
 import { AddSlotModal } from "./add-slot-modal";
 import { api } from "../../lib/trpc/client";
 
@@ -57,7 +58,6 @@ const statusConfig = {
 };
 
 export function MachineDetail({ machineId }: MachineDetailProps) {
-  const [restockingSlot, setRestockingSlot] = useState<string | null>(null);
   const [restockingAll, setRestockingAll] = useState(false);
   const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
 
@@ -89,14 +89,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     },
   });
 
-  const handleRestockSlot = (slotId: string) => {
-    setRestockingSlot(slotId);
-    // TODO: Implémenter le ravitaillement d'un slot spécifique
-    // Pour l'instant, on simule juste l'état de chargement
-    setTimeout(() => {
-      setRestockingSlot(null);
-    }, 2000);
-  };
+
 
   const handleRestockAll = () => {
     if (!machine) return;
@@ -171,9 +164,6 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     );
   }
 
-  const statusInfo = statusConfig[machine.status as MachineStatus];
-  const StatusIcon = statusInfo.icon;
-
   // Calculer les statistiques des slots
   const totalSlots = slots?.length || 0;
   const emptySlots = slots?.filter((slot) => slot.quantity === 0).length || 0;
@@ -185,6 +175,17 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     slots?.filter((slot) => slot.quantity === slot.max_capacity).length || 0;
   const needsRestockSlots =
     slots?.filter((slot) => slot.quantity < slot.max_capacity).length || 0;
+
+  // Calcul des slots non-configurés et statut machine
+  const configuredSlots = totalSlots;
+  const unConfiguredSlots = 6 - configuredSlots;
+  const isFullyConfigured = configuredSlots === 6;
+  const actualStatus = isFullyConfigured
+    ? machine?.status || "online"
+    : "out_of_service";
+
+  const statusInfo = statusConfig[actualStatus as MachineStatus];
+  const StatusIcon = statusInfo.icon;
 
   return (
     <div className="space-y-6">
@@ -222,6 +223,34 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           </Button>
         </div>
       </motion.div>
+
+      {/* Alerte de configuration incomplète */}
+      {!isFullyConfigured && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+        >
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-medium text-yellow-800 mb-1">
+                Configuration incomplète
+              </h3>
+              <p className="text-sm text-yellow-700">
+                Cette machine n'est pas entièrement configurée.
+                <strong>
+                  {" "}
+                  {unConfiguredSlots} slot{unConfiguredSlots > 1 ? "s" : ""}{" "}
+                  restant{unConfiguredSlots > 1 ? "s" : ""}
+                </strong>{" "}
+                à configurer sur 6 total. La machine est actuellement hors
+                service jusqu'à ce que tous les slots soient configurés.
+              </p>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Informations générales de la machine */}
       <motion.div
@@ -307,19 +336,6 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                 <History className="w-4 h-4 mr-2" />
                 Historique des ravitaillements
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => setIsAddSlotModalOpen(true)}
-                disabled={totalSlots >= 6}
-              >
-                <Plus className="w-4 h-4 mr-2" />
-                Ajouter un slot
-                {totalSlots >= 6 && (
-                  <Badge variant="warning" className="ml-2">
-                    Max
-                  </Badge>
-                )}
-              </Button>
             </div>
           </CardContent>
         </Card>
@@ -343,9 +359,10 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            {slots && slots.length > 0 ? (
-              <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {slots
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+              {/* Slots configurés */}
+              {slots &&
+                slots
                   .sort((a, b) => a.slot_number - b.slot_number)
                   .map((slot, index) => (
                     <motion.div
@@ -356,26 +373,36 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                     >
                       <SlotCard
                         slot={slot}
-                        onRestock={handleRestockSlot}
                         onEdit={handleEditSlot}
-                        isLoading={restockingSlot === slot.id}
+                        onRestockComplete={() => refetchSlots()}
                       />
                     </motion.div>
                   ))}
-              </div>
-            ) : (
-              <div className="text-center py-12">
-                <AlertTriangle className="w-12 h-12 text-muted-foreground mx-auto mb-4" />
-                <h3 className="text-lg font-medium mb-2">
-                  Aucun slot configuré
-                </h3>
+
+              {/* Card "Ajouter un produit" (seulement si pas complètement configuré) */}
+              {unConfiguredSlots > 0 && (
+                <motion.div
+                  key="add-product-card"
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{
+                    delay: 0.4 + configuredSlots * 0.05,
+                  }}
+                >
+                  <EmptySlotCard
+                    onAddSlot={() => setIsAddSlotModalOpen(true)}
+                  />
+                </motion.div>
+              )}
+            </div>
+
+            {/* Message si aucun slot du tout */}
+            {totalSlots === 0 && (
+              <div className="text-center py-8">
                 <p className="text-muted-foreground mb-4">
-                  Cette machine n'a aucun slot configuré pour le moment.
+                  Cliquez sur "Ajouter un produit" ci-dessus pour commencer la
+                  configuration.
                 </p>
-                <Button onClick={() => setIsAddSlotModalOpen(true)}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Ajouter un slot
-                </Button>
               </div>
             )}
           </CardContent>

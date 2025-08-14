@@ -16,11 +16,11 @@ import {
   X,
 } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
-import { Button } from "@/components/ui/button";
+import { Button } from "@/components/ui";
 
 const navigation = [
   {
-    name: "Dashboard",
+    name: "Tableau de bord",
     href: "/",
     icon: LayoutDashboard,
   },
@@ -35,9 +35,24 @@ const navigation = [
     icon: Monitor,
   },
   {
+    name: "Stocks",
+    href: "/stocks",
+    icon: Boxes,
+  },
+  {
+    name: "Commandes",
+    href: "/orders",
+    icon: ShoppingCart,
+  },
+  {
     name: "Statistiques",
     href: "/analytics",
     icon: BarChart3,
+  },
+  {
+    name: "Paramètres",
+    href: "/settings",
+    icon: Settings,
   },
 ];
 

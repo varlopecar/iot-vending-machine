@@ -12,7 +12,8 @@ import {
   ArrowUp,
   Wrench,
 } from "lucide-react";
-import { Card, CardContent, CardHeader, Button, Badge } from "@/components/ui";
+import { Card, CardContent, CardHeader, Button, Badge } from "../ui";
+import { api } from "../../lib/trpc/client";
 import Image from "next/image";
 
 type StockLevel = "empty" | "low" | "normal" | "full";
@@ -29,9 +30,8 @@ interface SlotCardProps {
     product_image_url?: string;
     product_id: string;
   };
-  onRestock: (slotId: string) => void;
   onEdit: (slotId: string) => void;
-  isLoading?: boolean;
+  onRestockComplete?: () => void;
 }
 
 const getStockLevel = (
@@ -80,13 +80,40 @@ const stockLevelConfig = {
   },
 };
 
-export function SlotCard({
-  slot,
-  onRestock,
-  onEdit,
-  isLoading = false,
-}: SlotCardProps) {
+export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
   const [showActions, setShowActions] = useState(false);
+  const [isRestocking, setIsRestocking] = useState(false);
+
+  // Mutation pour ravitailler au maximum
+  const restockSlotMutation = api.restocks.restockSlotToMax.useMutation({
+    retry: 3,
+    retryDelay: 1000,
+    onSuccess: () => {
+      onRestockComplete?.();
+      setIsRestocking(false);
+    },
+    onError: (error) => {
+      console.error("Erreur lors du ravitaillement:", error);
+      setIsRestocking(false);
+      if (
+        error.message.includes("Server has closed") ||
+        error.message.includes("connection")
+      ) {
+        alert(
+          "Erreur de connexion. Le serveur redémarre peut-être. Réessayez dans quelques secondes."
+        );
+      } else {
+        alert("Erreur: " + error.message);
+      }
+    },
+  });
+
+  const handleRestockSlot = () => {
+    setIsRestocking(true);
+    restockSlotMutation.mutate({
+      stock_id: slot.id,
+    });
+  };
 
   const stockLevel = getStockLevel(
     slot.quantity,
@@ -156,12 +183,12 @@ export function SlotCard({
                   variant="outline"
                   size="sm"
                   className="h-8 w-8 p-0 opacity-70 group-hover:opacity-100 transition-opacity"
-                  onClick={() => onRestock(slot.id)}
-                  disabled={isLoading}
-                  aria-label={`Ravitailler le slot ${slot.slot_number}`}
+                  onClick={handleRestockSlot}
+                  disabled={isRestocking}
+                  aria-label={`Ravitailler le slot ${slot.slot_number} au maximum`}
                   title="Ravitailler au maximum"
                 >
-                  {isLoading ? (
+                  {isRestocking ? (
                     <RefreshCw className="h-3 w-3 animate-spin" />
                   ) : (
                     <ArrowUp className="h-3 w-3" />
@@ -248,12 +275,12 @@ export function SlotCard({
                 variant="outline"
                 size="sm"
                 className="w-full justify-start"
-                onClick={() => onRestock(slot.id)}
-                disabled={isLoading}
-                aria-label={`Ravitailler le slot ${slot.slot_number}`}
+                onClick={handleRestockSlot}
+                disabled={isRestocking}
+                aria-label={`Ravitailler le slot ${slot.slot_number} au maximum`}
               >
                 <Wrench className="w-3 h-3 mr-2" />
-                Ravitailler manuellement
+                Ravitailler au maximum
               </Button>
             </motion.div>
           )}

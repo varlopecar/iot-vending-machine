@@ -4,9 +4,11 @@ import { z } from 'zod';
 import {
   createRestockSchema,
   restockToMaxSchema,
+  restockSlotToMaxSchema,
+  manualRestockSchema,
   restockWithItemsSchema,
 } from './restocks.schema';
-import type { CreateRestockInput, RestockToMaxInput } from './restocks.schema';
+import type { CreateRestockInput, RestockToMaxInput, RestockSlotToMaxInput, ManualRestockInput } from './restocks.schema';
 
 @Router({ alias: 'restocks' })
 export class RestocksRouter {
@@ -41,5 +43,21 @@ export class RestocksRouter {
   })
   restockToMax(@Input() restockData: RestockToMaxInput) {
     return this.restocksService.restockToMax(restockData);
+  }
+
+  @Mutation({
+    input: restockSlotToMaxSchema,
+    output: restockWithItemsSchema,
+  })
+  restockSlotToMax(@Input() restockData: RestockSlotToMaxInput) {
+    return this.restocksService.restockSlotToMax(restockData);
+  }
+
+  @Mutation({
+    input: manualRestockSchema,
+    output: restockWithItemsSchema,
+  })
+  manualRestock(@Input() restockData: ManualRestockInput) {
+    return this.restocksService.manualRestock(restockData);
   }
 }

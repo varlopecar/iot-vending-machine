@@ -1076,6 +1076,55 @@ const appRouter = t.router({
         product_name: z.string(),
         product_image_url: z.string().optional(),
       })),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    restockSlotToMax: publicProcedure.input(z.object({
+      stock_id: z.string().min(1),
+      user_id: z.string().min(1).optional(), // Optionnel - sera déterminé automatiquement
+      notes: z.string().optional(),
+    })).output(z.object({
+      id: z.string().min(1),
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1),
+      created_at: z.string(),
+      notes: z.string().optional(),
+    }).extend({
+      items: z.array(z.object({
+        id: z.string().min(1),
+        restock_id: z.string().min(1),
+        stock_id: z.string().min(1),
+        quantity_before: z.number().int().min(0),
+        quantity_after: z.number().int().min(0),
+        quantity_added: z.number().int(),
+      }).extend({
+        slot_number: z.number().int().positive(),
+        product_name: z.string(),
+        product_image_url: z.string().optional(),
+      })),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    manualRestock: publicProcedure.input(z.object({
+      stock_id: z.string().min(1),
+      quantity: z.number().int().positive(),
+      user_id: z.string().min(1).optional(), // Optionnel - sera déterminé automatiquement
+      notes: z.string().optional(),
+    })).output(z.object({
+      id: z.string().min(1),
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1),
+      created_at: z.string(),
+      notes: z.string().optional(),
+    }).extend({
+      items: z.array(z.object({
+        id: z.string().min(1),
+        restock_id: z.string().min(1),
+        stock_id: z.string().min(1),
+        quantity_before: z.number().int().min(0),
+        quantity_after: z.number().int().min(0),
+        quantity_added: z.number().int(),
+      }).extend({
+        slot_number: z.number().int().positive(),
+        product_name: z.string(),
+        product_image_url: z.string().optional(),
+      })),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   })
 });

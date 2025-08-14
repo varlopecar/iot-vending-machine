@@ -5,7 +5,6 @@ import { motion } from "framer-motion";
 import Link from "next/link";
 import {
   Search,
-  Filter,
   Plus,
   Edit,
   MapPin,
@@ -16,9 +15,9 @@ import {
   XCircle,
   Settings,
   TrendingUp,
-  Package,
   Euro,
   RefreshCw,
+  AlertTriangle,
 } from "lucide-react";
 import {
   Card,
@@ -28,8 +27,8 @@ import {
   Button,
   Input,
   Badge,
-} from "@/components/ui";
-import { api } from "@/lib/trpc/client";
+} from "../ui";
+import { api } from "../../lib/trpc/client";
 
 // Types pour les machines
 type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
@@ -110,6 +109,11 @@ export function MachineList() {
         statusFilter === "all" || machine.status === statusFilter;
       return matchesSearch && matchesStatus;
     }) || [];
+
+  // Calculer les machines incomplètes (en supposant que out_of_service = configuration incomplète)
+  const incompleteMachines =
+    machines?.filter((machine) => machine.status === "out_of_service") || [];
+  const incompleteCount = incompleteMachines.length;
 
   if (isLoading) {
     return (
@@ -193,6 +197,48 @@ export function MachineList() {
           Ajouter une machine
         </Button>
       </div>
+
+      {/* Alerte pour les machines incomplètes */}
+      {incompleteCount > 0 && (
+        <motion.div
+          initial={{ opacity: 0, y: -10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.3 }}
+        >
+          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
+            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <div className="flex-1">
+              <h3 className="font-medium text-yellow-800 mb-1">
+                {incompleteCount} machine{incompleteCount > 1 ? "s" : ""}{" "}
+                nécessite{incompleteCount > 1 ? "nt" : ""} une configuration
+              </h3>
+              <p className="text-sm text-yellow-700 mb-3">
+                Ces machines ne sont pas entièrement configurées et sont
+                actuellement hors service. Chaque machine doit avoir 6 slots
+                configurés pour être opérationnelle.
+              </p>
+              <div className="flex flex-wrap gap-2">
+                {incompleteMachines.slice(0, 3).map((machine) => (
+                  <Link key={machine.id} href={`/machines/${machine.id}`}>
+                    <Badge
+                      variant="outline"
+                      className="hover:bg-yellow-100 cursor-pointer"
+                    >
+                      {machine.label}
+                    </Badge>
+                  </Link>
+                ))}
+                {incompleteCount > 3 && (
+                  <Badge variant="outline">
+                    +{incompleteCount - 3} autre
+                    {incompleteCount - 3 > 1 ? "s" : ""}
+                  </Badge>
+                )}
+              </div>
+            </div>
+          </div>
+        </motion.div>
+      )}
 
       {/* Filters */}
       <Card>
