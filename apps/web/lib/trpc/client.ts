@@ -1,10 +1,10 @@
 'use client'
 
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
-import { createTRPCReact } from '@trpc/react-query'
+import { createTRPCReact, type CreateTRPCReact } from '@trpc/react-query'
 import type { AppRouter } from '../../../../packages/globals/trpc/src/server/server'
 
-export const api = createTRPCReact<AppRouter>()
+export const api: CreateTRPCReact<AppRouter, unknown, null> = createTRPCReact<AppRouter>()
 
 export const getUrl = () => {
   const base = (() => {

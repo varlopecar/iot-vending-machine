@@ -466,6 +466,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getStockById: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
       id: z.string().min(1),
@@ -473,6 +475,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getStocksByMachine: publicProcedure.input(z.object({ machine_id: z.string().min(1) })).output(z.array(z.object({
       id: z.string().min(1),
@@ -480,6 +484,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
@@ -505,6 +511,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     }).nullable()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getLowStockItems: publicProcedure.input(z.object({ threshold: z.number().int().positive().optional() })).output(z.array(z.object({
       id: z.string().min(1),
@@ -512,6 +520,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
@@ -534,6 +544,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
@@ -556,6 +568,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     }).omit({
       id: true,
     })).output(z.object({
@@ -564,6 +578,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateStock: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -573,6 +589,8 @@ const appRouter = t.router({
         product_id: z.string().min(1),
         quantity: z.number().int().min(0),
         slot_number: z.number().int().positive(),
+        max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+        low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
       }).omit({
         id: true,
       }).partial(),
@@ -582,6 +600,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateStockQuantity: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -592,6 +612,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     addStockQuantity: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -602,6 +624,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     removeStockQuantity: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -612,6 +636,23 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getNextAvailableSlotNumber: publicProcedure.input(z.object({ machine_id: z.string().min(1) })).output(z.number().int().positive()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    addSlot: publicProcedure.input(z.object({
+      machine_id: z.string().min(1),
+      product_id: z.string().min(1),
+      slot_number: z.number().int().positive(),
+      initial_quantity: z.number().int().min(0).max(4).default(0), // Quantité initiale (0-4)
+    })).output(z.object({
+      id: z.string().min(1),
+      machine_id: z.string().min(1),
+      product_id: z.string().min(1),
+      quantity: z.number().int().min(0),
+      slot_number: z.number().int().positive(),
+      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
+      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   loyalty: t.router({
@@ -905,6 +946,136 @@ const appRouter = t.router({
       stripeRefundId: z.string(),
       status: z.string(),
       amountCents: z.number(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  jobs: t.router({
+    getJobsStatus: publicProcedure.output(z.object({
+      expireStaleOrders: z.object({
+        name: z.string(),
+        schedule: z.string(),
+        timezone: z.string(),
+        description: z.string(),
+      }),
+      cleanupStalePaymentIntents: z.object({
+        name: z.string(),
+        schedule: z.string(),
+        timezone: z.string(),
+        description: z.string(),
+      }),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getJobMetrics: publicProcedure.output(z.object({
+      paymentsExpiredTotal: z.number(),
+      paymentIntentsCanceledTotal: z.number(),
+      stockReleasedTotal: z.number(),
+      jobExecutionTime: z.number(),
+      lastExecutionTime: z.string(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    runExpireStaleOrdersManually: publicProcedure.output(z.object({
+      ordersExpired: z.number(),
+      paymentIntentsCanceled: z.number(),
+      stockReleased: z.number(),
+      executionTime: z.number(),
+      errors: z.array(z.string()),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    runCleanupStalePaymentIntentsManually: publicProcedure.output(z.object({
+      paymentIntentsCanceled: z.number(),
+      paymentsUpdated: z.number(),
+      executionTime: z.number(),
+      errors: z.array(z.string()),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  restocks: t.router({
+    getAllRestocks: publicProcedure.output(z.array(z.object({
+      id: z.string().min(1),
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1),
+      created_at: z.string(),
+      notes: z.string().optional(),
+    }).extend({
+      items: z.array(z.object({
+        id: z.string().min(1),
+        restock_id: z.string().min(1),
+        stock_id: z.string().min(1),
+        quantity_before: z.number().int().min(0),
+        quantity_after: z.number().int().min(0),
+        quantity_added: z.number().int(),
+      }).extend({
+        slot_number: z.number().int().positive(),
+        product_name: z.string(),
+        product_image_url: z.string().optional(),
+      })),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getRestocksByMachine: publicProcedure.input(z.object({ machine_id: z.string().min(1) })).output(z.array(z.object({
+      id: z.string().min(1),
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1),
+      created_at: z.string(),
+      notes: z.string().optional(),
+    }).extend({
+      items: z.array(z.object({
+        id: z.string().min(1),
+        restock_id: z.string().min(1),
+        stock_id: z.string().min(1),
+        quantity_before: z.number().int().min(0),
+        quantity_after: z.number().int().min(0),
+        quantity_added: z.number().int(),
+      }).extend({
+        slot_number: z.number().int().positive(),
+        product_name: z.string(),
+        product_image_url: z.string().optional(),
+      })),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    createRestock: publicProcedure.input(z.object({
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1),
+      notes: z.string().optional(),
+      items: z.array(z.object({
+        stock_id: z.string().min(1),
+        quantity_to_add: z.number().int().positive(),
+      })).min(1),
+    })).output(z.object({
+      id: z.string().min(1),
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1),
+      created_at: z.string(),
+      notes: z.string().optional(),
+    }).extend({
+      items: z.array(z.object({
+        id: z.string().min(1),
+        restock_id: z.string().min(1),
+        stock_id: z.string().min(1),
+        quantity_before: z.number().int().min(0),
+        quantity_after: z.number().int().min(0),
+        quantity_added: z.number().int(),
+      }).extend({
+        slot_number: z.number().int().positive(),
+        product_name: z.string(),
+        product_image_url: z.string().optional(),
+      })),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    restockToMax: publicProcedure.input(z.object({
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1).optional(), // Optionnel - sera déterminé automatiquement
+      notes: z.string().optional(),
+    })).output(z.object({
+      id: z.string().min(1),
+      machine_id: z.string().min(1),
+      user_id: z.string().min(1),
+      created_at: z.string(),
+      notes: z.string().optional(),
+    }).extend({
+      items: z.array(z.object({
+        id: z.string().min(1),
+        restock_id: z.string().min(1),
+        stock_id: z.string().min(1),
+        quantity_before: z.number().int().min(0),
+        quantity_after: z.number().int().min(0),
+        quantity_added: z.number().int(),
+      }).extend({
+        slot_number: z.number().int().positive(),
+        product_name: z.string(),
+        product_image_url: z.string().optional(),
+      })),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   })
 });

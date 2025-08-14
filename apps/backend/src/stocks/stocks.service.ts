@@ -1,7 +1,8 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
 import {
   CreateStockInput,
   UpdateStockInput,
+  AddSlotInput,
   Stock,
   StockWithProduct,
 } from './stocks.schema';
@@ -42,6 +43,8 @@ export class StocksService {
       product_id: s.product_id,
       quantity: s.quantity,
       slot_number: s.slot_number,
+      max_capacity: s.max_capacity,
+      low_threshold: s.low_threshold,
       product_name: s.product.name,
       product_price: Number(s.product.price),
       product_image_url: s.product.image_url,
@@ -104,6 +107,8 @@ export class StocksService {
       product_id: s.product_id,
       quantity: s.quantity,
       slot_number: s.slot_number,
+      max_capacity: s.max_capacity,
+      low_threshold: s.low_threshold,
       product_name: s.product.name,
       product_price: Number(s.product.price),
       product_image_url: s.product.image_url,
@@ -117,11 +122,89 @@ export class StocksService {
     return this.getLowStockItems(0);
   }
 
+  /**
+   * Trouve le prochain numéro de slot disponible pour une machine
+   */
+  async getNextAvailableSlotNumber(machineId: string): Promise<number> {
+    const existingSlots = await this.prisma.stock.findMany({
+      where: { machine_id: machineId },
+      select: { slot_number: true },
+      orderBy: { slot_number: 'asc' },
+    });
+
+    const usedSlots = existingSlots.map(s => s.slot_number);
+    
+    // Trouve le premier slot disponible de 1 à 6
+    for (let i = 1; i <= 6; i++) {
+      if (!usedSlots.includes(i)) {
+        return i;
+      }
+    }
+    
+    throw new BadRequestException('Aucun slot disponible (maximum 6 slots par machine)');
+  }
+
+  /**
+   * Ajoute un nouveau slot à une machine avec validation des contraintes
+   */
+  async addSlot(slotData: AddSlotInput): Promise<Stock> {
+    // Vérifier que la machine existe
+    const machine = await this.prisma.machine.findUnique({
+      where: { id: slotData.machine_id },
+    });
+    if (!machine) {
+      throw new NotFoundException(`Machine ${slotData.machine_id} non trouvée`);
+    }
+
+    // Vérifier que le produit existe
+    const product = await this.prisma.product.findUnique({
+      where: { id: slotData.product_id },
+    });
+    if (!product) {
+      throw new NotFoundException(`Produit ${slotData.product_id} non trouvé`);
+    }
+
+    // Vérifier qu'il n'y a pas déjà 6 slots (limite maximale)
+    const existingSlots = await this.prisma.stock.count({
+      where: { machine_id: slotData.machine_id },
+    });
+    if (existingSlots >= 6) {
+      throw new BadRequestException('Une machine ne peut avoir que 6 slots maximum');
+    }
+
+    // Vérifier que le numéro de slot n'est pas déjà pris
+    const existingSlot = await this.prisma.stock.findFirst({
+      where: {
+        machine_id: slotData.machine_id,
+        slot_number: slotData.slot_number,
+      },
+    });
+    if (existingSlot) {
+      throw new BadRequestException(`Le slot ${slotData.slot_number} est déjà occupé`);
+    }
+
+    // Créer le nouveau slot avec les valeurs par défaut
+    const stock = await this.prisma.stock.create({
+      data: {
+        machine_id: slotData.machine_id,
+        product_id: slotData.product_id,
+        slot_number: slotData.slot_number,
+        quantity: slotData.initial_quantity,
+        max_capacity: 4, // Maximum 4 produits par slot
+        low_threshold: 1, // Seuil bas à 1 pour tous
+      },
+    });
+
+    return this.mapStock(stock);
+  }
+
   private mapStock = (s: any): Stock => ({
     id: s.id,
     machine_id: s.machine_id,
     product_id: s.product_id,
     quantity: s.quantity,
     slot_number: s.slot_number,
+    max_capacity: s.max_capacity,
+    low_threshold: s.low_threshold,
   });
 }

@@ -106,7 +106,7 @@ export function AddProductModal({
 
       const newProduct: Omit<Product, "id" | "sold"> = {
         name: formData.name.trim(),
-        category: formData.category,
+        category: formData.category || "",
         price,
         cost,
         margin: price - cost,

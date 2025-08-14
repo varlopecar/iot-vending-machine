@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { motion } from "framer-motion";
+import Link from "next/link";
 import {
   Search,
   Filter,
@@ -160,7 +161,7 @@ export function MachineList() {
     );
   }
 
-  const getConnectivityIcon = (connectivity: string) => {
+  const getConnectivityIcon = (connectivity: string | undefined) => {
     switch (connectivity) {
       case "strong":
         return <Wifi className="h-4 w-4 text-green-500" />;
@@ -269,197 +270,209 @@ export function MachineList() {
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Card
-                className="group hover:shadow-lg transition-all duration-200"
-                role="article"
-                aria-labelledby={`machine-title-${machine.id}`}
-              >
-                <CardHeader className="pb-4">
-                  <div className="flex items-start justify-between">
-                    <div className="flex-1">
-                      <CardTitle
-                        id={`machine-title-${machine.id}`}
-                        className="text-lg mb-2"
-                      >
-                        {machine.label}
-                      </CardTitle>
-                      <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
-                        <MapPin className="h-4 w-4" aria-hidden="true" />
-                        <span>{machine.location}</span>
+              <Link href={`/machines/${machine.id}`} className="block">
+                <Card
+                  className="group hover:shadow-lg transition-all duration-200"
+                  role="article"
+                  aria-labelledby={`machine-title-${machine.id}`}
+                >
+                  <CardHeader className="pb-4">
+                    <div className="flex items-start justify-between">
+                      <div className="flex-1">
+                        <CardTitle
+                          id={`machine-title-${machine.id}`}
+                          className="text-lg mb-2"
+                        >
+                          {machine.label}
+                        </CardTitle>
+                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+                          <MapPin className="h-4 w-4" aria-hidden="true" />
+                          <span>{machine.location}</span>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <Badge
+                            variant={statusInfo.variant}
+                            className="text-xs"
+                            aria-label={`Statut de la machine: ${statusInfo.label}`}
+                          >
+                            <StatusIcon
+                              className="h-3 w-3 mr-1"
+                              aria-hidden="true"
+                            />
+                            {statusInfo.label}
+                          </Badge>
+                          <span
+                            aria-label={`Connectivité: ${metrics.connectivity}`}
+                          >
+                            {getConnectivityIcon(metrics.connectivity)}
+                          </span>
+                        </div>
+                      </div>
+                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          aria-label={`Paramètres de ${machine.label}`}
+                          title="Paramètres"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // TODO: Ouvrir les paramètres
+                          }}
+                        >
+                          <Settings className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 w-8 p-0"
+                          aria-label={`Modifier ${machine.label}`}
+                          title="Modifier"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            e.stopPropagation();
+                            // TODO: Ouvrir l'édition
+                          }}
+                        >
+                          <Edit className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    </div>
+                  </CardHeader>
+
+                  <CardContent className="space-y-4">
+                    {/* Revenue and Orders */}
+                    <div className="grid grid-cols-2 gap-4 text-sm">
+                      <div className="flex items-center gap-2">
+                        <Euro
+                          className="h-4 w-4 text-green-500"
+                          aria-hidden="true"
+                        />
+                        <div>
+                          <div className="text-muted-foreground">Revenus</div>
+                          <div
+                            className="font-semibold text-lg"
+                            aria-label={`Revenus: ${metrics.revenue} euros`}
+                          >
+                            {metrics.revenue}€
+                          </div>
+                        </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <Badge
-                          variant={statusInfo.variant}
-                          className="text-xs"
-                          aria-label={`Statut de la machine: ${statusInfo.label}`}
-                        >
-                          <StatusIcon
-                            className="h-3 w-3 mr-1"
-                            aria-hidden="true"
-                          />
-                          {statusInfo.label}
-                        </Badge>
+                        <TrendingUp
+                          className="h-4 w-4 text-blue-500"
+                          aria-hidden="true"
+                        />
+                        <div>
+                          <div className="text-muted-foreground">Commandes</div>
+                          <div
+                            className="font-semibold text-lg"
+                            aria-label={`Commandes aujourd'hui: ${metrics.ordersToday}`}
+                          >
+                            {metrics.ordersToday}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+
+                    {/* Stock Status */}
+                    <div className="space-y-2">
+                      <div className="flex justify-between text-sm">
+                        <span className="text-muted-foreground">
+                          Stock global
+                        </span>
                         <span
-                          aria-label={`Connectivité: ${metrics.connectivity}`}
+                          className={
+                            metrics.stockLevel > 70
+                              ? "text-green-600"
+                              : metrics.stockLevel > 30
+                                ? "text-yellow-600"
+                                : "text-red-600"
+                          }
+                          aria-label={`Niveau de stock: ${metrics.stockLevel}%`}
                         >
-                          {getConnectivityIcon(metrics.connectivity)}
+                          {metrics.stockLevel}%
                         </span>
                       </div>
-                    </div>
-                    <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        aria-label={`Paramètres de ${machine.label}`}
-                        title="Paramètres"
+                      <div
+                        className="w-full bg-muted rounded-full h-2"
+                        role="progressbar"
+                        aria-valuenow={metrics.stockLevel}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label="Niveau de stock global"
                       >
-                        <Settings className="h-4 w-4" />
-                      </Button>
-                      <Button
-                        variant="ghost"
-                        size="sm"
-                        className="h-8 w-8 p-0"
-                        aria-label={`Modifier ${machine.label}`}
-                        title="Modifier"
-                      >
-                        <Edit className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </div>
-                </CardHeader>
-
-                <CardContent className="space-y-4">
-                  {/* Revenue and Orders */}
-                  <div className="grid grid-cols-2 gap-4 text-sm">
-                    <div className="flex items-center gap-2">
-                      <Euro
-                        className="h-4 w-4 text-green-500"
-                        aria-hidden="true"
-                      />
-                      <div>
-                        <div className="text-muted-foreground">Revenus</div>
                         <div
-                          className="font-semibold text-lg"
-                          aria-label={`Revenus: ${metrics.revenue} euros`}
+                          className={`h-2 rounded-full transition-all duration-300 ${
+                            metrics.stockLevel > 70
+                              ? "bg-green-500"
+                              : metrics.stockLevel > 30
+                                ? "bg-yellow-500"
+                                : "bg-red-500"
+                          }`}
+                          style={{ width: `${metrics.stockLevel}%` }}
+                        />
+                      </div>
+                    </div>
+
+                    {/* Product Stats */}
+                    <div className="grid grid-cols-3 gap-2 text-xs">
+                      <div className="text-center p-2 bg-muted/50 rounded-lg">
+                        <div
+                          className="font-semibold"
+                          aria-label={`Total produits: ${metrics.totalProducts}`}
                         >
-                          {metrics.revenue}€
+                          {metrics.totalProducts}
+                        </div>
+                        <div className="text-muted-foreground">Total</div>
+                      </div>
+                      <div className="text-center p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+                        <div
+                          className="font-semibold text-yellow-700 dark:text-yellow-400"
+                          aria-label={`Produits en stock faible: ${metrics.lowStockProducts}`}
+                        >
+                          {metrics.lowStockProducts}
+                        </div>
+                        <div className="text-yellow-600 dark:text-yellow-500">
+                          Stock faible
+                        </div>
+                      </div>
+                      <div className="text-center p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                        <div
+                          className="font-semibold text-red-700 dark:text-red-400"
+                          aria-label={`Produits en rupture: ${metrics.outOfStockProducts}`}
+                        >
+                          {metrics.outOfStockProducts}
+                        </div>
+                        <div className="text-red-600 dark:text-red-500">
+                          Rupture
                         </div>
                       </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <TrendingUp
-                        className="h-4 w-4 text-blue-500"
-                        aria-hidden="true"
-                      />
+
+                    {/* Additional Info */}
+                    <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
+                      <div>Dernière commande: {metrics.lastOrder}</div>
+                      <div>Température: {metrics.temperature}°C</div>
+                      <div>Maintenance: {metrics.lastMaintenance}</div>
                       <div>
-                        <div className="text-muted-foreground">Commandes</div>
-                        <div
-                          className="font-semibold text-lg"
-                          aria-label={`Commandes aujourd'hui: ${metrics.ordersToday}`}
-                        >
-                          {metrics.ordersToday}
-                        </div>
+                        Dernière mise à jour:{" "}
+                        {new Date(machine.last_update).toLocaleDateString(
+                          "fr-FR",
+                          {
+                            day: "2-digit",
+                            month: "2-digit",
+                            year: "numeric",
+                            hour: "2-digit",
+                            minute: "2-digit",
+                          }
+                        )}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Stock Status */}
-                  <div className="space-y-2">
-                    <div className="flex justify-between text-sm">
-                      <span className="text-muted-foreground">
-                        Stock global
-                      </span>
-                      <span
-                        className={
-                          metrics.stockLevel > 70
-                            ? "text-green-600"
-                            : metrics.stockLevel > 30
-                              ? "text-yellow-600"
-                              : "text-red-600"
-                        }
-                        aria-label={`Niveau de stock: ${metrics.stockLevel}%`}
-                      >
-                        {metrics.stockLevel}%
-                      </span>
-                    </div>
-                    <div
-                      className="w-full bg-muted rounded-full h-2"
-                      role="progressbar"
-                      aria-valuenow={metrics.stockLevel}
-                      aria-valuemin={0}
-                      aria-valuemax={100}
-                      aria-label="Niveau de stock global"
-                    >
-                      <div
-                        className={`h-2 rounded-full transition-all duration-300 ${
-                          metrics.stockLevel > 70
-                            ? "bg-green-500"
-                            : metrics.stockLevel > 30
-                              ? "bg-yellow-500"
-                              : "bg-red-500"
-                        }`}
-                        style={{ width: `${metrics.stockLevel}%` }}
-                      />
-                    </div>
-                  </div>
-
-                  {/* Product Stats */}
-                  <div className="grid grid-cols-3 gap-2 text-xs">
-                    <div className="text-center p-2 bg-muted/50 rounded-lg">
-                      <div
-                        className="font-semibold"
-                        aria-label={`Total produits: ${metrics.totalProducts}`}
-                      >
-                        {metrics.totalProducts}
-                      </div>
-                      <div className="text-muted-foreground">Total</div>
-                    </div>
-                    <div className="text-center p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
-                      <div
-                        className="font-semibold text-yellow-700 dark:text-yellow-400"
-                        aria-label={`Produits en stock faible: ${metrics.lowStockProducts}`}
-                      >
-                        {metrics.lowStockProducts}
-                      </div>
-                      <div className="text-yellow-600 dark:text-yellow-500">
-                        Stock faible
-                      </div>
-                    </div>
-                    <div className="text-center p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
-                      <div
-                        className="font-semibold text-red-700 dark:text-red-400"
-                        aria-label={`Produits en rupture: ${metrics.outOfStockProducts}`}
-                      >
-                        {metrics.outOfStockProducts}
-                      </div>
-                      <div className="text-red-600 dark:text-red-500">
-                        Rupture
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Additional Info */}
-                  <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
-                    <div>Dernière commande: {metrics.lastOrder}</div>
-                    <div>Température: {metrics.temperature}°C</div>
-                    <div>Maintenance: {metrics.lastMaintenance}</div>
-                    <div>
-                      Dernière mise à jour:{" "}
-                      {new Date(machine.last_update).toLocaleDateString(
-                        "fr-FR",
-                        {
-                          day: "2-digit",
-                          month: "2-digit",
-                          year: "numeric",
-                          hour: "2-digit",
-                          minute: "2-digit",
-                        }
-                      )}
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
+                  </CardContent>
+                </Card>
+              </Link>
             </motion.div>
           );
         })}
