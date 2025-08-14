@@ -724,6 +724,7 @@ const appRouter = t.router({
       id: z.string().min(1),
       location: z.string(),
       label: z.string(),
+      contact: z.string().email().nullable().optional(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -731,6 +732,7 @@ const appRouter = t.router({
       id: z.string().min(1),
       location: z.string(),
       label: z.string(),
+      contact: z.string().email().nullable().optional(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -738,6 +740,7 @@ const appRouter = t.router({
       id: z.string().min(1),
       location: z.string(),
       label: z.string(),
+      contact: z.string().email().nullable().optional(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -745,44 +748,46 @@ const appRouter = t.router({
       id: z.string().min(1),
       location: z.string(),
       label: z.string(),
+      contact: z.string().email().nullable().optional(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     createMachine: publicProcedure.input(z.object({
-      id: z.string().min(1),
       location: z.string(),
       label: z.string(),
-      status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-      last_update: z.string(),
-    }).omit({
-      id: true,
-      last_update: true,
+      contact: z.string().email().optional(),
+      // Statut optionnel côté input, mais ignoré: le backend force OFFLINE à la création
+      status: z
+        .enum(['online', 'offline', 'maintenance', 'out_of_service'])
+        .optional()
     })).output(z.object({
       id: z.string().min(1),
       location: z.string(),
       label: z.string(),
+      contact: z.string().email().nullable().optional(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateMachine: publicProcedure.input(z.object({
       id: z.string().min(1),
       data: z.object({
-        id: z.string().min(1),
         location: z.string(),
         label: z.string(),
-        status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
-        last_update: z.string(),
-      }).omit({
-        id: true,
-        last_update: true,
+        contact: z.string().email().optional(),
+        // Statut optionnel côté input, mais ignoré: le backend force OFFLINE à la création
+        status: z
+          .enum(['online', 'offline', 'maintenance', 'out_of_service'])
+          .optional()
       }).partial(),
     })).output(z.object({
       id: z.string().min(1),
       location: z.string(),
       label: z.string(),
+      contact: z.string().email().nullable().optional(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    deleteMachine: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.boolean()).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateMachineStatus: publicProcedure.input(z.object({
       id: z.string().min(1),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
@@ -790,9 +795,11 @@ const appRouter = t.router({
       id: z.string().min(1),
       location: z.string(),
       label: z.string(),
+      contact: z.string().email().nullable().optional(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    
     getMachineStats: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
       machine_id: z.string().min(1),
       totalSlots: z.number().int().nonnegative(),

@@ -23,6 +23,7 @@ import { SlotCard } from "./slot-card";
 import { EmptySlotCard } from "./empty-slot-card";
 import { AddSlotModal } from "./add-slot-modal";
 import { EditSlotModal } from "./edit-slot-modal";
+import { MachineSettingsModal } from "./machine-settings-modal";
 import { api } from "../../lib/trpc/client";
 
 type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
@@ -63,6 +64,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
   const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
   const [isEditSlotModalOpen, setIsEditSlotModalOpen] = useState(false);
   const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
 
   // Récupération des données de la machine
   const {
@@ -209,6 +211,14 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               <MapPin className="w-4 h-4" />
               <span>{machine.location}</span>
             </div>
+            {machine.contact && (
+              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+                <span className="text-sm">Contact:</span>
+                <a href={`mailto:${machine.contact}`} className="underline">
+                  {machine.contact}
+                </a>
+              </div>
+            )}
           </div>
         </div>
         <div className="flex items-center gap-2">
@@ -216,7 +226,11 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             <StatusIcon className="w-3 h-3 mr-1" />
             {statusInfo.label}
           </Badge>
-          <Button variant="outline" size="sm">
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={() => setIsSettingsOpen(true)}
+          >
             <Settings className="w-4 h-4 mr-2" />
             Paramètres
           </Button>
@@ -451,6 +465,18 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             : null
         }
         onSaved={() => refetchSlots()}
+      />
+
+      {/* Modal paramètres machine */}
+      <MachineSettingsModal
+        isOpen={isSettingsOpen}
+        onClose={() => setIsSettingsOpen(false)}
+        machineId={machineId}
+        initialLabel={machine.label}
+        initialLocation={machine.location}
+        initialContact={machine.contact || undefined}
+        onSaved={() => refetchMachine()}
+        onDeleted={() => (window.location.href = "/machines")}
       />
     </div>
   );

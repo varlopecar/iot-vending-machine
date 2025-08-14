@@ -6,14 +6,12 @@ import Link from "next/link";
 import {
   Search,
   Plus,
-  Edit,
   MapPin,
   Monitor,
   Wifi,
   WifiOff,
   Wrench,
   XCircle,
-  Settings,
   TrendingUp,
   Euro,
   RefreshCw,
@@ -29,6 +27,7 @@ import {
   Badge,
 } from "../ui";
 import { api } from "../../lib/trpc/client";
+import { AddMachineModal } from "./add-machine-modal";
 
 // MachineData dérivé directement des retours tRPC
 
@@ -62,6 +61,7 @@ const statusConfig = {
 export function MachineList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  const [isAddMachineOpen, setIsAddMachineOpen] = useState(false);
   // Revenus: affichage 30j par défaut; total en bas de carte
 
   // Récupération des données via tRPC
@@ -170,6 +170,7 @@ export function MachineList() {
           className="flex items-center gap-2"
           aria-label="Ajouter une nouvelle machine"
           title="Ajouter une nouvelle machine"
+          onClick={() => setIsAddMachineOpen(true)}
         >
           <Plus className="h-4 w-4" />
           Ajouter une machine
@@ -365,36 +366,7 @@ export function MachineList() {
                         </div>
                         {/* pas d'info connectivité réelle pour l'instant */}
                       </div>
-                      <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          aria-label={`Paramètres de ${machine.label}`}
-                          title="Paramètres"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // TODO: Ouvrir les paramètres
-                          }}
-                        >
-                          <Settings className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="ghost"
-                          size="sm"
-                          className="h-8 w-8 p-0"
-                          aria-label={`Modifier ${machine.label}`}
-                          title="Modifier"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            e.stopPropagation();
-                            // TODO: Ouvrir l'édition
-                          }}
-                        >
-                          <Edit className="h-4 w-4" />
-                        </Button>
-                      </div>
+                      {/* Icônes de carte supprimées selon demande */}
                     </div>
                   </CardHeader>
 
@@ -558,12 +530,21 @@ export function MachineList() {
             <Button
               className="mt-4"
               aria-label="Ajouter votre première machine"
+              onClick={() => setIsAddMachineOpen(true)}
             >
               Ajouter une machine
             </Button>
           )}
         </motion.div>
       )}
+
+      <AddMachineModal
+        isOpen={isAddMachineOpen}
+        onClose={() => setIsAddMachineOpen(false)}
+        onCreated={() => {
+          refetch();
+        }}
+      />
     </div>
   );
 }

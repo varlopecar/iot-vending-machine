@@ -91,7 +91,7 @@ async function main() {
       data: {
         location: 'Building A - Ground Floor',
         label: 'Vending Machine A1',
-        status: 'ONLINE',
+        status: 'OFFLINE',
         last_sync_at: now,
         created_at: now,
         last_update: now,
@@ -101,7 +101,7 @@ async function main() {
       data: {
         location: 'Building B - 2nd Floor',
         label: 'Vending Machine B2',
-        status: 'ONLINE',
+        status: 'OFFLINE',
         last_sync_at: now,
         created_at: now,
         last_update: now,
@@ -111,13 +111,18 @@ async function main() {
       data: {
         location: 'Cafeteria',
         label: 'Vending Machine C1',
-        status: 'MAINTENANCE',
+        status: 'OFFLINE',
         last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago
         created_at: now,
         last_update: now,
       },
     }),
   ]);
+
+  // Mettre à jour le champ contact via SQL (champ ajouté par patch SQL et non présent dans les types Prisma actuels)
+  await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'a1-ops@vendingmachine.com'} WHERE id = ${machines[0].id}`;
+  await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'b2-ops@vendingmachine.com'} WHERE id = ${machines[1].id}`;
+  await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'c1-ops@vendingmachine.com'} WHERE id = ${machines[2].id}`;
 
   console.log('🤖 Created machines');
 
@@ -131,24 +136,11 @@ async function main() {
         sku: 'COCA_001',
         ingredients:
           'Carbonated water, sugar, caramel, phosphoric acid, natural flavors, caffeine',
-        ingredients_list: [
-          'Carbonated water',
-          'Sugar',
-          'Caramel',
-          'Phosphoric acid',
-          'Natural flavors',
-          'Caffeine',
-        ],
+        // ingredients_list removed for compatibility with current Prisma types
         allergens: 'None',
-        allergens_list: [],
+        // allergens_list removed for compatibility
         nutritional_value: '140 calories per 330ml',
-        nutritional: {
-          calories: 140,
-          protein: 0,
-          carbs: 39,
-          fat: 0,
-          serving: '330ml',
-        },
+        // nutritional removed for compatibility
         image_url: 'https://via.placeholder.com/200x200/cc0000/ffffff?text=Coca-Cola',
         is_active: true,
         created_at: now,
@@ -161,17 +153,11 @@ async function main() {
         price: 1.8,
         sku: 'CHIPS_001',
         ingredients: 'Potatoes, vegetable oil, salt',
-        ingredients_list: ['Potatoes', 'Vegetable oil', 'Salt'],
+        // ingredients_list removed
         allergens: 'None',
-        allergens_list: [],
+        // allergens_list removed
         nutritional_value: '160 calories per 30g',
-        nutritional: {
-          calories: 160,
-          protein: 2,
-          carbs: 15,
-          fat: 10,
-          serving: '30g',
-        },
+        // nutritional removed
         image_url: 'https://via.placeholder.com/200x200/ffcc00/000000?text=Chips',
         is_active: true,
         created_at: now,
@@ -184,17 +170,11 @@ async function main() {
         price: 1.2,
         sku: 'WATER_001',
         ingredients: 'Spring water',
-        ingredients_list: ['Spring water'],
+        // ingredients_list removed
         allergens: 'None',
-        allergens_list: [],
+        // allergens_list removed
         nutritional_value: '0 calories per 500ml',
-        nutritional: {
-          calories: 0,
-          protein: 0,
-          carbs: 0,
-          fat: 0,
-          serving: '500ml',
-        },
+        // nutritional removed
         image_url: 'https://via.placeholder.com/200x200/0066cc/ffffff?text=Eau',
         is_active: true,
         created_at: now,
@@ -208,23 +188,11 @@ async function main() {
         sku: 'KINDER_001',
         ingredients:
           'Sugar, vegetable fats, hazelnuts, cocoa mass, skimmed milk powder',
-        ingredients_list: [
-          'Sugar',
-          'Vegetable fats',
-          'Hazelnuts',
-          'Cocoa mass',
-          'Skimmed milk powder',
-        ],
+        // ingredients_list removed
         allergens: 'Milk, hazelnuts',
-        allergens_list: ['Milk', 'Hazelnuts'],
+        // allergens_list removed
         nutritional_value: '180 calories per 43g',
-        nutritional: {
-          calories: 180,
-          protein: 3,
-          carbs: 20,
-          fat: 12,
-          serving: '43g',
-        },
+        // nutritional removed
         image_url: 'https://via.placeholder.com/200x200/4a2c17/ffffff?text=Kinder',
         is_active: true,
         created_at: now,
@@ -237,17 +205,11 @@ async function main() {
         price: 3.2,
         sku: 'ENERGY_001',
         ingredients: 'Oats, honey, nuts, dried fruits, protein isolate',
-        ingredients_list: ['Oats', 'Honey', 'Nuts', 'Dried fruits', 'Protein isolate'],
+        // ingredients_list removed
         allergens: 'Nuts',
-        allergens_list: ['Nuts'],
+        // allergens_list removed
         nutritional_value: '220 calories per 60g',
-        nutritional: {
-          calories: 220,
-          protein: 8,
-          carbs: 30,
-          fat: 7,
-          serving: '60g',
-        },
+        // nutritional removed
         image_url: 'https://via.placeholder.com/200x200/8b4513/ffffff?text=Energy-Bar',
         is_active: true,
         created_at: now,
@@ -256,6 +218,64 @@ async function main() {
   ]);
 
   console.log('🍫 Created products');
+
+  // Renseigner les listes d'ingrédients, allergènes et nutrition via SQL (compatibilité types Prisma)
+  const [coca, chips, water, kinder, energy] = products;
+  await prisma.$executeRawUnsafe(
+    `UPDATE "products"
+     SET ingredients_list = $1::text[],
+         allergens_list = $2::text[],
+         nutritional = $3::jsonb
+     WHERE id = $4`,
+    ['Carbonated water', 'Sugar', 'Caramel', 'Phosphoric acid', 'Natural flavors', 'Caffeine'],
+    [],
+    JSON.stringify({ calories: 140, protein: 0, carbs: 39, fat: 0, serving: '330ml' }),
+    coca.id,
+  );
+  await prisma.$executeRawUnsafe(
+    `UPDATE "products"
+     SET ingredients_list = $1::text[],
+         allergens_list = $2::text[],
+         nutritional = $3::jsonb
+     WHERE id = $4`,
+    ['Potatoes', 'Vegetable oil', 'Salt'],
+    [],
+    JSON.stringify({ calories: 160, protein: 2, carbs: 15, fat: 10, serving: '30g' }),
+    chips.id,
+  );
+  await prisma.$executeRawUnsafe(
+    `UPDATE "products"
+     SET ingredients_list = $1::text[],
+         allergens_list = $2::text[],
+         nutritional = $3::jsonb
+     WHERE id = $4`,
+    ['Spring water'],
+    [],
+    JSON.stringify({ calories: 0, protein: 0, carbs: 0, fat: 0, serving: '500ml' }),
+    water.id,
+  );
+  await prisma.$executeRawUnsafe(
+    `UPDATE "products"
+     SET ingredients_list = $1::text[],
+         allergens_list = $2::text[],
+         nutritional = $3::jsonb
+     WHERE id = $4`,
+    ['Sugar', 'Vegetable fats', 'Hazelnuts', 'Cocoa mass', 'Skimmed milk powder'],
+    ['Milk', 'Hazelnuts'],
+    JSON.stringify({ calories: 180, protein: 3, carbs: 20, fat: 12, serving: '43g' }),
+    kinder.id,
+  );
+  await prisma.$executeRawUnsafe(
+    `UPDATE "products"
+     SET ingredients_list = $1::text[],
+         allergens_list = $2::text[],
+         nutritional = $3::jsonb
+     WHERE id = $4`,
+    ['Oats', 'Honey', 'Nuts', 'Dried fruits', 'Protein isolate'],
+    ['Nuts'],
+    JSON.stringify({ calories: 220, protein: 8, carbs: 30, fat: 7, serving: '60g' }),
+    energy.id,
+  );
 
   // Create stocks (slots) avec nouvelles propriétés
   const stocks = await Promise.all([

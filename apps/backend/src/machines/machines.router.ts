@@ -66,6 +66,14 @@ export class MachinesRouter {
   }
 
   @Mutation({
+    input: z.object({ id: z.string().min(1) }),
+    output: z.boolean(),
+  })
+  deleteMachine(@Input('id') id: string) {
+    return this.machinesService.deleteMachine(id);
+  }
+
+  @Mutation({
     input: z.object({
       id: z.string().min(1),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),

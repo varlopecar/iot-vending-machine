@@ -15,7 +15,9 @@ export class MachinesService {
       data: {
         location: machineData.location,
         label: machineData.label,
-        status: this.toDbStatus(machineData.status),
+        // Force le statut OFFLINE par défaut à la création
+        status: 'OFFLINE',
+        contact: machineData.contact ?? null,
         last_update: new Date().toISOString(),
       },
     });
@@ -126,6 +128,9 @@ export class MachinesService {
             ? { location: updateData.location }
             : {}),
           ...('label' in updateData ? { label: updateData.label } : {}),
+          ...('contact' in updateData
+            ? { contact: updateData.contact ?? null }
+            : {}),
           ...('status' in updateData
             ? { status: this.toDbStatus(updateData.status!) }
             : {}),
@@ -143,6 +148,15 @@ export class MachinesService {
     status: Machine['status'],
   ): Promise<Machine> {
     return this.updateMachine(id, { status });
+  }
+
+  async deleteMachine(id: string): Promise<boolean> {
+    try {
+      await this.prisma.machine.delete({ where: { id } });
+      return true;
+    } catch {
+      throw new NotFoundException('Machine not found');
+    }
   }
 
   async getMachinesByLocation(location: string): Promise<Machine[]> {
@@ -183,6 +197,7 @@ export class MachinesService {
     id: m.id,
     location: m.location,
     label: m.label,
+    contact: m.contact ?? null,
     status: this.toApiStatus(m.status),
     last_update: m.last_update,
   });

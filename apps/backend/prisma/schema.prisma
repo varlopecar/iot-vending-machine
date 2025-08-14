@@ -59,7 +59,8 @@ model Machine {
   id           String        @id @default(cuid())
   location     String
   label        String
-  status       MachineStatus @default(ONLINE)
+  contact      String?
+  status       MachineStatus @default(OFFLINE)
   last_sync_at String?       // Nouveau: dernière synchronisation pour affichage online/offline
   created_at   String        @default(dbgenerated("now()::text"))
   last_update  String        @default(dbgenerated("now()::text"))

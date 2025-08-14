@@ -4,13 +4,19 @@ export const machineSchema = z.object({
   id: z.string().min(1),
   location: z.string(),
   label: z.string(),
+  contact: z.string().email().nullable().optional(),
   status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
   last_update: z.string(),
 });
 
-export const createMachineSchema = machineSchema.omit({
-  id: true,
-  last_update: true,
+export const createMachineSchema = z.object({
+  location: z.string(),
+  label: z.string(),
+  contact: z.string().email().optional(),
+  // Statut optionnel côté input, mais ignoré: le backend force OFFLINE à la création
+  status: z
+    .enum(['online', 'offline', 'maintenance', 'out_of_service'])
+    .optional()
 });
 
 export const updateMachineSchema = createMachineSchema.partial();
