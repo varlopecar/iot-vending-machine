@@ -1,5 +1,5 @@
-import React, { useState } from "react";
-import { View, ScrollView, Alert, Text } from "react-native";
+import React from "react";
+import { View, ScrollView, Alert } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
@@ -7,19 +7,14 @@ import {
   ProfileAvatar,
   UserInfo,
   ActionButton,
-  IdentifierCard,
   TabBarSpacer,
 } from "../../components/ui";
+import { useAuth } from "../../contexts/AuthContext";
 
 export default function ProfilScreen() {
   const { isDark } = useTailwindTheme();
   const router = useRouter();
-  const [user] = useState({
-    name: "Sabrina Carpenter",
-    email: "sabrina.carpenter@ynov.com",
-    identifier: "7026 8349 75324",
-    avatarUri: require("../../assets/images/test.png"),
-  });
+  const { user } = useAuth();
 
   const handleEditPassword = () => {
     Alert.alert("Modifier le mot de passe", "Fonctionnalité à implémenter", [
@@ -29,14 +24,6 @@ export default function ProfilScreen() {
 
   const handleSettingsPress = () => {
     router.push("/parametres");
-  };
-
-  const handleCopyIdentifier = () => {
-    Alert.alert(
-      "Identifiant copié",
-      "Votre identifiant a été copié dans le presse-papiers",
-      [{ text: "OK" }]
-    );
   };
 
   return (
@@ -51,7 +38,7 @@ export default function ProfilScreen() {
         {/* Header avec avatar et bouton paramètres */}
         <View className="items-center mt-6 mb-8">
           <ProfileAvatar
-            imageUri={user.avatarUri}
+            imageUri={require("../../assets/images/test.png")}
             size="large"
             showSettingsIcon={true}
             onSettingsPress={handleSettingsPress}
@@ -60,7 +47,7 @@ export default function ProfilScreen() {
 
         {/* Informations utilisateur */}
         <View className="items-center">
-          <UserInfo name={user.name} email={user.email} showDivider={true} />
+          <UserInfo name={user?.full_name || "Utilisateur"} email={user?.email || ""} showDivider={true} />
         </View>
 
         {/* Bouton modifier mot de passe */}

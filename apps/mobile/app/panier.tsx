@@ -5,10 +5,7 @@ import { Stack, useRouter } from "expo-router";
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
 import { useCart } from "../contexts/CartContext";
 import { useAuth } from "../contexts/AuthContext";
-import { createOrder } from "../lib/orders";
-import { getAllProducts } from "../lib/products";
-import { getStockByMachineAndProduct } from "../lib/stocks";
-import { resolveServerProductId } from "../lib/productMapping";
+// Création de commande déplacée après paiement (écran payment-success)
 
 export default function CartScreen() {
   const { isDark } = useTailwindTheme();
@@ -215,73 +212,39 @@ export default function CartScreen() {
             const handlePress = async () => {
               if (disabled) return;
               if (isFree) {
-                // Bypass Stripe: aller directement à l'écran de succès qui génère le QR et crée la commande
-                router.push({
-                  pathname: "/payment-success",
-                  params: {
-                    orderId: `order_${Date.now()}`,
-                    paymentIntentId: "free",
-                    amount: "0",
-                    currency: "eur",
-                  },
-                });
-                return;
-              }
-              // Création de commande réelle via tRPC
-              if (!user || !token) {
-                console.error('[Commande] Connexion requise: utilisateur ou token manquant');
-                return;
-              }
-
-              try {
-                const MACHINE_ID = "cmeaiktbj000703jboo377ul1";
-                // Récupérer les produits du serveur pour mapper les IDs mock -> IDs réels
-                const serverProducts = await getAllProducts();
-                const items = [] as { product_id: string; quantity: number; slot_number: number }[];
-                for (const ci of cartItems) {
-                  const serverId = resolveServerProductId(serverProducts, ci.name);
-                  if (!serverId) {
-                    console.error('[Commande] Produit introuvable côté serveur:', ci.name);
-                    throw new Error(`Produit introuvable: ${ci.name}`);
-                  }
-                  // Slot depuis le stock réel de la machine
-                  const stock = await getStockByMachineAndProduct(MACHINE_ID, serverId);
-                  if (!stock) {
-                    console.error('[Commande] Stock introuvable sur machine pour', ci.name, serverId);
-                    throw new Error(`Stock indisponible pour ${ci.name}`);
-                  }
-                  items.push({ product_id: serverId, quantity: ci.quantity, slot_number: stock.slot_number });
+                // Nouveau flux: création de commande après paiement (même pour gratuit)
+                if (!user || !token) {
+                  console.error('[Commande] Connexion requise: utilisateur ou token manquant');
+                  return;
                 }
-
-                const payload = {
-                  user_id: user.id,
-                  machine_id: MACHINE_ID,
-                  items,
-                };
-
-                console.log('[Commande] Création de commande → payload:', payload);
-                const order = await createOrder(payload);
-                console.log('[Commande] Commande créée:', {
-                  id: order.id,
-                  status: order.status,
-                  total_price: order.total_price,
-                });
-
-                // Redirection Checkout (Stripe) avec orderId réel
+                const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
                 router.push({
-                  pathname: "/checkout",
+                  pathname: '/payment-success',
                   params: {
-                    amount: Math.round(total * 100).toString(),
-                    currency: "eur",
-                    orderId: order.id,
+                    paymentIntentId: 'free',
+                    amount: '0',
+                    currency: 'eur',
                     userId: user.id,
                     machineId: MACHINE_ID,
                   },
                 });
-              } catch (e: any) {
-                const message = e?.message || "Impossible de créer la commande";
-                console.error('[Commande] Erreur lors de la création:', message, e);
+                return;
               }
+              // Paiement d'abord, commande après succès
+              if (!user || !token) {
+                console.error('[Commande] Connexion requise: utilisateur ou token manquant');
+                return;
+              }
+              const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
+              router.push({
+                pathname: '/checkout',
+                params: {
+                  amount: Math.round(total * 100).toString(),
+                  currency: 'eur',
+                  userId: user.id,
+                  machineId: MACHINE_ID,
+                },
+              });
             };
 
             return (

@@ -17,6 +17,18 @@ export const updateStockSchema = createStockSchema.partial();
 export const stockWithProductSchema = stockSchema.extend({
   product_name: z.string(),
   product_price: z.number().positive(),
+  product_image_url: z.string().optional(),
+  product_ingredients_list: z.array(z.string()).optional(),
+  product_allergens_list: z.array(z.string()).optional(),
+  product_nutritional: z
+    .object({
+      calories: z.number().optional(),
+      protein: z.number().optional(),
+      carbs: z.number().optional(),
+      fat: z.number().optional(),
+      serving: z.string().optional(),
+    })
+    .optional(),
 });
 
 export type CreateStockInput = z.infer<typeof createStockSchema>;

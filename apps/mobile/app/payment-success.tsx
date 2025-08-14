@@ -9,79 +9,129 @@ import {
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { PaymentQRView } from "../components/PaymentQRView";
 import { CheckoutGetStatusResponse } from "../types/stripe";
-import { useOrders } from "../contexts/OrdersContext";
 import { useCart } from "../contexts/CartContext";
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
+import { getOrderById as getOrderByIdApi, createOrder } from "../lib/orders";
+import { getAllProducts } from "../lib/products";
+import { getStockByMachineAndProduct } from "../lib/stocks";
+import { resolveServerProductId } from "../lib/productMapping";
 
 export default function PaymentSuccessScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isDark } = useTailwindTheme();
-  const { addOrder } = useOrders();
   const { cartItems, getTotalPrice, clearCart } = useCart();
 
   const [orderStatus, setOrderStatus] =
     useState<CheckoutGetStatusResponse | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [orderIdState, setOrderIdState] = useState<string | undefined>(params.orderId as string | undefined);
+  type StepStatus = 'idle' | 'pending' | 'done' | 'skip' | 'error';
+  const [createOrderStep, setCreateOrderStep] = useState<StepStatus>('idle');
+  const [fetchQrStep, setFetchQrStep] = useState<StepStatus>('idle');
 
-  // Simulation des données de commande - en production, récupérez ces données depuis votre API
+  // Récupérer le QR code réel depuis le backend pour l'orderId
   useEffect(() => {
-    let didCreate = false;
-    const simulateOrderStatus = () => {
-      // Simuler un appel API pour récupérer le statut de la commande
-      setTimeout(() => {
+    let cancelled = false;
+    async function load() {
+      try {
+        setIsLoading(true);
         const rawAmount = Number(params.amount as string);
-        const mockOrderStatus: CheckoutGetStatusResponse = {
+        const currency = (params.currency as string) || "eur";
+
+        // Si l'orderId n'existe pas encore, créer la commande maintenant (après paiement réussi)
+        const userId = params.userId as string | undefined;
+        const machineId = params.machineId as string | undefined;
+        let orderId = orderIdState;
+
+        if (!orderId) {
+          setCreateOrderStep('pending');
+          if (!userId || !machineId) throw new Error('Paramètres manquants pour créer la commande');
+          // Construire les items à partir du panier courant
+          const serverProducts = await getAllProducts();
+          const items: { product_id: string; quantity: number; slot_number: number }[] = [];
+          for (const ci of cartItems) {
+            const serverId = resolveServerProductId(serverProducts, ci.name);
+            if (!serverId) throw new Error(`Produit introuvable: ${ci.name}`);
+            const stock = await getStockByMachineAndProduct(machineId, serverId);
+            if (!stock) throw new Error(`Stock indisponible pour ${ci.name}`);
+            items.push({ product_id: serverId, quantity: ci.quantity, slot_number: stock.slot_number });
+          }
+          const created = await createOrder({ user_id: userId, machine_id: machineId, items });
+          orderId = created.id;
+          setOrderIdState(orderId);
+          setCreateOrderStep('done');
+        } else {
+          setCreateOrderStep('skip');
+        }
+
+        // Charger la commande réelle (créée ou existante) avec retry car création + latence DB
+        async function getWithRetry(id: string, retries = 3, delayMs = 400): Promise<ReturnType<typeof getOrderByIdApi>> {
+          for (let i = 0; i < retries; i++) {
+            try {
+              // @ts-ignore
+              return await getOrderByIdApi(id);
+            } catch (e: any) {
+              if (i === retries - 1) throw e;
+              await new Promise((r) => setTimeout(r, delayMs));
+            }
+          }
+          // @ts-ignore
+          return await getOrderByIdApi(id);
+        }
+        setFetchQrStep('pending');
+        const order = await getWithRetry(orderId as string);
+        setFetchQrStep('done');
+
+        const status: CheckoutGetStatusResponse = {
           orderStatus: "PAID",
           paymentStatus: "succeeded",
           paidAt: new Date().toISOString(),
           receiptUrl: null,
           amountTotalCents: Number.isFinite(rawAmount) ? rawAmount : 0,
-          currency: (params.currency as string) || "eur",
-          qrCodeToken: `qr_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`,
-          stripePaymentIntentId: params.paymentIntentId as string,
+          currency,
+          qrCodeToken: order.qr_code_token,
+          stripePaymentIntentId: ((params.paymentIntentId as string) || null) as string | null,
         };
 
-        setOrderStatus(mockOrderStatus);
-        setIsLoading(false);
+        if (!cancelled) setOrderStatus(status);
 
-        // Créer une seule fois la commande pour cet orderId
-        if (!didCreate) {
-          didCreate = true;
-          addOrder({
-            id: (params.orderId as string) || `order_${Date.now()}`,
-            items: cartItems,
-            totalPrice: getTotalPrice(),
-            qrCodeToken: mockOrderStatus.qrCodeToken || undefined,
-            expiresAt: new Date(Date.now() + 15 * 60 * 1000),
-            status: "active",
-          });
-          clearCart();
-        }
-      }, 1500); // Simule un délai de traitement
+        // Vider le panier une fois la commande confirmée
+        clearCart();
+      } catch (e) {
+        console.error("[PaymentSuccess] Erreur chargement order:", e);
+        if (createOrderStep === 'pending') setCreateOrderStep('error');
+        if (fetchQrStep === 'pending') setFetchQrStep('error');
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+    // Toujours tenter de charger (avec ou sans orderId initial)
+    load();
+    return () => {
+      cancelled = true;
     };
-
-    simulateOrderStatus();
-  }, [params.orderId]);
+  }, [params.userId, params.machineId, params.amount, params.currency]);
 
   const handleRefreshStatus = async () => {
     try {
       setIsLoading(true);
-
-      // TODO: Remplacer par un vrai appel à votre API tRPC
-      // const updatedStatus = await trpc.checkout.getStatus.query({
-      //   orderId: params.orderId as string
-      // });
-
-      // Simulation d'un rafraîchissement
-      setTimeout(() => {
-        Alert.alert(
-          "Statut à jour",
-          "Le statut de votre commande est à jour.",
-          [{ text: "OK" }]
-        );
-        setIsLoading(false);
-      }, 1000);
+      setFetchQrStep('pending');
+      const order = await getOrderByIdApi((orderIdState as string));
+      const rawAmount = Number(params.amount as string);
+      const currency = (params.currency as string) || 'eur';
+      setOrderStatus({
+        orderStatus: 'PAID',
+        paymentStatus: 'succeeded',
+        paidAt: new Date().toISOString(),
+        receiptUrl: null,
+        amountTotalCents: Number.isFinite(rawAmount) ? rawAmount : 0,
+        currency,
+        qrCodeToken: order.qr_code_token,
+        stripePaymentIntentId: ((params.paymentIntentId as string) || null) as string | null,
+      });
+      setFetchQrStep('done');
+      setIsLoading(false);
     } catch (error) {
       console.error("Erreur lors du rafraîchissement:", error);
       Alert.alert(
@@ -90,6 +140,7 @@ export default function PaymentSuccessScreen() {
         [{ text: "OK" }]
       );
       setIsLoading(false);
+      setFetchQrStep('error');
     }
   };
 
@@ -108,10 +159,18 @@ export default function PaymentSuccessScreen() {
           <Text className={`text-xl font-bold mb-2 ${isDark ? 'text-dark-textSecondary' : 'text-light-text'}`}>
             Paiement confirmé !
           </Text>
-          <Text className={`text-center mb-4 ${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'}`}>
+          <View className="mt-4 mb-2 w-full max-w-md">
+            <Text className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'} text-base mb-1`}>
+              • Création de la commande: {createOrderStep === 'pending' ? 'en cours…' : createOrderStep === 'done' ? 'terminée' : createOrderStep === 'skip' ? 'déjà créée' : createOrderStep === 'error' ? 'erreur' : '—'}
+            </Text>
+            <Text className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'} text-base`}>
+              • Récupération du QR code: {fetchQrStep === 'pending' ? 'en cours…' : fetchQrStep === 'done' ? 'terminée' : fetchQrStep === 'error' ? 'erreur' : '—'}
+            </Text>
+          </View>
+          <Text className={`text-center mt-2 ${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'}`}>
             Génération de votre QR code en cours...
           </Text>
-          <View className={`w-8 h-8 border-2 border-t-transparent rounded-full animate-spin ${isDark ? 'border-dark-secondary' : 'border-green-500'}`} />
+          <View className={`w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mt-4 ${isDark ? 'border-dark-secondary' : 'border-green-500'}`} />
         </View>
       </SafeAreaView>
     );
@@ -121,7 +180,7 @@ export default function PaymentSuccessScreen() {
     <SafeAreaView className={`flex-1 ${isDark ? 'bg-dark-background' : 'bg-light-background'}`}>
       <PaymentQRView
         qrCodeToken={orderStatus.qrCodeToken || ""}
-        orderId={params.orderId as string}
+        orderId={(orderIdState as string)}
         orderStatus={orderStatus}
         onRefreshStatus={handleRefreshStatus}
       />

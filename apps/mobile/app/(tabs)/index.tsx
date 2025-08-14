@@ -10,8 +10,9 @@ import {
 } from "../../components";
 import { Header } from "../../components/Header";
 import { SectionTitle, SafeContainer } from "../../components/ui";
-import { mockProducts } from "../../data/mockProducts";
 import { Product } from "../../types/product";
+import { getStocksByMachine, StockWithProduct } from "../../lib/stocks";
+import { displayNameFromServerName } from "../../lib/productMapping";
 import { useCart } from "../../contexts/CartContext";
 
 // Lazy loading des composants lourds
@@ -31,15 +32,42 @@ export default function IndexScreen() {
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const [successMessage, setSuccessMessage] = useState("");
   const [isLoading, setIsLoading] = useState(true);
+  const [products, setProducts] = useState<Product[]>([]);
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Simulation du chargement initial
+  // Chargement des vrais produits depuis la machine forcée
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 500);
-
-    return () => clearTimeout(timer);
+    let cancelled = false;
+    async function load() {
+      try {
+        setIsLoading(true);
+        const MACHINE_ID = 'cmeazo40a00050clyrz1a4iin';
+        const stocks = await getStocksByMachine(MACHINE_ID);
+        // Mapper les stocks -> Product[] pour la liste
+        const mapped: Product[] = stocks.map((s: StockWithProduct) => ({
+          id: s.product_id,
+          name: displayNameFromServerName(s.product_name),
+          price: s.product_price,
+          image: s.product_image_url ? { uri: s.product_image_url } : null,
+          stockQty: s.quantity,
+          ingredients: s.product_ingredients_list || [],
+          allergens: s.product_allergens_list || [],
+          nutritionalValues: {
+            calories: s.product_nutritional?.calories ?? 0,
+            protein: s.product_nutritional?.protein ?? 0,
+            carbs: s.product_nutritional?.carbs ?? 0,
+            fat: s.product_nutritional?.fat ?? 0,
+          },
+        }));
+        if (!cancelled) setProducts(mapped);
+      } catch (e) {
+        console.error('[Réserver] Erreur chargement produits machine:', e);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
   }, []);
 
   const handleAddToCart = (product: Product) => {
@@ -121,7 +149,7 @@ export default function IndexScreen() {
           {/* Products List */}
           <View className="mb-4">
             <React.Suspense fallback={<ProductListSkeleton />}>
-              {mockProducts.map((product) => (
+              {products.map((product) => (
                 <ProductCard
                   key={product.id}
                   product={product}
