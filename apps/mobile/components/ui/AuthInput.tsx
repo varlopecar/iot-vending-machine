@@ -10,6 +10,7 @@ interface AuthInputProps {
   secureTextEntry?: boolean;
   keyboardType?: 'default' | 'email-address' | 'numeric' | 'phone-pad';
   autoCapitalize?: 'none' | 'sentences' | 'words' | 'characters';
+  errorText?: string | null;
 }
 
 export function AuthInput({ 
@@ -18,7 +19,8 @@ export function AuthInput({
   onChangeText, 
   secureTextEntry = false,
   keyboardType = 'default',
-  autoCapitalize = 'none'
+  autoCapitalize = 'none',
+  errorText = null,
 }: AuthInputProps) {
   const { isDark } = useTailwindTheme();
   const [showPassword, setShowPassword] = useState(false);
@@ -31,8 +33,8 @@ export function AuthInput({
       <TextInput
         className={`w-full px-4 py-3 rounded-xl border-2 ${
           isDark 
-            ? 'bg-white border-dark-secondary text-gray-800' 
-            : 'bg-white border-light-secondary text-gray-800'
+            ? `bg-white ${errorText ? 'border-red-500' : 'border-dark-secondary'} text-gray-800` 
+            : `bg-white ${errorText ? 'border-red-500' : 'border-light-secondary'} text-gray-800`
         }`}
         placeholder={placeholder}
         placeholderTextColor={isDark ? '#6B7280' : '#9CA3AF'}
@@ -53,6 +55,9 @@ export function AuthInput({
             color={isDark ? '#6B7280' : '#9CA3AF'}
           />
         </TouchableOpacity>
+      )}
+      {!!errorText && (
+        <Text className="text-red-500 text-sm mt-2">{errorText}</Text>
       )}
     </View>
   );
