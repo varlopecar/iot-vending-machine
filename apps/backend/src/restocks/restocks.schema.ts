@@ -15,6 +15,7 @@ export const restockItemSchema = z.object({
   quantity_before: z.number().int().min(0),
   quantity_after: z.number().int().min(0),
   quantity_added: z.number().int(),
+  type: z.enum(['addition', 'removal']).optional(),
 });
 
 export const createRestockSchema = z.object({

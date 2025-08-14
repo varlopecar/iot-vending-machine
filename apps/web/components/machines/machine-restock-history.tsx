@@ -9,6 +9,8 @@ interface MachineRestockHistoryProps {
   machineId: string;
 }
 
+type RestockItemType = "addition" | "removal";
+
 export function MachineRestockHistory({
   machineId,
 }: MachineRestockHistoryProps) {
@@ -21,6 +23,7 @@ export function MachineRestockHistory({
   };
 
   const [requested, setRequested] = useState(false);
+  const [filterType, setFilterType] = useState<"all" | RestockItemType>("all");
 
   const restocks = data as
     | Array<{
@@ -39,19 +42,35 @@ export function MachineRestockHistory({
           slot_number: number;
           product_name: string;
           product_image_url?: string;
+          type?: RestockItemType;
         }>;
       }>
     | undefined;
 
-  // Restocks triés (plus récents d'abord) et limités à 10 pour l'affichage
-  const sortedLimited = useMemo(() => {
+  // Applique le filtre de type au niveau des items, puis enlève les restocks vides
+  const filtered = useMemo(() => {
     if (!restocks) return [] as NonNullable<typeof restocks>;
-    const sorted = [...restocks].sort(
+    return restocks
+      .map((r) => ({
+        ...r,
+        items: r.items.filter((it) =>
+          filterType === "all"
+            ? true
+            : (it.type ?? (it.quantity_added >= 0 ? "addition" : "removal")) ===
+              filterType
+        ),
+      }))
+      .filter((r) => r.items.length > 0);
+  }, [restocks, filterType]);
+
+  // Restocks triés (plus récents d'abord) et limités à 10 après filtrage
+  const sortedLimited = useMemo(() => {
+    const sorted = [...filtered].sort(
       (a, b) =>
         new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
     );
     return sorted.slice(0, 10);
-  }, [restocks]);
+  }, [filtered]);
 
   // Groupement par date pour l'affichage (sur la liste limitée)
   const groupedByDate = useMemo(() => {
@@ -91,10 +110,11 @@ export function MachineRestockHistory({
       return;
     }
 
-    // Génération CSV
+    // Génération CSV (export complet, pas seulement les 10 affichés)
     const headers = [
       "date",
       "heure",
+      "type",
       "notes",
       "slot_number",
       "product_name",
@@ -120,10 +140,12 @@ export function MachineRestockHistory({
         minute: "2-digit",
       });
       for (const it of r.items) {
+        const t = it.type ?? (it.quantity_added >= 0 ? "addition" : "removal");
         rows.push(
           [
             date,
             time,
+            t,
             r.notes ?? "",
             it.slot_number,
             it.product_name,
@@ -181,6 +203,27 @@ export function MachineRestockHistory({
               l'historique
             </div>
             <div className="flex items-center gap-2">
+              {/* Filtres type */}
+              <Button
+                variant={filterType === "all" ? "secondary" : "outline"}
+                onClick={() => setFilterType("all")}
+              >
+                Tous
+              </Button>
+              <Button
+                variant={filterType === "addition" ? "secondary" : "outline"}
+                onClick={() => setFilterType("addition")}
+              >
+                Ajouts
+              </Button>
+              <Button
+                variant={filterType === "removal" ? "secondary" : "outline"}
+                onClick={() => setFilterType("removal")}
+              >
+                Retraits
+              </Button>
+
+              {/* Export & Refresh */}
               <Button
                 variant="secondary"
                 onClick={exportCsv}
@@ -281,7 +324,26 @@ export function MachineRestockHistory({
                                   Slot #{it.slot_number} • {it.product_name}
                                 </div>
                                 <div className="text-xs text-muted-foreground">
-                                  {it.quantity_before} → {it.quantity_after} ( +
+                                  {/* Badge type */}
+                                  <span
+                                    className={
+                                      (it.type ??
+                                        (it.quantity_added >= 0
+                                          ? "addition"
+                                          : "removal")) === "addition"
+                                        ? "text-green-700"
+                                        : "text-red-700"
+                                    }
+                                  >
+                                    {(it.type ??
+                                      (it.quantity_added >= 0
+                                        ? "addition"
+                                        : "removal")) === "addition"
+                                      ? "+"
+                                      : "-"}
+                                  </span>{" "}
+                                  {it.quantity_before} → {it.quantity_after} ({" "}
+                                  {it.quantity_added > 0 ? "+" : ""}
                                   {it.quantity_added} )
                                 </div>
                               </div>

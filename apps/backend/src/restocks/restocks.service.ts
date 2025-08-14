@@ -45,6 +45,7 @@ export class RestocksService {
         quantity_before: number;
         quantity_after: number;
         quantity_added: number;
+        type: 'addition' | 'removal';
         slot_number: number;
         product_name: string;
         product_image_url?: string;
@@ -102,6 +103,7 @@ export class RestocksService {
           quantity_before: restockItem.quantity_before,
           quantity_after: restockItem.quantity_after,
           quantity_added: restockItem.quantity_added,
+          type: restockItem.quantity_added >= 0 ? 'addition' : 'removal',
           slot_number: stock.slot_number,
           product_name: stock.product.name,
           product_image_url: stock.product.image_url,
@@ -207,14 +209,15 @@ export class RestocksService {
             },
           });
 
-          restockItems.push({
+        restockItems.push({
             id: restockItem.id,
             restock_id: restockItem.restock_id,
             stock_id: restockItem.stock_id,
             quantity_before: restockItem.quantity_before,
             quantity_after: restockItem.quantity_after,
             quantity_added: restockItem.quantity_added,
-            slot_number: stock.slot_number,
+          type: (restockItem.quantity_added >= 0 ? 'addition' : 'removal') as 'addition' | 'removal',
+          slot_number: stock.slot_number,
             product_name: stock.product.name,
             product_image_url: stock.product.image_url,
           });
@@ -266,6 +269,7 @@ export class RestocksService {
         quantity_before: item.quantity_before,
         quantity_after: item.quantity_after,
         quantity_added: item.quantity_added,
+        type: item.quantity_added >= 0 ? 'addition' : 'removal',
         slot_number: item.stock.slot_number,
         product_name: item.stock.product.name,
         product_image_url: item.stock.product.image_url,
@@ -298,13 +302,14 @@ export class RestocksService {
       user_id: restock.user_id,
       created_at: restock.created_at,
       notes: restock.notes || undefined,
-      items: restock.items.map((item) => ({
+        items: restock.items.map((item) => ({
         id: item.id,
         restock_id: item.restock_id,
         stock_id: item.stock_id,
         quantity_before: item.quantity_before,
         quantity_after: item.quantity_after,
         quantity_added: item.quantity_added,
+          type: item.quantity_added >= 0 ? 'addition' : 'removal',
         slot_number: item.stock.slot_number,
         product_name: item.stock.product.name,
         product_image_url: item.stock.product.image_url,
@@ -386,6 +391,7 @@ export class RestocksService {
             quantity_before: restockItem.quantity_before,
             quantity_after: restockItem.quantity_after,
             quantity_added: restockItem.quantity_added,
+            type: restockItem.quantity_added >= 0 ? 'addition' : 'removal',
             slot_number: stock.slot_number,
             product_name: stock.product.name,
             product_image_url: stock.product.image_url,
@@ -400,7 +406,7 @@ export class RestocksService {
       user_id: result.restock.user_id,
       created_at: result.restock.created_at,
       notes: result.restock.notes || undefined,
-      items: result.items,
+        items: result.items,
     };
   }
 

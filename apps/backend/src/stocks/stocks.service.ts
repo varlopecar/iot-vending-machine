@@ -67,16 +67,45 @@ export class StocksService {
 
   async updateStock(id: string, updateData: UpdateStockInput): Promise<Stock> {
     try {
-      // Si la quantité est mise à jour, valider par rapport à max_capacity
+      // Si la quantité est mise à jour, valider et tracer en Restock (ajout/retrait)
       if (Object.prototype.hasOwnProperty.call(updateData, 'quantity')) {
         const current = await this.prisma.stock.findUnique({ where: { id } });
         if (!current) throw new NotFoundException('Stock not found');
         const newQuantity = (updateData as any).quantity as number | undefined;
-        if (typeof newQuantity === 'number' && newQuantity > current.max_capacity) {
-          throw new TRPCError({
-            code: 'BAD_REQUEST',
-            message: `La quantité (${newQuantity}) dépasse la capacité maximale (${current.max_capacity})`,
-          });
+        if (typeof newQuantity === 'number') {
+          if (newQuantity > current.max_capacity) {
+            throw new TRPCError({
+              code: 'BAD_REQUEST',
+              message: `La quantité (${newQuantity}) dépasse la capacité maximale (${current.max_capacity})`,
+            });
+          }
+          // Journaliser l'ajustement si changement
+          if (newQuantity !== current.quantity) {
+            const delta = newQuantity - current.quantity; // >0 addition, <0 retrait
+            await this.prisma.$transaction(async (tx) => {
+              const restock = await tx.restock.create({
+                data: {
+                  machine_id: current.machine_id,
+                  // utilisateur indéterminé côté API stocks → fallback: premier admin si dispo
+                  user_id: (await tx.user.findFirst({ where: { role: 'ADMIN' }, select: { id: true } }))?.id || (await tx.user.findFirst({ select: { id: true } }))!.id,
+                  notes: delta > 0 ? 'Ajustement manuel (ajout)' : 'Ajustement manuel (retrait)',
+                  created_at: new Date().toISOString(),
+                },
+              });
+              await tx.restockItem.create({
+                data: {
+                  restock_id: restock.id,
+                  stock_id: current.id,
+                  quantity_before: current.quantity,
+                  quantity_after: newQuantity,
+                  quantity_added: delta,
+                },
+              });
+              await tx.stock.update({ where: { id }, data: { ...updateData, quantity: newQuantity } });
+            });
+            const updated = await this.prisma.stock.findUnique({ where: { id } });
+            return this.mapStock(updated);
+          }
         }
       }
 
