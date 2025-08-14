@@ -3,14 +3,8 @@ name: Backend CI/CD Pipeline
 on:
   push:
     branches: [main]
-    paths:
-      - "apps/backend/**"
-      - "packages/**"
   pull_request:
     branches: [main]
-    paths:
-      - "apps/backend/**"
-      - "packages/**"
 
 jobs:
   test:
