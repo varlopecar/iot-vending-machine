@@ -56,9 +56,13 @@ const navigation = [
   },
 ];
 
-export function Sidebar() {
+interface SidebarProps {
+  isOpen: boolean;
+  onToggle: () => void;
+}
+
+export function Sidebar({ isOpen, onToggle }: SidebarProps) {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = useState(false);
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
@@ -79,20 +83,20 @@ export function Sidebar() {
         variant="ghost"
         size="sm"
         className="fixed top-4 left-4 z-50 lg:hidden"
-        onClick={() => setIsOpen(!isOpen)}
+        onClick={onToggle}
       >
         {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
       </Button>
 
       {/* Mobile backdrop */}
       <AnimatePresence>
-        {isOpen && (
+        {isOpen && isMobile && (
           <motion.div
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
-            onClick={() => setIsOpen(false)}
+            onClick={onToggle}
           />
         )}
       </AnimatePresence>
@@ -102,20 +106,42 @@ export function Sidebar() {
         initial={false}
         animate={{
           x: isMobile ? (isOpen ? 0 : "-100%") : 0,
+          width: isMobile ? 256 : (isOpen ? 256 : 64),
         }}
+        transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 w-64 bg-light-surface dark:bg-dark-surface border-r border-light-border dark:border-dark-border shadow-lg",
-          "lg:static lg:translate-x-0 lg:shadow-none"
+          "fixed inset-y-0 left-0 z-50 bg-light-surface dark:bg-dark-surface border-r border-light-border dark:border-dark-border shadow-lg h-screen"
         )}
       >
         <div className="flex h-full flex-col">
-          {/* Logo */}
-          <div className="flex h-16 items-center px-6 border-b border-light-border dark:border-dark-border">
-            <div className="flex items-center space-x-2">
+          {/* Logo - Clickable when collapsed on desktop */}
+          <div className={cn(
+            "flex h-16 items-center border-b border-light-border dark:border-dark-border",
+            isOpen ? "px-6" : "px-0 justify-center"
+          )}>
+            <div
+              className={cn(
+                "flex items-center",
+                isOpen ? "space-x-2" : "",
+                !isOpen && !isMobile && "cursor-pointer hover:opacity-80 transition-opacity"
+              )}
+              onClick={!isOpen && !isMobile ? onToggle : undefined}
+            >
               <div className="h-8 w-8 rounded-lg bg-light-secondary/20 dark:bg-dark-secondary/20 flex items-center justify-center">
                 <Monitor className="h-5 w-5 text-light-secondary dark:text-dark-secondary" />
               </div>
-              <span className="text-lg font-bold">VendingAdmin</span>
+              <AnimatePresence mode="wait">
+                {isOpen && (
+                  <motion.span
+                    initial={{ opacity: 0, width: 0 }}
+                    animate={{ opacity: 1, width: "auto" }}
+                    exit={{ opacity: 0, width: 0 }}
+                    className="text-lg font-bold overflow-hidden"
+                  >
+                    VendingAdmin
+                  </motion.span>
+                )}
+              </AnimatePresence>
             </div>
           </div>
 
@@ -129,21 +155,41 @@ export function Sidebar() {
                 <Link
                   key={item.name}
                   href={item.href}
-                  onClick={() => setIsOpen(false)}
+                  onClick={() => isMobile && onToggle()}
                   className={cn(
-                    "flex items-center space-x-3 px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200",
+                    "flex items-center px-3 py-2.5 rounded-xl text-sm font-medium transition-all duration-200 group relative",
+                    isOpen ? "justify-start space-x-3" : "justify-center",
                     isActive
                       ? "bg-light-secondary dark:bg-dark-secondary text-light-buttonText dark:text-dark-buttonText shadow-sm"
                       : "text-light-textSecondary dark:text-dark-textSecondary hover:text-light-text dark:hover:text-dark-text hover:bg-light-tertiary dark:hover:bg-dark-tertiary"
                   )}
+                  title={!isOpen ? item.name : undefined}
                 >
                   <Icon className="h-5 w-5 flex-shrink-0" />
-                  <span>{item.name}</span>
-                  {isActive && (
+                  <AnimatePresence mode="wait">
+                    {isOpen && (
+                      <motion.span
+                        initial={{ opacity: 0, width: 0 }}
+                        animate={{ opacity: 1, width: "auto" }}
+                        exit={{ opacity: 0, width: 0 }}
+                        className="overflow-hidden"
+                      >
+                        {item.name}
+                      </motion.span>
+                    )}
+                  </AnimatePresence>
+                  {isActive && isOpen && (
                     <motion.div
                       layoutId="activeIndicator"
                       className="ml-auto h-2 w-2 rounded-full bg-light-buttonText dark:bg-dark-buttonText"
                     />
+                  )}
+
+                  {/* Tooltip for collapsed state */}
+                  {!isOpen && (
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                      {item.name}
+                    </div>
                   )}
                 </Link>
               );
@@ -152,9 +198,18 @@ export function Sidebar() {
 
           {/* Footer */}
           <div className="p-4 border-t border-light-border dark:border-dark-border">
-            <div className="text-xs text-light-textSecondary dark:text-dark-textSecondary">
-              VendingAdmin v1.0
-            </div>
+            <AnimatePresence mode="wait">
+              {isOpen && (
+                <motion.div
+                  initial={{ opacity: 0, width: 0 }}
+                  animate={{ opacity: 1, width: "auto" }}
+                  exit={{ opacity: 0, width: 0 }}
+                  className="text-xs text-light-textSecondary dark:text-dark-textSecondary overflow-hidden"
+                >
+                  VendingAdmin v1.0
+                </motion.div>
+              )}
+            </AnimatePresence>
           </div>
         </div>
       </motion.aside>

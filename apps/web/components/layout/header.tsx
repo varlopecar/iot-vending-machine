@@ -1,20 +1,39 @@
 "use client";
 
-import { Moon, Sun, User } from "lucide-react";
+import { Moon, Sun, User, Menu } from "lucide-react";
 import { Button } from "@/components/ui";
 import { useTheme } from "@/hooks/use-theme";
 
-export function Header() {
+interface HeaderProps {
+  onSidebarToggle: () => void;
+  isSidebarOpen: boolean;
+}
+
+export function Header({ onSidebarToggle, isSidebarOpen }: HeaderProps) {
   const { theme, toggleTheme } = useTheme();
 
   return (
     <header className="bg-light-background dark:bg-dark-background border-b border-light-border dark:border-dark-border px-6 py-4">
       <div className="flex items-center justify-between">
-        <div className="ml-auto lg:ml-0">
-          <h1 className="text-xl font-semibold">Back-office</h1>
-          <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
-            Gestion des machines de distribution
-          </p>
+        <div className="flex items-center space-x-4">
+          {/* Sidebar toggle button - only show when sidebar is open on desktop */}
+          {isSidebarOpen && (
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={onSidebarToggle}
+              className="h-9 w-9 p-0 lg:flex hidden"
+            >
+              <Menu className="h-4 w-4" />
+            </Button>
+          )}
+
+          <div>
+            <h1 className="text-xl font-semibold">Back-office</h1>
+            <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
+              Gestion des machines de distribution
+            </p>
+          </div>
         </div>
 
         <div className="flex items-center space-x-4">
