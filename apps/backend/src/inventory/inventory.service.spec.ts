@@ -28,6 +28,7 @@ describe('InventoryService', () => {
     stock: {
       findFirst: jest.fn(),
       update: jest.fn(),
+      updateMany: jest.fn(),
     },
   };
 
