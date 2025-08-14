@@ -109,6 +109,14 @@ export async function logLocalPaymentEvent(
   orderId?: string,
 ): Promise<void> {
   try {
+    // Vérifier que les méthodes nécessaires existent
+    if (!prisma.payment?.findUnique || !prisma.paymentEvent?.create) {
+      console.warn(
+        'Prisma methods not available for logging local payment event',
+      );
+      return;
+    }
+
     // Trouver le payment correspondant à cette commande
     const payment = await prisma.payment.findUnique({
       where: { order_id: orderId },

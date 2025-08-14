@@ -25,15 +25,15 @@ describe('StripeService', () => {
   };
 
   beforeEach(async () => {
+    // Mock Stripe BEFORE creating the service
+    mockStripe = mockStripeClient;
+    (getStripeClient as jest.Mock).mockReturnValue(mockStripe);
+
     const module: TestingModule = await Test.createTestingModule({
       providers: [StripeService],
     }).compile();
 
     service = module.get<StripeService>(StripeService);
-
-    // Mock Stripe
-    mockStripe = mockStripeClient;
-    (getStripeClient as jest.Mock).mockReturnValue(mockStripe);
   });
 
   afterEach(() => {

@@ -22,6 +22,9 @@ describe('InventoryService', () => {
     order: {
       findUnique: jest.fn(),
     },
+    orderItem: {
+      findMany: jest.fn(),
+    },
     stock: {
       findFirst: jest.fn(),
       update: jest.fn(),
@@ -79,6 +82,10 @@ describe('InventoryService', () => {
 
     it('should decrement stock successfully for multi-item order', async () => {
       mockTransaction.order.findUnique.mockResolvedValue(mockOrder);
+      mockTransaction.orderItem.findMany.mockResolvedValue([
+        { product_id: 'product-1', quantity: 2, slot_number: 1 },
+        { product_id: 'product-2', quantity: 1, slot_number: 2 },
+      ]);
       mockTransaction.stock.findFirst
         .mockResolvedValueOnce(mockStock1) // Premier item
         .mockResolvedValueOnce(mockStock2); // Deuxième item

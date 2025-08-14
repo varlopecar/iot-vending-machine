@@ -12,6 +12,7 @@ describe('CleanupStalePaymentIntentsJob', () => {
   const mockPrismaService = {
     payment: {
       findMany: jest.fn(),
+      findUnique: jest.fn(),
       update: jest.fn(),
     },
     paymentEvent: {
@@ -72,6 +73,9 @@ describe('CleanupStalePaymentIntentsJob', () => {
 
       // Mock des réponses
       mockPrismaService.payment.findMany.mockResolvedValue(mockStalePayments);
+      mockPrismaService.payment.findUnique.mockResolvedValue({
+        id: 'payment-1',
+      });
       mockStripeService.getPaymentIntent.mockResolvedValue({
         id: 'pi_test_1',
         status: 'requires_payment_method',

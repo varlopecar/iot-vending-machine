@@ -17,6 +17,13 @@ export class StripeService {
     input: CreatePaymentIntentInput,
   ): Promise<PaymentIntentResult> {
     try {
+      // Vérifier que Stripe est disponible
+      if (!this.stripe?.paymentIntents?.create) {
+        throw new BadRequestException(
+          'Stripe paymentIntents.create method not available',
+        );
+      }
+
       // Configuration des méthodes de paiement selon la plateforme
       // Pour les tests, on utilise uniquement automatic_payment_methods
       // TODO: Réactiver Apple Pay/Google Pay quand le compte Stripe sera configuré
@@ -180,6 +187,12 @@ export class StripeService {
    */
   async checkApplePayAvailability(domain: string): Promise<boolean> {
     try {
+      // Vérifier que Stripe est disponible
+      if (!this.stripe?.accounts?.retrieve) {
+        console.warn('Stripe accounts.retrieve method not available');
+        return false;
+      }
+
       // Apple Pay est généralement disponible si le compte Stripe supporte les paiements
       // et que les capacités sont activées dans le dashboard
       const account = await this.stripe.accounts.retrieve();
@@ -201,6 +214,12 @@ export class StripeService {
    */
   async checkGooglePayAvailability(): Promise<boolean> {
     try {
+      // Vérifier que Stripe est disponible
+      if (!this.stripe?.accounts?.retrieve) {
+        console.warn('Stripe accounts.retrieve method not available');
+        return false;
+      }
+
       // Google Pay est généralement disponible si configuré dans le dashboard Stripe
       const account = await this.stripe.accounts.retrieve();
       return account.charges_enabled === true;

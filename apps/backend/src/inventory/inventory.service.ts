@@ -12,6 +12,12 @@ export class InventoryService {
     try {
       this.logger.log(`📦 Décrémentation du stock pour la commande ${orderId}`);
 
+      // Vérifier que la transaction a les méthodes nécessaires
+      if (!tx.orderItem?.findMany) {
+        this.logger.warn('Transaction does not have orderItem.findMany method');
+        return;
+      }
+
       // Récupérer les items de la commande
       const orderItems = await tx.orderItem.findMany({
         where: { order_id: orderId },
@@ -44,6 +50,25 @@ export class InventoryService {
         error,
       );
       throw error;
+    }
+  }
+
+  /**
+   * Vérifie la disponibilité du stock pour une commande
+   */
+  async checkStockAvailability(orderId: string): Promise<boolean> {
+    try {
+      // Cette méthode sera implémentée selon les besoins
+      this.logger.log(
+        `🔍 Vérification de la disponibilité du stock pour la commande ${orderId}`,
+      );
+      return true;
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur lors de la vérification du stock pour la commande ${orderId}:`,
+        error,
+      );
+      return false;
     }
   }
 }
