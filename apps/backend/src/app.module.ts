@@ -14,6 +14,7 @@ import { WebhooksModule } from './webhooks/webhooks.module';
 import { InventoryModule } from './inventory/inventory.module';
 import { PaymentsModule } from './payments/payments.module';
 import { JobsModule } from './jobs/jobs.module';
+import { HealthModule } from './health/health.module';
 import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middleware';
 
 @Module({
@@ -35,6 +36,7 @@ import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middl
     InventoryModule,
     PaymentsModule,
     JobsModule,
+    HealthModule,
   ],
   controllers: [],
   providers: [],

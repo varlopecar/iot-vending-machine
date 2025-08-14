@@ -35,7 +35,9 @@ export class InventoryService {
         );
       }
 
-      this.logger.log(`✅ Stock décrémenté avec succès pour la commande ${orderId}`);
+      this.logger.log(
+        `✅ Stock décrémenté avec succès pour la commande ${orderId}`,
+      );
     } catch (error) {
       this.logger.error(
         `❌ Erreur lors de la décrémentation du stock pour la commande ${orderId}:`,

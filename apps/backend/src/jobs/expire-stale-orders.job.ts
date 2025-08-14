@@ -180,61 +180,61 @@ export class ExpireStaleOrdersJob {
 
     const payment = order.payment;
     try {
-        if (
-          payment.stripe_payment_intent_id &&
-          canSafelyCancelPaymentIntent(payment.status)
-        ) {
-          // Vérifier si le PI existe encore sur Stripe
-          try {
-            const stripePI = await this.stripeService.getPaymentIntent(
+      if (
+        payment.stripe_payment_intent_id &&
+        canSafelyCancelPaymentIntent(payment.status)
+      ) {
+        // Vérifier si le PI existe encore sur Stripe
+        try {
+          const stripePI = await this.stripeService.getPaymentIntent(
+            payment.stripe_payment_intent_id,
+          );
+
+          if (stripePI && canSafelyCancelPaymentIntent(stripePI.status)) {
+            // Annuler le PI sur Stripe
+            await this.stripeService.cancelPaymentIntent(
               payment.stripe_payment_intent_id,
+              'abandoned',
             );
 
-            if (stripePI && canSafelyCancelPaymentIntent(stripePI.status)) {
-              // Annuler le PI sur Stripe
-              await this.stripeService.cancelPaymentIntent(
-                payment.stripe_payment_intent_id,
-                'abandoned',
-              );
-
-              // Mettre à jour le statut du paiement
-              await tx.payment.update({
-                where: { id: payment.id },
-                data: {
-                  status: 'canceled',
-                  last_error_message: 'Commande expirée - PaymentIntent annulé',
-                },
-              });
-
-              canceledCount++;
-              this.logger.log(
-                `💳 PaymentIntent ${payment.stripe_payment_intent_id} annulé avec succès`,
-              );
-            }
-          } catch (stripeError) {
-            // Le PI n'existe plus sur Stripe ou erreur d'API
-            this.logger.warn(
-              `⚠️  Impossible d'annuler le PaymentIntent ${payment.stripe_payment_intent_id}: ${stripeError.message}`,
-            );
-
-            // Marquer quand même comme annulé localement
+            // Mettre à jour le statut du paiement
             await tx.payment.update({
               where: { id: payment.id },
               data: {
                 status: 'canceled',
-                last_error_message: 'PaymentIntent introuvable sur Stripe',
+                last_error_message: 'Commande expirée - PaymentIntent annulé',
               },
             });
 
             canceledCount++;
+            this.logger.log(
+              `💳 PaymentIntent ${payment.stripe_payment_intent_id} annulé avec succès`,
+            );
           }
+        } catch (stripeError) {
+          // Le PI n'existe plus sur Stripe ou erreur d'API
+          this.logger.warn(
+            `⚠️  Impossible d'annuler le PaymentIntent ${payment.stripe_payment_intent_id}: ${stripeError.message}`,
+          );
+
+          // Marquer quand même comme annulé localement
+          await tx.payment.update({
+            where: { id: payment.id },
+            data: {
+              status: 'canceled',
+              last_error_message: 'PaymentIntent introuvable sur Stripe',
+            },
+          });
+
+          canceledCount++;
         }
-      } catch (error) {
-        this.logger.error(
-          `❌ Erreur lors de l'annulation du PaymentIntent pour la commande ${order.id}:`,
-          error,
-        );
       }
+    } catch (error) {
+      this.logger.error(
+        `❌ Erreur lors de l'annulation du PaymentIntent pour la commande ${order.id}:`,
+        error,
+      );
+    }
 
     return canceledCount;
   }

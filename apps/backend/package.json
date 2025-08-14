@@ -22,6 +22,7 @@
     "test:smoke:watch": "jest --config ./test/jest-smoke.json --watch",
     "seed": "ts-node prisma/seed.ts",
     "migrate:dev": "prisma migrate dev",
+    "db:migrate": "prisma migrate deploy",
     "db:backfill:payments": "ts-node scripts/backfill_payments_snapshots.ts",
     "db:verify:constraints": "ts-node scripts/verify_constraints.ts",
     "stripe:listen": "stripe listen --forward-to http://localhost:3000/webhooks/stripe",
@@ -34,7 +35,8 @@
     "jobs:test": "ts-node scripts/test-jobs.ts",
     "jobs:test:simple": "ts-node scripts/test-jobs-simple.ts",
     "jobs:test:minimal": "ts-node scripts/test-jobs-minimal.ts",
-    "check:payments": "ts-node scripts/check-payments-setup.ts"
+    "check:payments": "ts-node scripts/check-payments-setup.ts",
+    "setup:deployment": "./scripts/setup-deployment.sh"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
