@@ -34,9 +34,7 @@ describe('StripeWebhookService', () => {
       update: jest.fn(),
       findUnique: jest.fn(),
     },
-    loyaltyLog: {
-      create: jest.fn(),
-    },
+    // loyaltyLog supprimé
     user: {
       update: jest.fn(),
     },
@@ -56,9 +54,7 @@ describe('StripeWebhookService', () => {
       update: jest.fn(),
       findUnique: jest.fn(),
     },
-    loyaltyLog: {
-      create: jest.fn(),
-    },
+    // loyaltyLog supprimé dans la transaction
     user: {
       update: jest.fn(),
     },

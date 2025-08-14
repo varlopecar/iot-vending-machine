@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// Conservé pour compat UI interne mais non stocké en BDD
 export const loyaltyLogSchema = z.object({
   id: z.string().min(1),
   user_id: z.string().min(1),
@@ -21,6 +22,11 @@ export const historyEntrySchema = z.object({
   date: z.string(),
   location: z.string(),
   points: z.number().int(),
+});
+
+export const historyPagedResponseSchema = z.object({
+  entries: z.array(historyEntrySchema),
+  nextOffset: z.number().int().nullable(),
 });
 
 export type LoyaltyLog = z.infer<typeof loyaltyLogSchema>;

@@ -4,12 +4,14 @@ export type CreateOrderItemInput = {
   product_id: string;
   quantity: number;
   slot_number: number;
+  is_free?: boolean;
 };
 
 export type CreateOrderInput = {
   user_id: string;
   machine_id: string;
   items: CreateOrderItemInput[];
+  points_spent?: number;
 };
 
 export type OrderWithItems = {

@@ -244,7 +244,18 @@ const appRouter = t.router({
       id: z.string().min(1),
       user_id: z.string().min(1),
       machine_id: z.string().min(1),
-      status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+      status: z.enum([
+        'pending',
+        'active',
+        'expired',
+        'used',
+        'cancelled',
+        // Statuts de paiement additionnels renvoyés par certains flux
+        'paid',
+        'failed',
+        'refunded',
+        'requires_payment',
+      ]),
       created_at: z.string(),
       expires_at: z.string(),
       qr_code_token: z.string(),
@@ -262,7 +273,18 @@ const appRouter = t.router({
       id: z.string().min(1),
       user_id: z.string().min(1),
       machine_id: z.string().min(1),
-      status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+      status: z.enum([
+        'pending',
+        'active',
+        'expired',
+        'used',
+        'cancelled',
+        // Statuts de paiement additionnels renvoyés par certains flux
+        'paid',
+        'failed',
+        'refunded',
+        'requires_payment',
+      ]),
       created_at: z.string(),
       expires_at: z.string(),
       qr_code_token: z.string(),
@@ -284,13 +306,26 @@ const appRouter = t.router({
           product_id: z.string().min(1),
           quantity: z.number().int().positive(),
           slot_number: z.number().int().positive(),
+          is_free: z.boolean().optional(),
         }),
       ),
+      points_spent: z.number().int().min(0).optional(),
     })).output(z.object({
       id: z.string().min(1),
       user_id: z.string().min(1),
       machine_id: z.string().min(1),
-      status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+      status: z.enum([
+        'pending',
+        'active',
+        'expired',
+        'used',
+        'cancelled',
+        // Statuts de paiement additionnels renvoyés par certains flux
+        'paid',
+        'failed',
+        'refunded',
+        'requires_payment',
+      ]),
       created_at: z.string(),
       expires_at: z.string(),
       qr_code_token: z.string(),
@@ -308,7 +343,17 @@ const appRouter = t.router({
       id: z.string().min(1),
       data: z.object({
         status: z
-          .enum(['pending', 'active', 'expired', 'used', 'cancelled'])
+          .enum([
+            'pending',
+            'active',
+            'expired',
+            'used',
+            'cancelled',
+            'paid',
+            'failed',
+            'refunded',
+            'requires_payment',
+          ])
           .optional(),
         expires_at: z.string().optional(),
       }),
@@ -316,7 +361,18 @@ const appRouter = t.router({
       id: z.string().min(1),
       user_id: z.string().min(1),
       machine_id: z.string().min(1),
-      status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+      status: z.enum([
+        'pending',
+        'active',
+        'expired',
+        'used',
+        'cancelled',
+        // Statuts de paiement additionnels renvoyés par certains flux
+        'paid',
+        'failed',
+        'refunded',
+        'requires_payment',
+      ]),
       created_at: z.string(),
       expires_at: z.string(),
       qr_code_token: z.string(),
@@ -325,7 +381,18 @@ const appRouter = t.router({
       id: z.string().min(1),
       user_id: z.string().min(1),
       machine_id: z.string().min(1),
-      status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+      status: z.enum([
+        'pending',
+        'active',
+        'expired',
+        'used',
+        'cancelled',
+        // Statuts de paiement additionnels renvoyés par certains flux
+        'paid',
+        'failed',
+        'refunded',
+        'requires_payment',
+      ]),
       created_at: z.string(),
       expires_at: z.string(),
       qr_code_token: z.string(),
@@ -334,7 +401,18 @@ const appRouter = t.router({
       id: z.string().min(1),
       user_id: z.string().min(1),
       machine_id: z.string().min(1),
-      status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+      status: z.enum([
+        'pending',
+        'active',
+        'expired',
+        'used',
+        'cancelled',
+        // Statuts de paiement additionnels renvoyés par certains flux
+        'paid',
+        'failed',
+        'refunded',
+        'requires_payment',
+      ]),
       created_at: z.string(),
       expires_at: z.string(),
       qr_code_token: z.string(),
@@ -343,7 +421,18 @@ const appRouter = t.router({
       id: z.string().min(1),
       user_id: z.string().min(1),
       machine_id: z.string().min(1),
-      status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+      status: z.enum([
+        'pending',
+        'active',
+        'expired',
+        'used',
+        'cancelled',
+        // Statuts de paiement additionnels renvoyés par certains flux
+        'paid',
+        'failed',
+        'refunded',
+        'requires_payment',
+      ]),
       created_at: z.string(),
       expires_at: z.string(),
       qr_code_token: z.string(),
@@ -505,20 +594,32 @@ const appRouter = t.router({
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   loyalty: t.router({
-    getCurrentPoints: publicProcedure.input(z.object({ user_id: z.uuid() })).output(z.number()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getLoyaltyHistory: publicProcedure.input(z.object({ user_id: z.uuid() })).output(z.array(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
-    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getLoyaltyHistoryFormatted: publicProcedure.input(z.object({ user_id: z.uuid() })).output(z.array(z.object({
+    getCurrentPoints: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.number()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getLoyaltyHistory: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.array(z.object({
       id: z.string(),
       date: z.string(),
       location: z.string(),
       points: z.number().int(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getLoyaltyHistoryFormatted: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.array(z.object({
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getLoyaltyHistoryPaged: publicProcedure.input(z.object({
+      user_id: z.string().min(1),
+      offset: z.number().int().min(0).default(0),
+      limit: z.number().int().min(1).max(100).default(20),
+    })).output(z.object({
+      entries: z.array(z.object({
+        id: z.string(),
+        date: z.string(),
+        location: z.string(),
+        points: z.number().int(),
+      })),
+      nextOffset: z.number().int().nullable(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getAvailableAdvantages: publicProcedure.output(z.array(z.object({
       id: z.string(),
       title: z.string(),
@@ -527,36 +628,33 @@ const appRouter = t.router({
       image: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     addPoints: publicProcedure.input(z.object({
-      user_id: z.uuid(),
+      user_id: z.string().min(1),
       points: z.number().int().positive(),
       reason: z.string(),
     })).output(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     deductPoints: publicProcedure.input(z.object({
-      user_id: z.uuid(),
+      user_id: z.string().min(1),
       points: z.number().int().positive(),
       reason: z.string(),
     })).output(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     redeemAdvantage: publicProcedure.input(z.object({
-      user_id: z.uuid(),
+      user_id: z.string().min(1),
       advantage_id: z.string(),
     })).output(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   machines: t.router({
@@ -754,7 +852,7 @@ const appRouter = t.router({
   }),
   checkout: t.router({
     createIntent: publicProcedure.input(z.object({
-      orderId: z.string().uuid('OrderId doit être un UUID valide'),
+      orderId: z.string().min(1, 'OrderId requis'),
     })).output(z.object({
       publishableKey: z.string(),
       paymentIntentClientSecret: z.string(),
@@ -762,7 +860,7 @@ const appRouter = t.router({
       ephemeralKey: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getStatus: publicProcedure.input(z.object({
-      orderId: z.string().uuid('OrderId doit être un UUID valide'),
+      orderId: z.string().min(1, 'OrderId requis'),
     })).output(z.object({
       orderStatus: z.string(),
       paymentStatus: z.string().nullable(),

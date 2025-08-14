@@ -132,4 +132,10 @@ export class CheckoutRouter {
       });
     }
   }
+
+  /**
+   * Finalise un paiement côté serveur en vérifiant l'état du PaymentIntent Stripe
+   * Applique les mêmes effets que le webhook: PAID, stock, QR, points fidélité
+   */
+  // finalizePayment retiré selon la demande (retour à l'état initial)
 }

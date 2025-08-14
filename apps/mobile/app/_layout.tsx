@@ -8,7 +8,7 @@ import { MachineProvider } from "../contexts/MachineContext";
 import { AuthProvider } from "../contexts/AuthContext";
 import * as Notifications from "expo-notifications";
 import { GestureHandlerRootView } from "react-native-gesture-handler";
-import { StripeProvider } from "@stripe/stripe-react-native";
+import { StripeProvider } from "../components/StripeProvider";
 
 // Configuration des notifications
 Notifications.setNotificationHandler({
@@ -29,13 +29,10 @@ export default function RootLayout() {
     >
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
-          <CartProvider>
-            <OrdersProvider>
-            {
-              // Injection du AuthProvider pour fournir le contexte d'auth à toute l'app
-            }
-            <AuthProvider>
+          <AuthProvider>
             <MachineProvider>
+            <CartProvider>
+              <OrdersProvider>
             <Stack screenOptions={{ headerBackTitle: "" }}>
               <Stack.Screen name="login" options={{ headerShown: false }} />
               <Stack.Screen name="register" options={{ headerShown: false }} />
@@ -64,10 +61,10 @@ export default function RootLayout() {
                 }}
               />
             </Stack>
+              </OrdersProvider>
+            </CartProvider>
             </MachineProvider>
-            </AuthProvider>
-            </OrdersProvider>
-          </CartProvider>
+          </AuthProvider>
         </SafeAreaProvider>
       </GestureHandlerRootView>
     </StripeProvider>

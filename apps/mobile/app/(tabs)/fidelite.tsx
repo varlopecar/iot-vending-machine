@@ -20,7 +20,10 @@ import {
 } from "../../components/ui";
 import { HistoryEntry } from "../../types/types";
 import { AdvantageGrid, HistoryList } from "../../components/fidelity";
+import { useAuth } from "../../contexts/AuthContext";
+import { getLoyaltyHistory } from "../../lib/loyalty";
 import { useRouter } from "expo-router";
+import { useFocusEffect } from "@react-navigation/native";
 import { useCart } from "../../contexts/CartContext";
 import {
   getAdvantagesFromOffers,
@@ -30,35 +33,24 @@ import SuccessBanner from "../../components/SuccessBanner";
 
 const CartBanner = React.lazy(() => import("../../components/CartBanner"));
 
-// Les points affichés proviennent maintenant du CartContext (getCurrentPoints)
-
-// Les avantages sont maintenant générés à partir de la configuration centralisée
+// Les avantages sont générés à partir de la configuration centralisée
 const advantages = getAdvantagesFromOffers();
-
-const mockHistory: HistoryEntry[] = [
-  { id: "1", date: "04/08/2025", location: "Sophia", points: 2 },
-  { id: "2", date: "02/09/2025", location: "Antibes", points: 4 },
-  { id: "3", date: "02/09/2025", location: "Antibes", points: 4 },
-  { id: "4", date: "02/09/2025", location: "Antibes", points: 4 },
-  { id: "5", date: "02/09/2025", location: "Antibes", points: 4 },
-  { id: "6", date: "02/09/2025", location: "Antibes", points: 4 },
-  { id: "7", date: "02/09/2025", location: "Antibes", points: 4 },
-  { id: "8", date: "02/09/2025", location: "Antibes", points: 4 },
-  { id: "9", date: "02/09/2025", location: "Antibes", points: 4 },
-];
 
 export default function FideliteScreen() {
   const { isDark, colors } = useTailwindTheme();
+  const { user } = useAuth();
   const { gradientColors, textGradientColors } = useGradient();
   const [activeTab, setActiveTab] = useState<"advantages" | "history">(
     "advantages"
   );
+  const [history, setHistory] = useState<HistoryEntry[]>([]);
   const [showBarcode, setShowBarcode] = useState(false);
   const [showSuccessBanner, setShowSuccessBanner] = useState(false);
   const scrollY = useRef(new Animated.Value(0)).current;
   const router = useRouter();
   const {
     getCurrentPoints,
+    refreshUserPoints,
     getTotalItems,
     getTotalPrice,
     lastOfferAdded,
@@ -95,6 +87,24 @@ export default function FideliteScreen() {
       }, 2500); // Un peu plus que la durée de la notification
     }
   }, [lastOfferAdded, clearLastOfferAdded]);
+
+  // Rafraîchir les points à chaque focus de l'onglet Fidélité
+  useFocusEffect(
+    useCallback(() => {
+      void refreshUserPoints();
+      // Charger l'historique fidélité
+      if (user?.id) {
+        getLoyaltyHistory(user.id)
+          .then((entries) => {
+            setHistory(entries);
+          })
+          .catch(() => setHistory([]));
+      } else {
+        setHistory([]);
+      }
+      return undefined;
+    }, [refreshUserPoints, user?.id])
+  );
 
   return (
     <SafeContainer>
@@ -161,7 +171,7 @@ export default function FideliteScreen() {
           ) : (
             <HistoryList
               isDark={isDark}
-              entries={mockHistory}
+              entries={history}
               gradientColors={gradientColors}
             />
           )}

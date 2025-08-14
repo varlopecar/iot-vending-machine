@@ -1,11 +1,14 @@
-import React, { createContext, useContext, useState, ReactNode } from "react";
+import React, { createContext, useContext, useState, ReactNode, useEffect } from "react";
 import { CartItem, AppliedOffer, Product } from "../types/product";
+import { useAuth } from "./AuthContext";
+import { getCurrentPoints as fetchServerPoints } from "../lib/loyalty";
 
 interface CartContextType {
   cartItems: CartItem[];
   appliedOffers: AppliedOffer[];
   userBasePoints: number;
   getCurrentPoints: () => number;
+  refreshUserPoints: () => Promise<void>;
   addToCart: (product: Product) => boolean;
   removeFromCart: (productId: string) => void;
   updateQuantity: (productId: string, quantity: number) => void;
@@ -23,10 +26,30 @@ interface CartContextType {
 const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
+  const { user } = useAuth();
   const [cartItems, setCartItems] = useState<CartItem[]>([]);
   const [appliedOffers, setAppliedOffers] = useState<AppliedOffer[]>([]);
-  const [userBasePoints] = useState<number>(100);
+  const [userBasePoints, setUserBasePoints] = useState<number>(0);
   const [lastOfferAdded, setLastOfferAdded] = useState<string | null>(null);
+
+  const refreshUserPoints = async () => {
+    try {
+      if (!user?.id) {
+        setUserBasePoints(0);
+        return;
+      }
+      const pts = await fetchServerPoints(user.id);
+      setUserBasePoints(Number.isFinite(pts) ? pts : 0);
+    } catch (e) {
+      setUserBasePoints(0);
+    }
+  };
+
+  useEffect(() => {
+    // Charger les points serveur à l'arrivée ou au changement d'utilisateur
+    void refreshUserPoints();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user?.id]);
 
   const getCurrentPoints = () => {
     const pointsUsed = appliedOffers.reduce(
@@ -188,6 +211,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
         appliedOffers,
         userBasePoints,
         getCurrentPoints,
+        refreshUserPoints,
         addToCart,
         removeFromCart,
         updateQuantity,
