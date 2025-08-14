@@ -136,6 +136,10 @@ DATABASE_URL="your-test-database-url"
    - Click "Approve and deploy"
 4. **Automatic deployment**:
    - Deploys to Scalingo
+   - **Runs Prisma setup automatically:**
+     - `pnpm prisma migrate status`
+     - `pnpm prisma migrate deploy`
+     - `pnpm seed`
    - Verifies deployment
    - Sends notifications
 
@@ -214,6 +218,48 @@ Configure alerts in Scalingo for:
 - High response times
 - Memory usage
 - CPU usage
+
+## 🗄️ Prisma Database Deployment
+
+### Automatic Prisma Setup:
+
+The deployment process automatically handles Prisma database operations:
+
+1. **Pre-deployment Check** (GitHub Actions):
+   - `pnpm prisma migrate status` - Checks migration status
+
+2. **Post-deployment Setup** (Scalingo):
+   - `pnpm prisma migrate status` - Verifies migration status
+   - `pnpm prisma migrate deploy` - Applies pending migrations
+   - `pnpm seed` - Seeds the database with initial data
+
+### Manual Prisma Operations:
+
+If you need to run Prisma operations manually:
+
+```bash
+# Connect to Scalingo app
+scalingo --app your-app-name run bash
+
+# Check migration status
+pnpm prisma migrate status
+
+# Apply migrations
+pnpm prisma migrate deploy
+
+# Seed database
+pnpm seed
+
+# Generate Prisma client
+pnpm prisma generate
+```
+
+### Database Connection:
+
+The app uses Prisma Accelerate for database connections:
+
+- **Development**: Direct PostgreSQL connection
+- **Production**: Prisma Accelerate connection (configured via `DATABASE_URL`)
 
 ## 🐛 Troubleshooting
 

@@ -25,7 +25,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -82,7 +82,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: "18"
-          cache: "npm"
+          cache: "pnpm"
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -97,6 +97,13 @@ jobs:
           cd apps/backend
           pnpm build
         id: build
+
+      - name: Setup Prisma (pre-deployment check)
+        run: |
+          cd apps/backend
+          echo "🔍 Checking Prisma migration status..."
+          pnpm prisma migrate status
+          echo "✅ Prisma migration status checked"
 
       - name: Verify build artifacts
         run: |
@@ -125,7 +132,8 @@ jobs:
           echo "- Backend API with all modules" >> $GITHUB_STEP_SUMMARY
           echo "- Health check endpoints" >> $GITHUB_STEP_SUMMARY
           echo "- Payment system integration" >> $GITHUB_STEP_SUMMARY
-          echo "- Database migrations (if any)" >> $GITHUB_STEP_SUMMARY
+          echo "- Database migrations and seeding" >> $GITHUB_STEP_SUMMARY
+          echo "- Prisma client generation" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🔗 Deployment URL:" >> $GITHUB_STEP_SUMMARY
           echo "https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io" >> $GITHUB_STEP_SUMMARY

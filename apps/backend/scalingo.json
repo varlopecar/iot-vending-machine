@@ -22,7 +22,7 @@
     }
   ],
   "scripts": {
-    "postdeploy": "pnpm run db:migrate"
+    "postdeploy": "pnpm run db:setup"
   },
   "addons": ["postgresql"]
 }

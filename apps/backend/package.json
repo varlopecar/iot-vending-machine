@@ -23,6 +23,7 @@
     "seed": "ts-node prisma/seed.ts",
     "migrate:dev": "prisma migrate dev",
     "db:migrate": "prisma migrate deploy",
+    "db:setup": "pnpm prisma migrate status && pnpm prisma migrate deploy && pnpm seed",
     "db:backfill:payments": "ts-node scripts/backfill_payments_snapshots.ts",
     "db:verify:constraints": "ts-node scripts/verify_constraints.ts",
     "stripe:listen": "stripe listen --forward-to http://localhost:3000/webhooks/stripe",
