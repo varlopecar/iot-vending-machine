@@ -80,6 +80,8 @@ jobs:
           echo "🔍 Checking Prisma migration status..."
           pnpm prisma migrate status
           echo "✅ Prisma migration status checked"
+        env:
+          DATABASE_URL: ${{ secrets.DATABASE_URL }}
 
       - name: Verify build artifacts
         run: |
