@@ -14,62 +14,79 @@ export class LoyaltyService {
     userId: string,
     points: number,
     reason: string,
-  ): Promise<LoyaltyLog> {
-    // Verify user exists
+  ): Promise<HistoryEntry> {
     const user = await this.authService.getUserById(userId);
-
-    const loyaltyLog = await this.prisma.loyaltyLog.create({
-      data: {
-        user_id: userId,
-        change: points,
-        reason,
-        created_at: new Date().toISOString(),
-      },
-    });
-
     await this.prisma.user.update({
       where: { id: userId },
       data: { points: user.points + points },
     });
-
-    return this.mapLog(loyaltyLog);
+    return {
+      id: `virt_add_${Date.now()}`,
+      date: new Date().toISOString(),
+      location: this.extractLocationFromReason(reason),
+      points,
+    };
   }
 
   async deductPoints(
     userId: string,
     points: number,
     reason: string,
-  ): Promise<LoyaltyLog> {
-    // Verify user exists and has enough points
+  ): Promise<HistoryEntry> {
     const user = await this.authService.getUserById(userId);
-
     if (user.points < points) {
       throw new Error('Insufficient points');
     }
-
-    const loyaltyLog = await this.prisma.loyaltyLog.create({
-      data: {
-        user_id: userId,
-        change: -points,
-        reason,
-        created_at: new Date().toISOString(),
-      },
-    });
-
     await this.prisma.user.update({
       where: { id: userId },
       data: { points: user.points - points },
     });
-
-    return this.mapLog(loyaltyLog);
+    return {
+      id: `virt_deduct_${Date.now()}`,
+      date: new Date().toISOString(),
+      location: this.extractLocationFromReason(reason),
+      points: -points,
+    };
   }
 
   async getLoyaltyHistory(userId: string): Promise<LoyaltyLog[]> {
-    const logs = await this.prisma.loyaltyLog.findMany({
+    // Historique dérivé des commandes: points_spent (négatif) et points_earned (positif)
+    const orders = await this.prisma.order.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
+      select: {
+        id: true,
+        created_at: true,
+        points_spent: true,
+        points_earned: true,
+        machine_id: true,
+      },
     });
-    return logs.map(this.mapLog);
+
+    const entries: LoyaltyLog[] = [];
+    for (const o of orders) {
+      if ((o.points_spent ?? 0) > 0) {
+        entries.push({
+          id: `order_${o.id}_spent`,
+          user_id: userId,
+          change: -(o.points_spent ?? 0),
+          reason: `Redeemed: order ${o.id}`,
+          created_at: o.created_at,
+        });
+      }
+      if ((o.points_earned ?? 0) > 0) {
+        entries.push({
+          id: `order_${o.id}_earned`,
+          user_id: userId,
+          change: o.points_earned ?? 0,
+          reason: `Purchase credit: order ${o.id}`,
+          created_at: o.created_at,
+        });
+      }
+    }
+    // Tri décroissant par date
+    entries.sort((a, b) => (a.created_at < b.created_at ? 1 : -1));
+    return entries;
   }
 
   async getLoyaltyHistoryFormatted(userId: string): Promise<HistoryEntry[]> {
@@ -126,20 +143,19 @@ export class LoyaltyService {
   async redeemAdvantage(
     userId: string,
     advantageId: string,
-  ): Promise<LoyaltyLog> {
+  ): Promise<HistoryEntry> {
     const advantages = this.getAvailableAdvantages();
     const advantage = advantages.find((adv) => adv.id === advantageId);
-
     if (!advantage) {
       throw new NotFoundException('Advantage not found');
     }
-
-    // Deduct points for the advantage
-    return await this.deductPoints(
-      userId,
-      advantage.points,
-      `Redeemed: ${advantage.title}`,
-    );
+    // Ne pas décrémenter ici : le débit se fera lors de la création de la commande via points_spent
+    return {
+      id: `virt_adv_${advantage.id}_${Date.now()}`,
+      date: new Date().toISOString(),
+      location: `Avantage sélectionné: ${advantage.title}`,
+      points: 0,
+    };
   }
 
   async getCurrentPoints(userId: string): Promise<number> {

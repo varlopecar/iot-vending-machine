@@ -26,7 +26,6 @@ model User {
 
   // Relations
   orders       Order[]
-  loyalty_logs LoyaltyLog[]
   restocks     Restock[] // Nouveaux: restocks effectués par cet utilisateur (si ADMIN/OPERATOR)
 
   @@map("users")
@@ -132,6 +131,11 @@ model Order {
   paid_at                   String?     // Timestamp du paiement réussi
   receipt_url               String?     // URL du reçu Stripe
 
+  // Fidélité (source de vérité au niveau de la commande)
+  points_spent              Int         @default(0)
+  points_earned             Int         @default(0)
+  loyalty_applied           Boolean     @default(false)
+
   // Relations
   user    User        @relation(fields: [user_id], references: [id], onDelete: Cascade)
   machine Machine     @relation(fields: [machine_id], references: [id], onDelete: Cascade)
@@ -178,18 +182,7 @@ model Pickup {
   @@map("pickups")
 }
 
-model LoyaltyLog {
-  id         String @id @default(cuid())
-  user_id    String
-  change     Int // Positive for points earned, negative for points spent
-  reason     String
-  created_at String @default(dbgenerated("now()::text"))
-
-  // Relations
-  user User @relation(fields: [user_id], references: [id], onDelete: Cascade)
-
-  @@map("loyalty_logs")
-}
+// Loyalty logs supprimés: l'historique est dérivé de `orders` (points_spent/points_earned)
 
 // Nouvelles tables pour le système de paiement robuste
 

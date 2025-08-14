@@ -28,6 +28,7 @@ export const createOrderSchema = z.object({
       slot_number: z.number().int().positive(),
     }),
   ),
+  points_spent: z.number().int().min(0).optional(),
 });
 
 export const updateOrderSchema = z.object({

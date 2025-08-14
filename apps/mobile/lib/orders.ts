@@ -10,6 +10,7 @@ export type CreateOrderInput = {
   user_id: string;
   machine_id: string;
   items: CreateOrderItemInput[];
+  points_spent?: number;
 };
 
 export type OrderWithItems = {

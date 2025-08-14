@@ -149,19 +149,19 @@ export class StripeWebhookService {
         const pointsToAdd = Math.floor(payment.amount_cents / 50);
         if (pointsToAdd > 0) {
           await oncePerOrder(tx, orderId, 'credit_loyalty', async () => {
-            await tx.loyaltyLog.create({
-              data: {
-                user_id: payment.order.user_id,
-                change: pointsToAdd,
-                reason: `order:${orderId}:paid`,
-                created_at: new Date().toISOString(),
-              },
-            });
-
             // Mettre à jour les points de l'utilisateur
             await tx.user.update({
               where: { id: payment.order.user_id },
               data: { points: { increment: pointsToAdd } },
+            });
+
+            // Marquer la commande avec points_earned et loyalty_applied
+            await tx.order.update({
+              where: { id: orderId },
+              data: {
+                points_earned: { increment: pointsToAdd },
+                loyalty_applied: true,
+              },
             });
           });
         }

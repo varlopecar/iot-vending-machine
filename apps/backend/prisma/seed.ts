@@ -10,7 +10,7 @@ async function main() {
   await prisma.restockItem.deleteMany();
   await prisma.restock.deleteMany();
   await prisma.alert.deleteMany();
-  await prisma.loyaltyLog.deleteMany();
+  // loyalty logs supprimés
   await prisma.pickup.deleteMany();
   await prisma.orderItem.deleteMany();
   await prisma.order.deleteMany();
@@ -432,35 +432,7 @@ async function main() {
 
   console.log('🛒 Created order items');
 
-  // Create loyalty logs
-  const loyaltyLogs = await Promise.all([
-    prisma.loyaltyLog.create({
-      data: {
-        user_id: users[0].id,
-        change: 50,
-        reason: 'Purchase at Building A - Ground Floor',
-        created_at: new Date().toISOString(),
-      },
-    }),
-    prisma.loyaltyLog.create({
-      data: {
-        user_id: users[0].id,
-        change: -20,
-        reason: 'Redeemed: Petit Snack',
-        created_at: new Date().toISOString(),
-      },
-    }),
-    prisma.loyaltyLog.create({
-      data: {
-        user_id: users[1].id,
-        change: 30,
-        reason: 'Purchase at Building B - 2nd Floor',
-        created_at: new Date().toISOString(),
-      },
-    }),
-  ]);
-
-  console.log('🎯 Created loyalty logs');
+  // Loyalty logs supprimés (l'historique est désormais dérivé de orders)
 
   // Create a pickup
   const pickup = await prisma.pickup.create({
@@ -575,7 +547,7 @@ async function main() {
   console.log(`- ${stocks.length} stock entries created (incluant produit dupliqué)`);
   console.log(`- ${orders.length} orders created`);
   console.log(`- ${orderItems.length} order items created`);
-  console.log(`- ${loyaltyLogs.length} loyalty logs created`);
+  // Loyalty logs supprimés du seed
   console.log(`- 1 pickup created`);
   console.log(`- ${alerts.length} alerts created (avec relations stock_id)`);
   console.log(`- ${restocks.length} restocks created`);

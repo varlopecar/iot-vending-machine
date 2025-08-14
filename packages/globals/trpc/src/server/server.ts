@@ -286,6 +286,7 @@ const appRouter = t.router({
           slot_number: z.number().int().positive(),
         }),
       ),
+      points_spent: z.number().int().min(0).optional(),
     })).output(z.object({
       id: z.string().min(1),
       user_id: z.string().min(1),
@@ -505,15 +506,14 @@ const appRouter = t.router({
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   loyalty: t.router({
-    getCurrentPoints: publicProcedure.input(z.object({ user_id: z.uuid() })).output(z.number()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getLoyaltyHistory: publicProcedure.input(z.object({ user_id: z.uuid() })).output(z.array(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
+    getCurrentPoints: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.number()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getLoyaltyHistory: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.array(z.object({
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getLoyaltyHistoryFormatted: publicProcedure.input(z.object({ user_id: z.uuid() })).output(z.array(z.object({
+    getLoyaltyHistoryFormatted: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.array(z.object({
       id: z.string(),
       date: z.string(),
       location: z.string(),
@@ -527,36 +527,33 @@ const appRouter = t.router({
       image: z.string(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     addPoints: publicProcedure.input(z.object({
-      user_id: z.uuid(),
+      user_id: z.string().min(1),
       points: z.number().int().positive(),
       reason: z.string(),
     })).output(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     deductPoints: publicProcedure.input(z.object({
-      user_id: z.uuid(),
+      user_id: z.string().min(1),
       points: z.number().int().positive(),
       reason: z.string(),
     })).output(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     redeemAdvantage: publicProcedure.input(z.object({
-      user_id: z.uuid(),
+      user_id: z.string().min(1),
       advantage_id: z.string(),
     })).output(z.object({
-      id: z.string().min(1),
-      user_id: z.string().min(1),
-      change: z.number().int(),
-      reason: z.string(),
-      created_at: z.string(),
+      id: z.string(),
+      date: z.string(),
+      location: z.string(),
+      points: z.number().int(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   machines: t.router({

@@ -59,6 +59,8 @@ export class OrdersService {
           created_at: createdAt,
           expires_at: expiresAt,
           qr_code_token: qrCodeToken,
+          points_spent: orderData.points_spent ?? 0,
+          loyalty_applied: (orderData.points_spent ?? 0) > 0,
         },
       });
 
@@ -74,6 +76,19 @@ export class OrdersService {
           }),
         ),
       );
+
+      // Décrémenter les points fidélité si points_spent est fourni
+      if (orderData.points_spent && orderData.points_spent > 0) {
+        const user = await tx.user.findUnique({ where: { id: orderData.user_id } });
+        if (!user) throw new NotFoundException('User not found');
+        if (user.points < orderData.points_spent) {
+          throw new BadRequestException('Insufficient loyalty points');
+        }
+        await tx.user.update({
+          where: { id: orderData.user_id },
+          data: { points: user.points - orderData.points_spent },
+        });
+      }
 
       return { order, items };
     });

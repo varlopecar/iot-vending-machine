@@ -1,5 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { StripeProvider as StripeProviderBase } from '@stripe/stripe-react-native';
+// Attention: ce fichier sera scindé en .native et .web pour éviter l'import web du module natif
 
 interface StripeContextType {
   publishableKey: string | null;

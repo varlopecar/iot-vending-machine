@@ -1,5 +1,6 @@
 import { z } from 'zod';
 
+// Conservé pour compat UI interne mais non stocké en BDD
 export const loyaltyLogSchema = z.object({
   id: z.string().min(1),
   user_id: z.string().min(1),
