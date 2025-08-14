@@ -8,6 +8,8 @@ import { SafeContainer, SectionTitle } from "../../components/ui";
 import { useCart } from "../../contexts/CartContext";
 import { Header } from "../../components/Header";
 import { useOrders } from "../../contexts/OrdersContext";
+import { useAuth } from "../../contexts/AuthContext";
+import { getOrdersByUserId, OrderWithItems } from "../../lib/orders";
 
 // Lazy loading des composants
 const OrderCard = React.lazy(() => import("../../components/OrderCard"));
@@ -18,19 +20,44 @@ export default function CommandesScreen() {
   const { isDark } = useTailwindTheme();
   const { getTotalItems, getTotalPrice } = useCart();
   const { orders } = useOrders();
+  const { user } = useAuth();
   const [localOrders, setLocalOrders] = useState<Order[]>(orders);
   const [tick, setTick] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const scrollY = useRef(new Animated.Value(0)).current;
 
-  // Simulation du chargement initial
+  // Charger les commandes réelles pour l'utilisateur connecté
   useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsLoading(false);
-    }, 300);
-
-    return () => clearTimeout(timer);
-  }, []);
+    let cancelled = false;
+    async function load() {
+      try {
+        setIsLoading(true);
+        if (!user?.id) {
+          setIsLoading(false);
+          return;
+        }
+        const serverOrders = await getOrdersByUserId(user.id);
+        const mapped: Order[] = serverOrders.map((o: OrderWithItems) => ({
+          id: o.id,
+          date: new Date(o.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+          items: o.items.map(it => ({ id: it.product_id, name: '', price: 0, image: null, quantity: it.quantity })),
+          totalPrice: (o.total_price ?? 0),
+          qrCodeToken: o.qr_code_token,
+          expiresAt: new Date(o.expires_at),
+          status: (o.status as any) || 'active',
+        }));
+        if (!cancelled) {
+          setLocalOrders(mapped);
+        }
+      } catch (e) {
+        console.error('[Commandes] Erreur chargement:', e);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+    load();
+    return () => { cancelled = true; };
+  }, [user?.id]);
 
   useEffect(() => {
     setLocalOrders(orders);
