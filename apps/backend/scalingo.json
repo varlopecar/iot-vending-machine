@@ -1,0 +1,28 @@
+{
+  "name": "iot-vending-machine-backend",
+  "description": "Backend API for IoT Vending Machine platform",
+  "repository": "https://github.com/your-username/iot-vending-machine",
+  "logo": "https://nestjs.com/img/logo-small.svg",
+  "keywords": ["nestjs", "node", "typescript", "trpc", "stripe", "postgresql"],
+  "env": {
+    "NODE_ENV": {
+      "description": "Environment mode",
+      "value": "production"
+    }
+  },
+  "formation": {
+    "web": {
+      "amount": 1,
+      "size": "S"
+    }
+  },
+  "buildpacks": [
+    {
+      "url": "heroku/nodejs"
+    }
+  ],
+  "scripts": {
+    "postdeploy": "pnpm run db:migrate"
+  },
+  "addons": ["postgresql"]
+}

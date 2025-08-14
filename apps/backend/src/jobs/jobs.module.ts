@@ -10,7 +10,12 @@ import { JobsRouter } from './jobs.router';
 import { MetricsService } from './metrics.service';
 
 @Module({
-  imports: [ScheduleModule.forRoot(), PrismaModule, StripeModule, InventoryModule],
+  imports: [
+    ScheduleModule.forRoot(),
+    PrismaModule,
+    StripeModule,
+    InventoryModule,
+  ],
   providers: [
     JobsService,
     ExpireStaleOrdersJob,
