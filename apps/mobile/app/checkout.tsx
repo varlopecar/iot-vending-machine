@@ -17,9 +17,10 @@ export default function CheckoutScreen() {
   const [orderData] = useState({
     amount: Number.isFinite(rawAmount) ? rawAmount : 2500, // Respecte 0 si passé en paramètre
     currency: (params.currency as string) || "eur",
-    orderId: (params.orderId as string) || `order_${Date.now()}`,
-    userId: (params.userId as string) || `user_${Date.now()}`,
-    machineId: (params.machineId as string) || `machine_${Date.now()}`,
+    // On passe un id temporaire pour Stripe (métadonnées), la vraie commande est créée après paiement
+    orderId: (params.orderId as string) || `pending_${Date.now()}`,
+    userId: params.userId as string,
+    machineId: params.machineId as string,
   });
 
   const handlePaymentSuccess = (result: PaymentResult) => {
@@ -27,21 +28,20 @@ export default function CheckoutScreen() {
 
     Alert.alert(
       "Paiement réussi ! 🎉",
-      "Votre commande a été confirmée. Vous allez recevoir votre QR code.",
+      "Votre commande va être créée. Vous allez recevoir votre QR code.",
       [
         {
           text: "Voir mon QR code",
           onPress: () => {
-            // Naviguer vers l'écran de QR code avec les données de la commande
-            router.push({
-              pathname: "/payment-success",
-              params: {
-                orderId: orderData.orderId,
-                paymentIntentId: result.paymentIntentId,
-                amount: orderData.amount.toString(),
-                currency: orderData.currency,
-              },
-            });
+            // Ne PAS passer d'orderId ici: la commande sera créée dans payment-success
+            const nextParams: Record<string, string> = {
+              paymentIntentId: result.paymentIntentId || 'paid',
+              amount: orderData.amount.toString(),
+              currency: orderData.currency,
+            };
+            if (orderData.userId) nextParams.userId = orderData.userId;
+            if (orderData.machineId) nextParams.machineId = orderData.machineId;
+            router.push({ pathname: "/payment-success", params: nextParams } as any);
           },
         },
       ],

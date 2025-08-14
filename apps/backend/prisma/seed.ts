@@ -288,6 +288,32 @@ async function main() {
         updated_at: now,
       },
     }),
+
+    // Compléter la machine A1 avec TOUS les produits disponibles
+    prisma.stock.create({
+      data: {
+        machine_id: machines[0].id,
+        product_id: products[3].id, // Kinder Bueno
+        quantity: 10,
+        slot_number: 4,
+        max_capacity: 12,
+        low_threshold: 2,
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[0].id,
+        product_id: products[4].id, // Energy Bar
+        quantity: 8,
+        slot_number: 5,
+        max_capacity: 12,
+        low_threshold: 2,
+        created_at: now,
+        updated_at: now,
+      },
+    }),
   ]);
 
   console.log('📦 Created stocks');

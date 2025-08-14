@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { useFocusEffect } from "@react-navigation/native";
 import { View, Text, Animated } from "react-native";
 import { useRouter } from "expo-router";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
@@ -7,7 +8,7 @@ import { Order } from "../../types/product";
 import { SafeContainer, SectionTitle } from "../../components/ui";
 import { useCart } from "../../contexts/CartContext";
 import { Header } from "../../components/Header";
-import { useOrders } from "../../contexts/OrdersContext";
+// import { useOrders } from "../../contexts/OrdersContext";
 import { useAuth } from "../../contexts/AuthContext";
 import { getOrdersByUserId, OrderWithItems } from "../../lib/orders";
 
@@ -19,9 +20,8 @@ export default function CommandesScreen() {
   const router = useRouter();
   const { isDark } = useTailwindTheme();
   const { getTotalItems, getTotalPrice } = useCart();
-  const { orders } = useOrders();
   const { user } = useAuth();
-  const [localOrders, setLocalOrders] = useState<Order[]>(orders);
+  const [localOrders, setLocalOrders] = useState<Order[]>([]);
   const [tick, setTick] = useState(0);
   const [isLoading, setIsLoading] = useState(true);
   const scrollY = useRef(new Animated.Value(0)).current;
@@ -59,9 +59,7 @@ export default function CommandesScreen() {
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  useEffect(() => {
-    setLocalOrders(orders);
-  }, [orders]);
+  // Ne plus refléter les mocks du contexte pour éviter les données obsolètes
 
   // Déclenche un re-render toutes les minutes pour rafraîchir le compte à rebours
   useEffect(() => {
@@ -71,6 +69,35 @@ export default function CommandesScreen() {
     }, 60000);
     return () => clearInterval(id);
   }, []);
+
+  // Recharger à chaque focus de l'onglet
+  useFocusEffect(
+    React.useCallback(() => {
+      let active = true;
+      const refetch = async () => {
+        if (!user?.id) return;
+        try {
+          const serverOrders = await getOrdersByUserId(user.id);
+          if (active) {
+            const mapped: Order[] = serverOrders.map((o: OrderWithItems) => ({
+              id: o.id,
+              date: new Date(o.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
+              items: o.items.map(it => ({ id: it.product_id, name: '', price: 0, image: null, quantity: it.quantity })),
+              totalPrice: (o.total_price ?? 0),
+              qrCodeToken: o.qr_code_token,
+              expiresAt: new Date(o.expires_at),
+              status: (o.status as any) || 'active',
+            }));
+            setLocalOrders(mapped);
+          }
+        } catch (e) {
+          console.error('[Commandes] Erreur re-focus:', e);
+        }
+      };
+      refetch();
+      return () => { active = false; };
+    }, [user?.id])
+  );
 
   const handleOrderPress = (order: Order) => {
     router.push({
