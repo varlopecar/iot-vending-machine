@@ -17,6 +17,7 @@ import type {
   PayableOrderStatus,
 } from './checkout.schema';
 import Stripe from 'stripe';
+// finalizePayment retiré → imports non nécessaires
 
 @Injectable()
 export class CheckoutService {
@@ -242,6 +243,8 @@ export class CheckoutService {
       throw new BadRequestException('Erreur lors de la récupération du statut');
     }
   }
+
+  // finalizePayment supprimé (retour en arrière)
 
   /**
    * Vérifie si le statut de la commande permet le paiement

@@ -12,7 +12,18 @@ export const orderSchema = z.object({
   id: z.string().min(1),
   user_id: z.string().min(1),
   machine_id: z.string().min(1),
-  status: z.enum(['pending', 'active', 'expired', 'used', 'cancelled']),
+  status: z.enum([
+    'pending',
+    'active',
+    'expired',
+    'used',
+    'cancelled',
+    // Statuts de paiement additionnels renvoyés par certains flux
+    'paid',
+    'failed',
+    'refunded',
+    'requires_payment',
+  ]),
   created_at: z.string(),
   expires_at: z.string(),
   qr_code_token: z.string(),
@@ -26,6 +37,7 @@ export const createOrderSchema = z.object({
       product_id: z.string().min(1),
       quantity: z.number().int().positive(),
       slot_number: z.number().int().positive(),
+      is_free: z.boolean().optional(),
     }),
   ),
   points_spent: z.number().int().min(0).optional(),
@@ -33,7 +45,17 @@ export const createOrderSchema = z.object({
 
 export const updateOrderSchema = z.object({
   status: z
-    .enum(['pending', 'active', 'expired', 'used', 'cancelled'])
+    .enum([
+      'pending',
+      'active',
+      'expired',
+      'used',
+      'cancelled',
+      'paid',
+      'failed',
+      'refunded',
+      'requires_payment',
+    ])
     .optional(),
   expires_at: z.string().optional(),
 });

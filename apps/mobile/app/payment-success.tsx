@@ -14,7 +14,7 @@ export default function PaymentSuccessScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isDark } = useTailwindTheme();
-  const { cartItems, getTotalPrice, clearCart } = useCart();
+  const { cartItems, getTotalPrice, clearCart, appliedOffers } = useCart();
 
   const [orderStatus, setOrderStatus] =
     useState<CheckoutGetStatusResponse | null>(null);
@@ -44,15 +44,22 @@ export default function PaymentSuccessScreen() {
           if (!userId || !machineId) throw new Error('Paramètres manquants pour créer la commande');
           // Construire les items à partir du panier courant
           const serverProducts = await getAllProducts();
-          const items: { product_id: string; quantity: number; slot_number: number }[] = [];
+          const items: { product_id: string; quantity: number; slot_number: number; is_free?: boolean }[] = [];
           for (const ci of cartItems) {
             const serverId = resolveServerProductId(serverProducts, ci.name);
             if (!serverId) throw new Error(`Produit introuvable: ${ci.name}`);
             const stock = await getStockByMachineAndProduct(machineId, serverId);
             if (!stock) throw new Error(`Stock indisponible pour ${ci.name}`);
-            items.push({ product_id: serverId, quantity: ci.quantity, slot_number: stock.slot_number });
+            items.push({
+              product_id: serverId,
+              quantity: ci.quantity,
+              slot_number: stock.slot_number,
+              is_free: !!ci.fromOfferId,
+            });
           }
-          const created = await createOrder({ user_id: userId, machine_id: machineId, items });
+          // Calcul des points dépensés via les offres appliquées
+          const pointsSpent = appliedOffers.reduce((sum, o) => sum + o.points, 0);
+          const created = await createOrder({ user_id: userId, machine_id: machineId, items, points_spent: pointsSpent > 0 ? pointsSpent : undefined });
           orderId = created.id;
           setOrderIdState(orderId);
           setCreateOrderStep('done');

@@ -53,7 +53,7 @@ export function HistoryList({
               <Text
                 className={`${isDark ? "text-dark-text" : "text-light-text"} text-xl font-extrabold`}
               >
-                +{entry.points}
+                {entry.points > 0 ? `+${entry.points}` : `${entry.points}`}
               </Text>
               <Text
                 className={`${isDark ? "text-dark-text" : "text-light-text"} text-xs font-semibold`}

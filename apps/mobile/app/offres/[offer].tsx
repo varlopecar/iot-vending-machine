@@ -1,8 +1,8 @@
-import React, { useMemo, useState } from "react";
+import React, { useMemo, useState, useEffect } from "react";
 import { View, ScrollView } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
-import { mockProducts } from "../../data/mockProducts";
+import { getAllProducts, ServerProduct } from "../../lib/products";
 import { Product } from "../../types/product";
 import { getOfferRule } from "../../lib/offers/offerRules";
 import {
@@ -38,13 +38,31 @@ export default function OfferDetailScreen() {
   }, [offerId]);
 
   // Catégorisation des produits
+  const [products, setProducts] = useState<Product[]>([]);
+  useEffect(() => {
+    getAllProducts()
+      .then((ps: ServerProduct[]) => {
+        const mapped: Product[] = ps.map((p) => ({
+          id: p.id,
+          name: p.name,
+          price: p.price,
+          image: { uri: p.image_url },
+          ingredients: p.ingredients.split(',').map((s) => s.trim()),
+          allergens: p.allergens.split(',').map((s) => s.trim()).filter(Boolean),
+          nutritionalValues: { calories: 0, protein: 0, carbs: 0, fat: 0 },
+        }));
+        setProducts(mapped);
+      })
+      .catch(() => setProducts([]));
+  }, []);
+  // Seuils simplifiés et inclusifs pour mieux couvrir le catalogue backend
   const smallSnacks = useMemo(
-    () => mockProducts.filter((p) => p.price < 1.5),
-    []
+    () => products.filter((p) => p.price < 2.0),
+    [products]
   );
   const bigSnacks = useMemo(
-    () => mockProducts.filter((p) => p.price >= 1.5 && p.price <= 2.49),
-    []
+    () => products.filter((p) => p.price >= 2.0),
+    [products]
   );
 
   // Fonction de gestion du succès - retour immédiat

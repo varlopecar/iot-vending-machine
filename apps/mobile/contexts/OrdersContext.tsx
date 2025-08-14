@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useMemo, useState, ReactNode } from "react";
 import { CartItem, Order } from "../types/product";
-import { mockOrders } from "../data/mockProducts";
 
 interface NewOrderInput {
   id: string;
@@ -23,13 +22,7 @@ interface OrdersContextType {
 const OrdersContext = createContext<OrdersContextType | undefined>(undefined);
 
 export function OrdersProvider({ children }: { children: ReactNode }) {
-  const [orders, setOrders] = useState<Order[]>(() => {
-    // Normalise les mocks: ancien champ qrCode -> qrCodeImage
-    return mockOrders.map((o) => ({
-      ...o,
-      qrCodeImage: (o as any).qrCodeImage ?? (o as any).qrCode,
-    }));
-  });
+  const [orders, setOrders] = useState<Order[]>([]);
 
   const addOrder = (input: NewOrderInput): Order => {
     const next: Order = {

@@ -59,23 +59,86 @@ export class OrdersService {
           created_at: createdAt,
           expires_at: expiresAt,
           qr_code_token: qrCodeToken,
-          points_spent: orderData.points_spent ?? 0,
-          loyalty_applied: (orderData.points_spent ?? 0) > 0,
+          // Champs fidélité ajoutés via spread typé any pour compatibilité typage Prisma si non généré
+          ...(orderData.points_spent && orderData.points_spent > 0
+            ? ({
+                points_spent: orderData.points_spent,
+                loyalty_applied: true,
+              } as any)
+            : ({} as any)),
         },
       });
 
       const items = await Promise.all(
-        orderData.items.map((it) =>
-          tx.orderItem.create({
+        orderData.items.map(async (it) => {
+          const product = await tx.product.findUnique({
+            where: { id: it.product_id },
+          });
+          if (!product) throw new NotFoundException('Product not found');
+
+          const unitPriceCents = Math.round(Number(product.price) * 100);
+          const subtotalCents = (it.is_free ? 0 : unitPriceCents) * it.quantity;
+
+          return tx.orderItem.create({
             data: {
               order_id: order.id,
               product_id: it.product_id,
               quantity: it.quantity,
               slot_number: it.slot_number,
+              unit_price_cents: unitPriceCents,
+              subtotal_cents: subtotalCents,
+              label: product.name,
             },
-          }),
-        ),
+          });
+        }),
       );
+
+      // Mettre à jour le montant total de la commande en centimes depuis les snapshots
+      const amountTotalCents = items.reduce(
+        (sum, item) => sum + (item.subtotal_cents ?? 0),
+        0,
+      );
+
+      // Autoriser les commandes à 0€ (ex: uniquement des bonus/offerts)
+      // On valide seulement qu'il y a au moins un item
+      if (items.length === 0) {
+        throw new BadRequestException('Order must contain at least one item');
+      }
+
+      await tx.order.update({
+        where: { id: order.id },
+        data: { amount_total_cents: amountTotalCents },
+      });
+
+      // Créditer immédiatement les points fidélité sur création de commande (1 point / 0,50€)
+      // On crédite même si des points ont été dépensés: net = +earned - spent
+      // Calcul des points uniquement sur les items payants
+      const paidSubtotalCents = items.reduce(
+        (sum, item) => sum + ((item.subtotal_cents ?? 0)),
+        0,
+      );
+      const pointsToAdd = Math.floor(paidSubtotalCents / 50);
+      if (pointsToAdd > 0) {
+        // Enregistrer l'action pour idempotence (évite double crédit via webhook)
+        await tx.orderAction.create({
+          data: { order_id: order.id, action: 'credit_loyalty' },
+        });
+
+        // Incrémenter les points utilisateur
+        await tx.user.update({
+          where: { id: orderData.user_id },
+          data: { points: { increment: pointsToAdd } },
+        });
+
+        // Marquer la commande
+        await tx.order.update({
+          where: { id: order.id },
+          data: ({
+            points_earned: { increment: pointsToAdd },
+            loyalty_applied: true,
+          } as any),
+        });
+      }
 
       // Décrémenter les points fidélité si points_spent est fourni
       if (orderData.points_spent && orderData.points_spent > 0) {
@@ -234,6 +297,17 @@ export class OrdersService {
         return 'USED';
       case 'cancelled':
         return 'CANCELLED';
+      // Tolérance pour nouveaux statuts API; on mappe vers valeurs DB les plus proches
+      case 'paid':
+        return 'PENDING';
+      case 'failed':
+        return 'PENDING';
+      case 'refunded':
+        return 'PENDING';
+      case 'requires_payment':
+        return 'PENDING';
+      default:
+        return 'PENDING';
     }
   }
 

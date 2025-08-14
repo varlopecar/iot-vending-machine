@@ -2,13 +2,16 @@ import { z } from 'zod';
 
 // Schéma pour la création d'intention de paiement
 export const createIntentSchema = z.object({
-  orderId: z.string().uuid('OrderId doit être un UUID valide'),
+  orderId: z.string().min(1, 'OrderId requis'),
 });
 
 // Schéma pour la récupération du statut
 export const getStatusSchema = z.object({
-  orderId: z.string().uuid('OrderId doit être un UUID valide'),
+  orderId: z.string().min(1, 'OrderId requis'),
 });
+
+// Schéma pour finaliser un paiement côté serveur (fallback si webhook indisponible)
+// finalizePayment supprimé (retour en arrière)
 
 // Schéma de réponse pour createIntent
 export const createIntentResponseSchema = z.object({
@@ -35,6 +38,7 @@ export type CreateIntentInput = z.infer<typeof createIntentSchema>;
 export type GetStatusInput = z.infer<typeof getStatusSchema>;
 export type CreateIntentResponse = z.infer<typeof createIntentResponseSchema>;
 export type GetStatusResponse = z.infer<typeof getStatusResponseSchema>;
+// type FinalizePaymentInput supprimé
 
 // Statuts de commande supportés pour le paiement
 export const PAYABLE_ORDER_STATUSES = ['PENDING', 'FAILED'] as const;

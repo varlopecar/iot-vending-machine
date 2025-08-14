@@ -4,6 +4,7 @@ export type CreateOrderItemInput = {
   product_id: string;
   quantity: number;
   slot_number: number;
+  is_free?: boolean;
 };
 
 export type CreateOrderInput = {

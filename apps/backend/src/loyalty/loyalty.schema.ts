@@ -24,6 +24,11 @@ export const historyEntrySchema = z.object({
   points: z.number().int(),
 });
 
+export const historyPagedResponseSchema = z.object({
+  entries: z.array(historyEntrySchema),
+  nextOffset: z.number().int().nullable(),
+});
+
 export type LoyaltyLog = z.infer<typeof loyaltyLogSchema>;
 export type Advantage = z.infer<typeof advantageSchema>;
 export type HistoryEntry = z.infer<typeof historyEntrySchema>;

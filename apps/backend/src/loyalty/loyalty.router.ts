@@ -1,7 +1,7 @@
 import { Input, Mutation, Query, Router } from 'nestjs-trpc';
 import { LoyaltyService } from './loyalty.service';
 import { z } from 'zod';
-import { advantageSchema, historyEntrySchema } from './loyalty.schema';
+import { advantageSchema, historyEntrySchema, historyPagedResponseSchema } from './loyalty.schema';
 
 @Router({ alias: 'loyalty' })
 export class LoyaltyRouter {
@@ -29,6 +29,23 @@ export class LoyaltyRouter {
   })
   getLoyaltyHistoryFormatted(@Input('user_id') userId: string) {
     return this.loyaltyService.getLoyaltyHistoryFormatted(userId);
+  }
+
+  // Pagination simple avec offset/limit
+  @Query({
+    input: z.object({
+      user_id: z.string().min(1),
+      offset: z.number().int().min(0).default(0),
+      limit: z.number().int().min(1).max(100).default(20),
+    }),
+    output: historyPagedResponseSchema,
+  })
+  async getLoyaltyHistoryPaged(
+    @Input('user_id') userId: string,
+    @Input('offset') offset: number,
+    @Input('limit') limit: number,
+  ) {
+    return this.loyaltyService.getLoyaltyHistoryPaged(userId, offset, limit);
   }
 
   @Query({

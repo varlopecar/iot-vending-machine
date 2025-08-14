@@ -54,31 +54,24 @@ export class LoyaltyService {
     const orders = await this.prisma.order.findMany({
       where: { user_id: userId },
       orderBy: { created_at: 'desc' },
-      select: {
-        id: true,
-        created_at: true,
-        points_spent: true,
-        points_earned: true,
-        machine_id: true,
-      },
     });
 
     const entries: LoyaltyLog[] = [];
-    for (const o of orders) {
-      if ((o.points_spent ?? 0) > 0) {
+    for (const o of orders as any[]) {
+      if (((o.points_spent ?? 0) as number) > 0) {
         entries.push({
           id: `order_${o.id}_spent`,
           user_id: userId,
-          change: -(o.points_spent ?? 0),
+          change: -((o.points_spent ?? 0) as number),
           reason: `Redeemed: order ${o.id}`,
           created_at: o.created_at,
         });
       }
-      if ((o.points_earned ?? 0) > 0) {
+      if (((o.points_earned ?? 0) as number) > 0) {
         entries.push({
           id: `order_${o.id}_earned`,
           user_id: userId,
-          change: o.points_earned ?? 0,
+          change: (o.points_earned ?? 0) as number,
           reason: `Purchase credit: order ${o.id}`,
           created_at: o.created_at,
         });
@@ -90,13 +83,48 @@ export class LoyaltyService {
   }
 
   async getLoyaltyHistoryFormatted(userId: string): Promise<HistoryEntry[]> {
-    const logs = await this.getLoyaltyHistory(userId);
-    return logs.map((log) => ({
-      id: log.id,
-      date: new Date(log.created_at).toLocaleDateString('fr-FR'),
-      location: this.extractLocationFromReason(log.reason),
-      points: log.change,
-    }));
+    // Recalcul direct à partir des commandes, avec nom de machine
+    const orders = await this.prisma.order.findMany({
+      where: { user_id: userId },
+      orderBy: { created_at: 'desc' },
+      include: {
+        machine: { select: { label: true, location: true } },
+      },
+    });
+
+    const entries: HistoryEntry[] = [];
+    for (const o of orders) {
+      const location = (o as any).machine?.label || (o as any).machine?.location || 'Unknown';
+      if (((o as any).points_spent ?? 0) > 0) {
+        entries.push({
+          id: `order_${o.id}_spent`,
+          date: new Date(o.created_at).toLocaleDateString('fr-FR'),
+          location,
+          points: -(((o as any).points_spent ?? 0)),
+        });
+      }
+      if (((o as any).points_earned ?? 0) > 0) {
+        entries.push({
+          id: `order_${o.id}_earned`,
+          date: new Date(o.created_at).toLocaleDateString('fr-FR'),
+          location,
+          points: ((o as any).points_earned ?? 0),
+        });
+      }
+    }
+
+    return entries;
+  }
+
+  async getLoyaltyHistoryPaged(
+    userId: string,
+    offset: number,
+    limit: number,
+  ): Promise<{ entries: HistoryEntry[]; nextOffset: number | null }> {
+    const all = await this.getLoyaltyHistoryFormatted(userId);
+    const slice = all.slice(offset, offset + limit);
+    const nextOffset = offset + limit < all.length ? offset + limit : null;
+    return { entries: slice, nextOffset };
   }
 
   getAvailableAdvantages(): Advantage[] {
