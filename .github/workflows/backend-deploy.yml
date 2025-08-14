@@ -3,8 +3,8 @@ name: Backend CI/CD Pipeline
 on:
   push:
     branches: [main]
-remove  pull_request:
-  branches: [main]
+  pull_request:
+    branches: [main]
 
 jobs:
   test:
