@@ -1,5 +1,5 @@
-name: Backend CI/CD Pipeline
-# Deployment trigger - updated for testing
+name: Backend CI Pipeline
+# Auto-deployment via Scalingo GitHub integration
 
 on:
   push:
