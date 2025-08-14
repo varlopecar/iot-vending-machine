@@ -18,13 +18,13 @@ export const useNativePayment = () => {
         // Pour iOS, on vérifie dynamiquement avec le backend
         // TODO: Remplacer par votre endpoint tRPC
         try {
-          const response = await fetch('https://a849cdd6a381.ngrok-free.app/trpc/stripe.checkNativePayAvailability', {
+          const response = await fetch('https://0e6a95162b27.ngrok-free.app/trpc/stripe.checkNativePayAvailability', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
             },
             body: JSON.stringify({
-              domain: 'a849cdd6a381.ngrok-free.app' // URL ngrok mise à jour
+              domain: '0e6a95162b27.ngrok-free.app' // URL ngrok mise à jour
             }),
           });
           
