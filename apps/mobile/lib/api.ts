@@ -28,6 +28,13 @@ export async function trpcMutation<TInput extends object, TOutput>(
     body: JSON.stringify(input),
   });
   const raw = await response.text();
+  console.log(`[tRPC] ${path} → status ${response.status}`);
+  if (raw) {
+    try {
+      const preview = raw.length > 500 ? raw.slice(0, 500) + '…' : raw;
+      console.log(`[tRPC] ${path} → body:`, preview);
+    } catch {}
+  }
 
   // Tente de parser le JSON si possible, sans relire le flux
   let parsed: any = null;
@@ -44,12 +51,67 @@ export async function trpcMutation<TInput extends object, TOutput>(
 
     // Normalisation des messages usuels
     const normalized = normalizeErrorMessage(serverMessage, response.status);
+    console.error(`[tRPC] ${path} → erreur:`, normalized);
     throw new Error(normalized);
   }
 
   // Même en 200, tRPC peut renvoyer un objet avec "error"
   if (parsed?.error?.message) {
     const normalized = normalizeErrorMessage(parsed.error.message, 400);
+    console.error(`[tRPC] ${path} → erreur enveloppe:`, normalized);
+    throw new Error(normalized);
+  }
+
+  const envelope = parsed as TrpcEnvelope<TOutput>;
+  if (envelope?.result?.data === undefined) {
+    throw new Error('Réponse invalide du serveur');
+  }
+  return envelope.result.data as TOutput;
+}
+
+export async function trpcQuery<TInput extends object | undefined, TOutput>(
+  path: string,
+  input?: TInput,
+  options?: { token?: string },
+): Promise<TOutput> {
+  const queryParam = input ? `?input=${encodeURIComponent(JSON.stringify(input))}` : '';
+  const endpoint = `${API_BASE_URL}/trpc/${path}${queryParam}`;
+  const headers: Record<string, string> = {
+    'ngrok-skip-browser-warning': 'true',
+  };
+  if (options?.token) headers['Authorization'] = `Bearer ${options.token}`;
+
+  const response = await fetch(endpoint, {
+    method: 'GET',
+    headers,
+  });
+  const raw = await response.text();
+  console.log(`[tRPC] ${path} [GET] → status ${response.status}`);
+  if (raw) {
+    try {
+      const preview = raw.length > 500 ? raw.slice(0, 500) + '…' : raw;
+      console.log(`[tRPC] ${path} [GET] → body:`, preview);
+    } catch {}
+  }
+
+  let parsed: any = null;
+  try {
+    parsed = raw ? JSON.parse(raw) : null;
+  } catch {
+    parsed = null;
+  }
+
+  if (!response.ok) {
+    const serverMessage =
+      parsed?.error?.message || parsed?.message || raw || `Erreur HTTP ${response.status}`;
+    const normalized = normalizeErrorMessage(serverMessage, response.status);
+    console.error(`[tRPC] ${path} [GET] → erreur:`, normalized);
+    throw new Error(normalized);
+  }
+
+  if (parsed?.error?.message) {
+    const normalized = normalizeErrorMessage(parsed.error.message, 400);
+    console.error(`[tRPC] ${path} [GET] → erreur enveloppe:`, normalized);
     throw new Error(normalized);
   }
 

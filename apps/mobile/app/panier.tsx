@@ -4,10 +4,16 @@ import { Ionicons } from "@expo/vector-icons";
 import { Stack, useRouter } from "expo-router";
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
 import { useCart } from "../contexts/CartContext";
+import { useAuth } from "../contexts/AuthContext";
+import { createOrder } from "../lib/orders";
+import { getAllProducts } from "../lib/products";
+import { getStockByMachineAndProduct } from "../lib/stocks";
+import { resolveServerProductId } from "../lib/productMapping";
 
 export default function CartScreen() {
   const { isDark } = useTailwindTheme();
   const router = useRouter();
+  const { user, token } = useAuth();
   const [isGiftChecked, setIsGiftChecked] = useState(false);
   const {
     cartItems,
@@ -206,7 +212,7 @@ export default function CartScreen() {
             const btnClasses = `${isDark ? "bg-dark-secondary" : "bg-light-secondary"} p-4 rounded-lg ${disabled ? "opacity-60" : "opacity-100"}`;
             const labelClasses = `${isDark ? "text-dark-buttonText" : "text-white"} text-lg font-bold text-center`;
 
-            const handlePress = () => {
+            const handlePress = async () => {
               if (disabled) return;
               if (isFree) {
                 // Bypass Stripe: aller directement à l'écran de succès qui génère le QR et crée la commande
@@ -221,17 +227,61 @@ export default function CartScreen() {
                 });
                 return;
               }
-              // Flux Stripe classique
-              router.push({
-                pathname: "/checkout",
-                params: {
-                  amount: Math.round(total * 100).toString(),
-                  currency: "eur",
-                  orderId: `order_${Date.now()}`,
-                  userId: `user_${Date.now()}`,
-                  machineId: `machine_${Date.now()}`,
-                },
-              });
+              // Création de commande réelle via tRPC
+              if (!user || !token) {
+                console.error('[Commande] Connexion requise: utilisateur ou token manquant');
+                return;
+              }
+
+              try {
+                const MACHINE_ID = "cmeaiktbj000703jboo377ul1";
+                // Récupérer les produits du serveur pour mapper les IDs mock -> IDs réels
+                const serverProducts = await getAllProducts();
+                const items = [] as { product_id: string; quantity: number; slot_number: number }[];
+                for (const ci of cartItems) {
+                  const serverId = resolveServerProductId(serverProducts, ci.name);
+                  if (!serverId) {
+                    console.error('[Commande] Produit introuvable côté serveur:', ci.name);
+                    throw new Error(`Produit introuvable: ${ci.name}`);
+                  }
+                  // Slot depuis le stock réel de la machine
+                  const stock = await getStockByMachineAndProduct(MACHINE_ID, serverId);
+                  if (!stock) {
+                    console.error('[Commande] Stock introuvable sur machine pour', ci.name, serverId);
+                    throw new Error(`Stock indisponible pour ${ci.name}`);
+                  }
+                  items.push({ product_id: serverId, quantity: ci.quantity, slot_number: stock.slot_number });
+                }
+
+                const payload = {
+                  user_id: user.id,
+                  machine_id: MACHINE_ID,
+                  items,
+                };
+
+                console.log('[Commande] Création de commande → payload:', payload);
+                const order = await createOrder(payload);
+                console.log('[Commande] Commande créée:', {
+                  id: order.id,
+                  status: order.status,
+                  total_price: order.total_price,
+                });
+
+                // Redirection Checkout (Stripe) avec orderId réel
+                router.push({
+                  pathname: "/checkout",
+                  params: {
+                    amount: Math.round(total * 100).toString(),
+                    currency: "eur",
+                    orderId: order.id,
+                    userId: user.id,
+                    machineId: MACHINE_ID,
+                  },
+                });
+              } catch (e: any) {
+                const message = e?.message || "Impossible de créer la commande";
+                console.error('[Commande] Erreur lors de la création:', message, e);
+              }
             };
 
             return (
