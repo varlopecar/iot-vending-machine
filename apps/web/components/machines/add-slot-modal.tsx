@@ -210,12 +210,11 @@ export function AddSlotModal({
               id="initial-quantity"
               type="number"
               min="0"
-              max="4"
               value={initialQuantity}
               onChange={(e) => setInitialQuantity(Number(e.target.value))}
             />
             <p className="text-sm text-gray-500 mt-1">
-              Entre 0 et 4 produits (capacité maximale: 4)
+              La quantité sera plafonnée par la capacité du slot côté serveur.
             </p>
           </div>
 

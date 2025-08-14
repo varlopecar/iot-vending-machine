@@ -24,6 +24,7 @@ import { EmptySlotCard } from "./empty-slot-card";
 import { AddSlotModal } from "./add-slot-modal";
 import { EditSlotModal } from "./edit-slot-modal";
 import { MachineSettingsModal } from "./machine-settings-modal";
+import { MachineRestockHistory } from "./machine-restock-history";
 import { api } from "../../lib/trpc/client";
 
 type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
@@ -345,10 +346,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                   </Badge>
                 )}
               </Button>
-              <Button variant="outline">
-                <History className="w-4 h-4 mr-2" />
-                Historique des ravitaillements
-              </Button>
+              {/* Bouton historique retiré de la section Actions rapides */}
             </div>
           </CardContent>
         </Card>
@@ -420,6 +418,15 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             )}
           </CardContent>
         </Card>
+      </motion.div>
+
+      {/* Historique des ravitaillements */}
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ delay: 0.35 }}
+      >
+        <MachineRestockHistory machineId={machineId} />
       </motion.div>
 
       {/* Modal d'ajout de slot */}

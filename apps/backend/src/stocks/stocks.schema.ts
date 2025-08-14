@@ -6,8 +6,8 @@ export const stockSchema = z.object({
   product_id: z.string().min(1),
   quantity: z.number().int().min(0),
   slot_number: z.number().int().positive(),
-  max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-  low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+  max_capacity: z.number().int().positive(),
+  low_threshold: z.number().int().min(0),
 });
 
 export const createStockSchema = stockSchema.omit({
@@ -21,7 +21,7 @@ export const addSlotSchema = z.object({
   machine_id: z.string().min(1),
   product_id: z.string().min(1),
   slot_number: z.number().int().positive(),
-  initial_quantity: z.number().int().min(0).max(4).default(0), // Quantité initiale (0-4)
+  initial_quantity: z.number().int().min(0).default(0),
 });
 
 export const stockWithProductSchema = stockSchema.extend({

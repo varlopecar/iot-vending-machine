@@ -466,8 +466,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getStockById: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
       id: z.string().min(1),
@@ -475,8 +475,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getStocksByMachine: publicProcedure.input(z.object({ machine_id: z.string().min(1) })).output(z.array(z.object({
       id: z.string().min(1),
@@ -484,8 +484,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
@@ -511,8 +511,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     }).nullable()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getLowStockItems: publicProcedure.input(z.object({ threshold: z.number().int().positive().optional() })).output(z.array(z.object({
       id: z.string().min(1),
@@ -520,8 +520,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
@@ -544,8 +544,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
@@ -568,8 +568,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     }).omit({
       id: true,
     })).output(z.object({
@@ -578,8 +578,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateStock: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -589,8 +589,8 @@ const appRouter = t.router({
         product_id: z.string().min(1),
         quantity: z.number().int().min(0),
         slot_number: z.number().int().positive(),
-        max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-        low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+        max_capacity: z.number().int().positive(),
+        low_threshold: z.number().int().min(0),
       }).omit({
         id: true,
       }).partial(),
@@ -600,8 +600,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateStockQuantity: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -612,8 +612,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     addStockQuantity: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -624,8 +624,8 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     removeStockQuantity: publicProcedure.input(z.object({
       id: z.string().min(1),
@@ -636,23 +636,23 @@ const appRouter = t.router({
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getNextAvailableSlotNumber: publicProcedure.input(z.object({ machine_id: z.string().min(1) })).output(z.number().int().positive()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     addSlot: publicProcedure.input(z.object({
       machine_id: z.string().min(1),
       product_id: z.string().min(1),
       slot_number: z.number().int().positive(),
-      initial_quantity: z.number().int().min(0).max(4).default(0), // Quantité initiale (0-4)
+      initial_quantity: z.number().int().min(0).default(0),
     })).output(z.object({
       id: z.string().min(1),
       machine_id: z.string().min(1),
       product_id: z.string().min(1),
       quantity: z.number().int().min(0),
       slot_number: z.number().int().positive(),
-      max_capacity: z.number().int().positive().default(4), // Maximum 4 produits par slot
-      low_threshold: z.number().int().min(0).default(1), // Seuil bas à 1 pour tous
+      max_capacity: z.number().int().positive(),
+      low_threshold: z.number().int().min(0),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   loyalty: t.router({
@@ -799,7 +799,6 @@ const appRouter = t.router({
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    
     getMachineStats: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
       machine_id: z.string().min(1),
       totalSlots: z.number().int().nonnegative(),

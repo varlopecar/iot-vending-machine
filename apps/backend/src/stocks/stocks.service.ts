@@ -1,4 +1,5 @@
 import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import { TRPCError } from '@trpc/server';
 import {
   CreateStockInput,
   UpdateStockInput,
@@ -66,21 +67,49 @@ export class StocksService {
 
   async updateStock(id: string, updateData: UpdateStockInput): Promise<Stock> {
     try {
+      // Si la quantité est mise à jour, valider par rapport à max_capacity
+      if (Object.prototype.hasOwnProperty.call(updateData, 'quantity')) {
+        const current = await this.prisma.stock.findUnique({ where: { id } });
+        if (!current) throw new NotFoundException('Stock not found');
+        const newQuantity = (updateData as any).quantity as number | undefined;
+        if (typeof newQuantity === 'number' && newQuantity > current.max_capacity) {
+          throw new TRPCError({
+            code: 'BAD_REQUEST',
+            message: `La quantité (${newQuantity}) dépasse la capacité maximale (${current.max_capacity})`,
+          });
+        }
+      }
+
       const stock = await this.prisma.stock.update({
         where: { id },
         data: updateData,
       });
       return this.mapStock(stock);
-    } catch {
+    } catch (err) {
+      // Ne pas masquer les erreurs de validation en NotFound
+      if (err instanceof BadRequestException || err instanceof NotFoundException || err instanceof TRPCError) {
+        throw err;
+      }
       throw new NotFoundException('Stock not found');
     }
   }
 
   async updateStockQuantity(id: string, quantity: number): Promise<Stock> {
     if (quantity < 0) {
-      throw new Error('Quantity cannot be negative');
+      throw new BadRequestException('La quantité ne peut pas être négative');
     }
-    return this.updateStock(id, { quantity });
+    const current = await this.prisma.stock.findUnique({ where: { id } });
+    if (!current) {
+      throw new NotFoundException('Stock not found');
+    }
+    if (quantity > current.max_capacity) {
+      throw new TRPCError({
+        code: 'BAD_REQUEST',
+        message: `La quantité (${quantity}) dépasse la capacité maximale (${current.max_capacity})`,
+      });
+    }
+    const updated = await this.prisma.stock.update({ where: { id }, data: { quantity } });
+    return this.mapStock(updated);
   }
 
   async addStockQuantity(id: string, quantity: number): Promise<Stock> {
@@ -190,7 +219,7 @@ export class StocksService {
         product_id: slotData.product_id,
         slot_number: slotData.slot_number,
         quantity: slotData.initial_quantity,
-        max_capacity: 4, // Maximum 4 produits par slot
+        max_capacity: 5, // Maximum 4 produits par slot
         low_threshold: 1, // Seuil bas à 1 pour tous
       },
     });

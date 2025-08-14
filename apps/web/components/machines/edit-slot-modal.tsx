@@ -52,13 +52,21 @@ export function EditSlotModal({
       onClose();
     },
     onError: (error) => {
-      alert("Erreur: " + error.message);
+      const msg = error.message || "";
+      if (
+        msg.toLowerCase().includes("capacité maximale") ||
+        msg.includes("capacité")
+      ) {
+        alert("La quantité demandée dépasse la capacité du slot.");
+        return;
+      }
+      alert("Erreur: " + msg);
     },
   });
 
   const capacityText = useMemo(() => {
     if (!slot) return "";
-    return `Capacité max: ${slot.max_capacity}`;
+    return `Capacité max (backend): ${slot.max_capacity}`;
   }, [slot]);
 
   if (!isOpen || !slot) return null;
@@ -76,12 +84,7 @@ export function EditSlotModal({
       return;
     }
 
-    if (quantity > slot.max_capacity) {
-      alert(
-        `La quantité (${quantity}) dépasse la capacité maximale (${slot.max_capacity})`
-      );
-      return;
-    }
+    // Le backend valide la capacité maximale; on supprime la contrainte côté front
 
     updateStockMutation.mutate({
       id: slot.id,
@@ -158,7 +161,6 @@ export function EditSlotModal({
               id="quantity"
               type="number"
               min="0"
-              max={slot.max_capacity}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
             />

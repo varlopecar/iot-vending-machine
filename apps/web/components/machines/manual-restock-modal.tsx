@@ -41,11 +41,20 @@ export function ManualRestockModal({
       resetForm();
     },
     onError: (error) => {
-      console.error("Erreur lors du ravitaillement:", error);
-      if (error.message.includes("Server has closed") || error.message.includes("connection")) {
-        alert("Erreur de connexion. Le serveur redémarre peut-être. Réessayez dans quelques secondes.");
+      const msg = error.message || "";
+      if (
+        msg.toLowerCase().includes("capacité maximale") ||
+        msg.includes("capacité")
+      ) {
+        alert("La quantité demandée dépasse la capacité du slot.");
+        return;
+      }
+      if (msg.includes("Server has closed") || msg.includes("connection")) {
+        alert(
+          "Erreur de connexion. Le serveur redémarre peut-être. Réessayez dans quelques secondes."
+        );
       } else {
-        alert("Erreur: " + error.message);
+        alert("Erreur: " + msg);
       }
     },
   });
@@ -72,7 +81,9 @@ export function ManualRestockModal({
 
     const newTotal = slot.quantity + quantity;
     if (newTotal > slot.max_capacity) {
-      alert(`La quantité totale (${newTotal}) dépasserait la capacité maximale (${slot.max_capacity})`);
+      alert(
+        `La quantité totale (${newTotal}) dépasserait la capacité maximale (${slot.max_capacity})`
+      );
       return;
     }
 
@@ -83,7 +94,7 @@ export function ManualRestockModal({
     });
   };
 
-  const maxQuantityToAdd = slot.max_capacity - slot.quantity;
+  const maxQuantityToAdd = Math.max(0, slot.max_capacity - slot.quantity);
 
   if (!isOpen) return null;
 
@@ -118,36 +129,54 @@ export function ManualRestockModal({
         <form onSubmit={handleSubmit} className="space-y-4">
           {/* Informations du slot */}
           <div className="bg-gray-50 rounded-lg p-4">
-            <h3 className="font-medium text-gray-900 mb-2">{slot.product_name}</h3>
+            <h3 className="font-medium text-gray-900 mb-2">
+              {slot.product_name}
+            </h3>
             <div className="text-sm text-gray-600 space-y-1">
-              <p>Stock actuel: <span className="font-medium">{slot.quantity}</span></p>
-              <p>Capacité max: <span className="font-medium">{slot.max_capacity}</span></p>
-              <p>Peut ajouter: <span className="font-medium text-green-600">{maxQuantityToAdd}</span></p>
+              <p>
+                Stock actuel:{" "}
+                <span className="font-medium">{slot.quantity}</span>
+              </p>
+              <p>
+                Capacité max:{" "}
+                <span className="font-medium">{slot.max_capacity}</span>
+              </p>
+              <p>
+                Peut ajouter:{" "}
+                <span className="font-medium text-green-600">
+                  {maxQuantityToAdd}
+                </span>
+              </p>
             </div>
           </div>
 
           {/* Quantité à ajouter */}
           <div>
-            <label htmlFor="quantity" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="quantity"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Quantité à ajouter <span className="text-red-500">*</span>
             </label>
             <Input
               id="quantity"
               type="number"
               min="1"
-              max={maxQuantityToAdd}
               value={quantity}
               onChange={(e) => setQuantity(Number(e.target.value))}
               required
             />
             <p className="text-sm text-gray-500 mt-1">
-              Maximum ajoutale: {maxQuantityToAdd}
+              Capacité restante indicative: {maxQuantityToAdd}
             </p>
           </div>
 
           {/* Notes optionnelles */}
           <div>
-            <label htmlFor="notes" className="block text-sm font-medium text-gray-700 mb-1">
+            <label
+              htmlFor="notes"
+              className="block text-sm font-medium text-gray-700 mb-1"
+            >
               Notes (optionnel)
             </label>
             <textarea
@@ -171,9 +200,13 @@ export function ManualRestockModal({
             </Button>
             <Button
               type="submit"
-              disabled={manualRestockMutation.isPending || maxQuantityToAdd === 0}
+              disabled={
+                manualRestockMutation.isPending || maxQuantityToAdd === 0
+              }
             >
-              {manualRestockMutation.isPending ? "Ravitaillement..." : `Ajouter ${quantity}`}
+              {manualRestockMutation.isPending
+                ? "Ravitaillement..."
+                : `Ajouter ${quantity}`}
             </Button>
           </div>
         </form>

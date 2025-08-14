@@ -1,16 +1,20 @@
 "use client";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { httpBatchLink } from "@trpc/client";
-import { createTRPCReact } from "@trpc/react-query";
 import { useState } from "react";
 
-import { api, getUrl } from "./client";
+import { api, trpcClient as staticClient } from "./client";
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
   const [queryClient] = useState(
     () =>
       new QueryClient({
+        logger: {
+          log: console.log,
+          warn: console.warn,
+          // Désactive l'affichage des erreurs dans la console (les UI gèrent l'alerte)
+          error: () => {},
+        },
         defaultOptions: {
           queries: {
             // With SSR, we usually want to set some default staleTime
@@ -21,25 +25,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
       })
   );
 
-  const [trpcClient] = useState(() =>
-    api.createClient({
-      links: [
-        httpBatchLink({
-          url: getUrl(),
-          // You can pass any HTTP headers you wish here
-          async headers() {
-            const token =
-              typeof window !== "undefined"
-                ? localStorage.getItem("admin_token")
-                : null;
-            return {
-              ...(token && { authorization: `Bearer ${token}` }),
-            };
-          },
-        }),
-      ],
-    })
-  );
+  // Réutilise le client tRPC configuré pour éviter d'ajouter des options manquantes (transformer...)
+  const [trpcClient] = useState(() => staticClient);
 
   return (
     <api.Provider client={trpcClient} queryClient={queryClient}>
