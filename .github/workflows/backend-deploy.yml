@@ -158,17 +158,47 @@ jobs:
         run: |
           echo "🚀 Starting deployment to Scalingo..."
 
+          # Debug: Check if secrets are available (without exposing them)
+          echo "🔍 Checking configuration..."
+          if [ -z "$SCALINGO_API_TOKEN" ]; then
+            echo "❌ SCALINGO_API_TOKEN is not set"
+            exit 1
+          else
+            echo "✅ SCALINGO_API_TOKEN is configured"
+          fi
+
+          if [ -z "$SCALINGO_APP_NAME" ]; then
+            echo "❌ SCALINGO_APP_NAME is not set"
+            exit 1
+          else
+            echo "✅ SCALINGO_APP_NAME: $SCALINGO_APP_NAME"
+          fi
+
+          if [ -z "$SCALINGO_REGION" ]; then
+            echo "❌ SCALINGO_REGION is not set"
+            exit 1
+          else
+            echo "✅ SCALINGO_REGION: $SCALINGO_REGION"
+          fi
+
           # Install Scalingo CLI
           curl -O https://cli-dl.scalingo.com/install.sh
           chmod +x install.sh
           ./install.sh
 
+          # Authenticate with Scalingo API token
+          echo "🔐 Authenticating with Scalingo..."
+          scalingo login --api-token "$SCALINGO_API_TOKEN"
+
           # Deploy using Scalingo CLI
-          scalingo --app ${{ secrets.SCALINGO_APP_NAME }} --region ${{ secrets.SCALINGO_REGION }} deploy
+          echo "📦 Starting deployment..."
+          scalingo --app "$SCALINGO_APP_NAME" --region "$SCALINGO_REGION" deploy
 
           echo "✅ Deployment initiated successfully"
         env:
           SCALINGO_API_TOKEN: ${{ secrets.SCALINGO_API_TOKEN }}
+          SCALINGO_APP_NAME: ${{ secrets.SCALINGO_APP_NAME }}
+          SCALINGO_REGION: ${{ secrets.SCALINGO_REGION }}
 
       - name: Wait for deployment to complete
         run: |
