@@ -6,6 +6,7 @@ export const userSchema = z.object({
   email: z.email(),
   points: z.number().int().min(0),
   barcode: z.string(),
+  role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
   created_at: z.string(),
 });
 
@@ -16,6 +17,11 @@ export const createUserSchema = z.object({
 });
 
 export const loginSchema = z.object({
+  email: z.email(),
+  password: z.string(),
+});
+
+export const adminLoginSchema = z.object({
   email: z.email(),
   password: z.string(),
 });
@@ -31,6 +37,7 @@ export const changePasswordSchema = z.object({
 
 export type CreateUserInput = z.infer<typeof createUserSchema>;
 export type LoginInput = z.infer<typeof loginSchema>;
+export type AdminLoginInput = z.infer<typeof adminLoginSchema>;
 export type UpdateUserInput = z.infer<typeof updateUserSchema>;
 export type ChangePasswordInput = z.infer<typeof changePasswordSchema>;
 export type User = z.infer<typeof userSchema>;

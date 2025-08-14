@@ -4,7 +4,6 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink } from "@trpc/client";
 import { createTRPCReact } from "@trpc/react-query";
 import { useState } from "react";
-import superjson from "superjson";
 
 import { api, getUrl } from "./client";
 
@@ -24,14 +23,17 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
 
   const [trpcClient] = useState(() =>
     api.createClient({
-      transformer: superjson,
       links: [
         httpBatchLink({
           url: getUrl(),
           // You can pass any HTTP headers you wish here
           async headers() {
+            const token =
+              typeof window !== "undefined"
+                ? localStorage.getItem("admin_token")
+                : null;
             return {
-              // authorization: getAuthCookie(),
+              ...(token && { authorization: `Bearer ${token}` }),
             };
           },
         }),

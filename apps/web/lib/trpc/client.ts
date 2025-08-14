@@ -2,19 +2,17 @@
 
 import { createTRPCClient, httpBatchLink } from '@trpc/client'
 import { createTRPCReact } from '@trpc/react-query'
-
-// Import the router type from backend
-export type AppRouter = any // TODO: Import the actual router type
+import type { AppRouter } from '../../../../packages/globals/trpc/src/server/server'
 
 export const api = createTRPCReact<AppRouter>()
 
 export const getUrl = () => {
   const base = (() => {
-    if (typeof window !== 'undefined') return '' // browser should use relative url
+    if (typeof window !== 'undefined') return 'http://localhost:3000' // backend url for browser
     if (process.env.VERCEL_URL) return `https://${process.env.VERCEL_URL}` // SSR should use vercel url
-    return `http://localhost:3000` // dev SSR should use localhost
+    return `http://localhost:3000` // Backend runs on port 3000
   })()
-  return `${base}/api/trpc`
+  return `${base}/trpc`
 }
 
 export const trpcClient = createTRPCClient<AppRouter>({
@@ -23,8 +21,9 @@ export const trpcClient = createTRPCClient<AppRouter>({
       url: getUrl(),
       // You can pass any HTTP headers you wish here
       async headers() {
+        const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
         return {
-          // authorization: getAuthCookie(),
+          ...(token && { authorization: `Bearer ${token}` }),
         }
       },
     }),

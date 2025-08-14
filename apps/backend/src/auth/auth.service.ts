@@ -7,6 +7,7 @@ import {
 import {
   CreateUserInput,
   LoginInput,
+  AdminLoginInput,
   UpdateUserInput,
   User,
 } from './auth.schema';
@@ -66,6 +67,34 @@ export class AuthService {
     );
     if (!isPasswordValid) {
       throw new UnauthorizedException('Invalid credentials');
+    }
+
+    const token = await this.generateJwt(user.id);
+
+    return { user, token };
+  }
+
+  async adminLogin(loginData: AdminLoginInput): Promise<{ user: User; token: string }> {
+    const user = await this.prisma.user.findUnique({
+      where: { email: loginData.email },
+    });
+
+    if (!user) {
+      throw new UnauthorizedException('Invalid admin credentials');
+    }
+
+    // Verify user is admin or operator
+    if (user.role !== 'ADMIN' && user.role !== 'OPERATOR') {
+      throw new UnauthorizedException('Access denied: Admin privileges required');
+    }
+
+    // Verify password
+    const isPasswordValid = await bcrypt.compare(
+      loginData.password,
+      user.password,
+    );
+    if (!isPasswordValid) {
+      throw new UnauthorizedException('Invalid admin credentials');
     }
 
     const token = await this.generateJwt(user.id);

@@ -1,169 +1,138 @@
 "use client";
 
-import { motion } from "framer-motion";
-import { Monitor, Wifi, WifiOff, Wrench, XCircle, MapPin } from "lucide-react";
+import { api } from "@/lib/trpc/client";
 import {
   Card,
   CardContent,
+  CardDescription,
   CardHeader,
   CardTitle,
-  Badge,
-} from "@/components/ui";
-import { formatCurrency } from "@/lib/utils/format";
-
-// Mock data pour l'exemple
-const machines = [
-  {
-    id: "MAC-001",
-    name: "Machine Campus A",
-    location: "Bâtiment Sciences",
-    status: "online" as const,
-    stockLevel: 85,
-    lastOrder: "2 min",
-    revenue: 145.5,
-  },
-  {
-    id: "MAC-002",
-    name: "Machine Cafétéria",
-    location: "Cafétéria principale",
-    status: "maintenance" as const,
-    stockLevel: 65,
-    lastOrder: "1h 23min",
-    revenue: 98.75,
-  },
-  {
-    id: "MAC-003",
-    name: "Machine Bibliothèque",
-    location: "Bibliothèque universitaire",
-    status: "offline" as const,
-    stockLevel: 45,
-    lastOrder: "3h 12min",
-    revenue: 76.25,
-  },
-];
+} from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Monitor, MapPin } from "lucide-react";
+import { cn } from "@/lib/utils/cn";
 
 const statusConfig = {
   online: {
-    icon: Wifi,
     label: "En ligne",
-    variant: "success" as const,
-    color: "text-green-500",
+    color: "bg-green-100 text-green-800 border-green-200",
+    icon: "🟢",
   },
   offline: {
-    icon: WifiOff,
     label: "Hors ligne",
-    variant: "destructive" as const,
-    color: "text-red-500",
+    color: "bg-red-100 text-red-800 border-red-200",
+    icon: "🔴",
   },
   maintenance: {
-    icon: Wrench,
     label: "Maintenance",
-    variant: "warning" as const,
-    color: "text-yellow-500",
+    color: "bg-orange-100 text-orange-800 border-orange-200",
+    icon: "🟠",
   },
   out_of_service: {
-    icon: XCircle,
     label: "Hors service",
-    variant: "destructive" as const,
-    color: "text-red-500",
+    color: "bg-gray-100 text-gray-800 border-gray-200",
+    icon: "⚫",
   },
-};
+} as const;
 
 export function MachineStatus() {
+  const { data: machines, isLoading } = api.machines.getAllMachines.useQuery();
+
+  if (isLoading) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>État des machines</CardTitle>
+          <CardDescription>
+            Vue d'ensemble du statut de vos machines
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="space-y-3">
+            {[1, 2, 3].map((i) => (
+              <div
+                key={i}
+                className="flex items-center justify-between p-3 border rounded-lg"
+              >
+                <div className="flex items-center space-x-3">
+                  <div className="h-8 w-8 bg-gray-200 rounded animate-pulse"></div>
+                  <div>
+                    <div className="h-4 w-24 bg-gray-200 rounded animate-pulse"></div>
+                    <div className="h-3 w-32 bg-gray-200 rounded animate-pulse mt-1"></div>
+                  </div>
+                </div>
+                <div className="h-6 w-16 bg-gray-200 rounded animate-pulse"></div>
+              </div>
+            ))}
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
+  if (!machines || machines.length === 0) {
+    return (
+      <Card>
+        <CardHeader>
+          <CardTitle>État des machines</CardTitle>
+          <CardDescription>
+            Vue d'ensemble du statut de vos machines
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="text-center py-6 text-gray-500">
+            <Monitor className="h-12 w-12 mx-auto mb-2 text-gray-400" />
+            <p>Aucune machine configurée</p>
+          </div>
+        </CardContent>
+      </Card>
+    );
+  }
+
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Monitor className="h-5 w-5" />
-          État des machines
-        </CardTitle>
+        <CardTitle>État des machines</CardTitle>
+        <CardDescription>
+          Vue d'ensemble du statut de vos machines
+        </CardDescription>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {machines.map((machine, index) => {
-          const statusInfo = statusConfig[machine.status];
-          const StatusIcon = statusInfo.icon;
+      <CardContent>
+        <div className="space-y-3">
+          {machines.slice(0, 5).map((machine) => {
+            const status =
+              statusConfig[machine.status as keyof typeof statusConfig];
 
-          return (
-            <motion.div
-              key={machine.id}
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: index * 0.1 }}
-              className="p-4 rounded-xl border bg-card hover:shadow-md transition-all duration-200"
-            >
-              <div className="flex items-start justify-between mb-3">
-                <div>
-                  <div className="flex items-center gap-2 mb-1">
-                    <h4 className="font-medium text-sm">{machine.name}</h4>
-                    <Badge variant={statusInfo.variant} className="text-xs">
-                      <StatusIcon className="h-3 w-3 mr-1" />
-                      {statusInfo.label}
-                    </Badge>
-                  </div>
-                  <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                    <MapPin className="h-3 w-3" />
-                    {machine.location}
+            return (
+              <div
+                key={machine.id}
+                className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
+              >
+                <div className="flex items-center space-x-3">
+                  <Monitor className="h-5 w-5 text-gray-600" />
+                  <div>
+                    <div className="font-medium">{machine.label}</div>
+                    <div className="text-sm text-gray-600 flex items-center">
+                      <MapPin className="h-3 w-3 mr-1" />
+                      {machine.location}
+                    </div>
                   </div>
                 </div>
-                <div className="text-right">
-                  <div className="text-sm font-semibold">
-                    {formatCurrency(machine.revenue)}
-                  </div>
-                  <div className="text-xs text-muted-foreground">
-                    aujourd'hui
-                  </div>
-                </div>
+                <Badge className={cn("text-xs", status.color)}>
+                  {status.icon} {status.label}
+                </Badge>
               </div>
+            );
+          })}
 
-              <div className="space-y-2">
-                {/* Stock level */}
-                <div>
-                  <div className="flex justify-between text-xs mb-1">
-                    <span className="text-muted-foreground">Stock</span>
-                    <span
-                      className={
-                        machine.stockLevel > 70
-                          ? "text-green-600"
-                          : machine.stockLevel > 30
-                            ? "text-yellow-600"
-                            : "text-red-600"
-                      }
-                    >
-                      {machine.stockLevel}%
-                    </span>
-                  </div>
-                  <div className="w-full bg-muted rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        machine.stockLevel > 70
-                          ? "bg-green-500"
-                          : machine.stockLevel > 30
-                            ? "bg-yellow-500"
-                            : "bg-red-500"
-                      }`}
-                      style={{ width: `${machine.stockLevel}%` }}
-                    />
-                  </div>
-                </div>
-
-                <div className="text-xs text-muted-foreground">
-                  Dernière commande: {machine.lastOrder}
-                </div>
-              </div>
-            </motion.div>
-          );
-        })}
-
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.4 }}
-          className="text-center pt-2"
-        >
-          <button className="text-sm text-primary hover:underline">
-            Voir toutes les machines
-          </button>
-        </motion.div>
+          {machines.length > 5 && (
+            <div className="text-center pt-2">
+              <p className="text-sm text-gray-500">
+                +{machines.length - 5} autres machines
+              </p>
+            </div>
+          )}
+        </div>
       </CardContent>
     </Card>
   );

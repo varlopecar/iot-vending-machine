@@ -16,6 +16,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
+      role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
       created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     login: publicProcedure.input(z.object({
@@ -28,6 +29,22 @@ const appRouter = t.router({
         email: z.email(),
         points: z.number().int().min(0),
         barcode: z.string(),
+        role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
+        created_at: z.string(),
+      }),
+      token: z.string(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    adminLogin: publicProcedure.input(z.object({
+      email: z.email(),
+      password: z.string(),
+    })).output(z.object({
+      user: z.object({
+        id: z.string().min(1),
+        full_name: z.string(),
+        email: z.email(),
+        points: z.number().int().min(0),
+        barcode: z.string(),
+        role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
         created_at: z.string(),
       }),
       token: z.string(),
@@ -38,6 +55,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
+      role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
       created_at: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getUserByBarcode: publicProcedure.input(z.object({ barcode: z.string() })).output(z.object({
@@ -46,6 +64,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
+      role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
       created_at: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateUser: publicProcedure.input(z.object({
@@ -63,6 +82,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
+      role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
       created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updatePoints: publicProcedure.input(z.object({
@@ -74,6 +94,7 @@ const appRouter = t.router({
       email: z.email(),
       points: z.number().int().min(0),
       barcode: z.string(),
+      role: z.enum(['CUSTOMER', 'OPERATOR', 'ADMIN']),
       created_at: z.string(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),

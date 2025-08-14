@@ -99,9 +99,11 @@ export function ProductCard({
               <Image
                 src={product.image}
                 alt={`Photo du produit ${product.name}`}
-                fill
-                className="object-contain"
+                width={200}
+                height={128}
+                className="object-contain w-full h-full"
                 sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+                priority={false}
               />
             ) : (
               <div
