@@ -140,10 +140,9 @@ jobs:
           echo "- ✅ Unit tests: 7/7 suites passing (deployment mode)" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Build: Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
-          echo "### 🔗 Deployment URL:" >> $GITHUB_STEP_SUMMARY
-          echo "https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**⚠️ Manual approval required to proceed with deployment**" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Auto-Deployment:" >> $GITHUB_STEP_SUMMARY
+          echo "- Scalingo will automatically deploy when pushed to main" >> $GITHUB_STEP_SUMMARY
+          echo "- Check your Scalingo dashboard for deployment status" >> $GITHUB_STEP_SUMMARY
 
     notify:
     name: Notify Build Status
@@ -160,40 +159,14 @@ jobs:
           echo "📋 Scalingo will handle the deployment automatically"
           echo "🔄 Check your Scalingo dashboard for deployment status"
 
-  notify:
-    name: Notify Deployment Status
-    runs-on: ubuntu-latest
-    needs: [test, build, deploy]
-    if: always()
-
-    steps:
-      - name: Notify build success
-        if: needs.test.result == 'success' && needs.build.result == 'success' && needs.deploy.result == 'skipped'
-        run: |
-          echo "✅ Build completed successfully!"
-          echo "🚀 Ready for manual deployment approval"
-          echo "🌐 App URL: https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io"
-          echo "📋 Go to GitHub Actions to approve deployment"
-
-      - name: Notify deployment success
-        if: needs.test.result == 'success' && needs.build.result == 'success' && needs.deploy.result == 'success'
-        run: |
-          echo "🎉 Backend deployed successfully to Scalingo!"
-          echo "🌐 App URL: https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io"
-          echo "🏥 Health check: https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io/health"
-          echo "✅ Deployment completed and verified"
-
       - name: Notify failure
-        if: needs.test.result == 'failure' || needs.build.result == 'failure' || needs.deploy.result == 'failure'
+        if: needs.test.result == 'failure' || needs.build.result == 'failure'
         run: |
-          echo "❌ Backend deployment failed!"
+          echo "❌ Backend CI/CD pipeline failed!"
           echo "Check the logs above for more details."
           if [ "${{ needs.test.result }}" == "failure" ]; then
             echo "❌ Test stage failed"
           fi
           if [ "${{ needs.build.result }}" == "failure" ]; then
             echo "❌ Build stage failed"
-          fi
-          if [ "${{ needs.deploy.result }}" == "failure" ]; then
-            echo "❌ Deploy stage failed"
           fi
