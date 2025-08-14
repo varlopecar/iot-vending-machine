@@ -23,7 +23,7 @@ function Badge({ className, variant = "default", ...props }: BadgeProps) {
             variant === "secondary",
           "border-transparent bg-light-error dark:bg-dark-error text-white hover:opacity-80":
             variant === "destructive",
-          "text-light-text dark:text-dark-text border-light-border dark:border-dark-border":
+          "text-light-text dark:text-primary border-light-border dark:border-dark-border":
             variant === "outline",
           "border-transparent bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300":
             variant === "success",

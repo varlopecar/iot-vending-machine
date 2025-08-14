@@ -4,3 +4,4 @@ export { SlotCard } from './slot-card';
 export { EmptySlotCard } from './empty-slot-card';
 export { AddSlotModal } from './add-slot-modal';
 export { ManualRestockModal } from './manual-restock-modal';
+export { EditSlotModal } from './edit-slot-modal';

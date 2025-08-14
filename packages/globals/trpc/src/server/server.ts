@@ -792,7 +792,25 @@ const appRouter = t.router({
       label: z.string(),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
       last_update: z.string(),
-    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getMachineStats: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
+      machine_id: z.string().min(1),
+      totalSlots: z.number().int().nonnegative(),
+      lowStockCount: z.number().int().nonnegative(),
+      outOfStockCount: z.number().int().nonnegative(),
+      revenueTotalCents: z.number().int().nonnegative(),
+      revenueLast30dCents: z.number().int().nonnegative(),
+      ordersLast30d: z.number().int().nonnegative(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getAllMachineStats: publicProcedure.output(z.array(z.object({
+      machine_id: z.string().min(1),
+      totalSlots: z.number().int().nonnegative(),
+      lowStockCount: z.number().int().nonnegative(),
+      outOfStockCount: z.number().int().nonnegative(),
+      revenueTotalCents: z.number().int().nonnegative(),
+      revenueLast30dCents: z.number().int().nonnegative(),
+      ordersLast30d: z.number().int().nonnegative(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   pickups: t.router({
     getPickupById: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({

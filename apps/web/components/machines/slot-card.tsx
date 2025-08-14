@@ -8,8 +8,6 @@ import {
   CheckCircle,
   RefreshCw,
   Edit,
-  MoreVertical,
-  ArrowUp,
   Wrench,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, Button, Badge } from "../ui";
@@ -81,7 +79,6 @@ const stockLevelConfig = {
 };
 
 export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
-  const [showActions, setShowActions] = useState(false);
   const [isRestocking, setIsRestocking] = useState(false);
 
   // Mutation pour ravitailler au maximum
@@ -176,36 +173,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               </div>
             </div>
 
-            {/* Actions */}
-            <div className="flex items-center gap-1">
-              {needsRestock && (
-                <Button
-                  variant="outline"
-                  size="sm"
-                  className="h-8 w-8 p-0 opacity-70 group-hover:opacity-100 transition-opacity"
-                  onClick={handleRestockSlot}
-                  disabled={isRestocking}
-                  aria-label={`Ravitailler le slot ${slot.slot_number} au maximum`}
-                  title="Ravitailler au maximum"
-                >
-                  {isRestocking ? (
-                    <RefreshCw className="h-3 w-3 animate-spin" />
-                  ) : (
-                    <ArrowUp className="h-3 w-3" />
-                  )}
-                </Button>
-              )}
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 opacity-0 group-hover:opacity-100 transition-opacity"
-                onClick={() => setShowActions(!showActions)}
-                aria-label={`Options pour le slot ${slot.slot_number}`}
-                title="Plus d'options"
-              >
-                <MoreVertical className="h-3 w-3" />
-              </Button>
-            </div>
+            {/* Plus d'icônes d'action dans l'en-tête */}
           </div>
         </CardHeader>
 
@@ -249,41 +217,38 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
             </div>
             <div className="text-center p-2 bg-background/50 rounded-lg">
               <div className="font-semibold">{slot.low_threshold}</div>
-              <div className="text-muted-foreground">Seuil bas</div>
+              <div className="text-muted-foreground">Seuil critique</div>
             </div>
           </div>
 
-          {/* Actions étendues */}
-          {showActions && (
-            <motion.div
-              initial={{ opacity: 0, height: 0 }}
-              animate={{ opacity: 1, height: "auto" }}
-              exit={{ opacity: 0, height: 0 }}
-              className="border-t pt-3 space-y-2"
+          {/* Actions visibles en permanence */}
+          <div className="border-t pt-3 space-y-2">
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={() => onEdit(slot.id)}
+              aria-label={`Modifier le produit du slot ${slot.slot_number}`}
             >
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={() => onEdit(slot.id)}
-                aria-label={`Modifier le produit du slot ${slot.slot_number}`}
-              >
-                <Edit className="w-3 h-3 mr-2" />
-                Modifier le produit
-              </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                className="w-full justify-start"
-                onClick={handleRestockSlot}
-                disabled={isRestocking}
-                aria-label={`Ravitailler le slot ${slot.slot_number} au maximum`}
-              >
+              <Edit className="w-3 h-3 mr-2" />
+              Modifier le produit
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              className="w-full justify-start"
+              onClick={handleRestockSlot}
+              disabled={isRestocking || !needsRestock}
+              aria-label={`Ravitailler le slot ${slot.slot_number} au maximum`}
+            >
+              {isRestocking ? (
+                <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
+              ) : (
                 <Wrench className="w-3 h-3 mr-2" />
-                Ravitailler au maximum
-              </Button>
-            </motion.div>
-          )}
+              )}
+              Ravitailler au maximum
+            </Button>
+          </div>
         </CardContent>
       </Card>
     </motion.div>

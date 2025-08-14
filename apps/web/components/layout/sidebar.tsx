@@ -35,24 +35,9 @@ const navigation = [
     icon: Monitor,
   },
   {
-    name: "Stocks",
-    href: "/stocks",
-    icon: Boxes,
-  },
-  {
-    name: "Commandes",
-    href: "/orders",
-    icon: ShoppingCart,
-  },
-  {
     name: "Statistiques",
     href: "/analytics",
     icon: BarChart3,
-  },
-  {
-    name: "Paramètres",
-    href: "/settings",
-    icon: Settings,
   },
 ];
 

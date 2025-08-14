@@ -22,6 +22,7 @@ import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "../ui";
 import { SlotCard } from "./slot-card";
 import { EmptySlotCard } from "./empty-slot-card";
 import { AddSlotModal } from "./add-slot-modal";
+import { EditSlotModal } from "./edit-slot-modal";
 import { api } from "../../lib/trpc/client";
 
 type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
@@ -60,6 +61,8 @@ const statusConfig = {
 export function MachineDetail({ machineId }: MachineDetailProps) {
   const [restockingAll, setRestockingAll] = useState(false);
   const [isAddSlotModalOpen, setIsAddSlotModalOpen] = useState(false);
+  const [isEditSlotModalOpen, setIsEditSlotModalOpen] = useState(false);
+  const [selectedSlotId, setSelectedSlotId] = useState<string | null>(null);
 
   // Récupération des données de la machine
   const {
@@ -89,8 +92,6 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     },
   });
 
-
-
   const handleRestockAll = () => {
     if (!machine) return;
 
@@ -103,8 +104,8 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
   };
 
   const handleEditSlot = (slotId: string) => {
-    // TODO: Ouvrir un modal pour éditer le produit du slot
-    console.log("Éditer le slot:", slotId);
+    setSelectedSlotId(slotId);
+    setIsEditSlotModalOpen(true);
   };
 
   const isLoading = loadingMachine || loadingSlots;
@@ -176,15 +177,13 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
   const needsRestockSlots =
     slots?.filter((slot) => slot.quantity < slot.max_capacity).length || 0;
 
-  // Calcul des slots non-configurés et statut machine
+  // Calcul des slots non-configurés
   const configuredSlots = totalSlots;
   const unConfiguredSlots = 6 - configuredSlots;
   const isFullyConfigured = configuredSlots === 6;
-  const actualStatus = isFullyConfigured
-    ? machine?.status || "online"
-    : "out_of_service";
 
-  const statusInfo = statusConfig[actualStatus as MachineStatus];
+  // Statut directement depuis la BDD
+  const statusInfo = statusConfig[machine.status as MachineStatus];
   const StatusIcon = statusInfo.icon;
 
   return (
@@ -416,8 +415,42 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         machineId={machineId}
         onSlotAdded={() => {
           refetchSlots();
-          // Optionnel: refetch machine pour mettre à jour les statistiques
+          // Mettre à jour aussi la machine pour refléter ONLINE si 6/6
+          refetchMachine();
         }}
+      />
+
+      {/* Modal d'édition de slot */}
+      <EditSlotModal
+        isOpen={isEditSlotModalOpen}
+        onClose={() => setIsEditSlotModalOpen(false)}
+        slot={
+          selectedSlotId
+            ? (slots || []).find((s) => s.id === selectedSlotId)
+              ? {
+                  id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
+                  product_id: (slots || []).find(
+                    (s) => s.id === selectedSlotId
+                  )!.product_id,
+                  product_name: (slots || []).find(
+                    (s) => s.id === selectedSlotId
+                  )!.product_name,
+                  quantity: (slots || []).find((s) => s.id === selectedSlotId)!
+                    .quantity,
+                  max_capacity: (slots || []).find(
+                    (s) => s.id === selectedSlotId
+                  )!.max_capacity,
+                  slot_number: (slots || []).find(
+                    (s) => s.id === selectedSlotId
+                  )!.slot_number,
+                  machine_id: (slots || []).find(
+                    (s) => s.id === selectedSlotId
+                  )!.machine_id,
+                }
+              : null
+            : null
+        }
+        onSaved={() => refetchSlots()}
       />
     </div>
   );

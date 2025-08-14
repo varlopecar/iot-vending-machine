@@ -18,7 +18,6 @@ export function AddSlotModal({
   onSlotAdded,
 }: AddSlotModalProps) {
   const [selectedProductId, setSelectedProductId] = useState("");
-  const [slotNumber, setSlotNumber] = useState<number>(1);
   const [initialQuantity, setInitialQuantity] = useState<number>(0);
 
   // Récupérer la liste des produits
@@ -26,14 +25,26 @@ export function AddSlotModal({
     api.products.getAllProducts.useQuery();
 
   // Récupérer le prochain slot disponible (si l'endpoint existe)
-  const { data: nextSlotNumber, refetch: refetchNextSlot } =
-    api.stocks.getNextAvailableSlotNumber?.useQuery(
-      { machine_id: machineId },
-      { enabled: isOpen }
-    ) || { data: undefined, refetch: () => Promise.resolve() };
-
-  // Utils pour invalider les queries
-  const utils = api.useUtils();
+  const {
+    data: nextSlotNumber,
+    refetch: refetchNextSlot,
+    isError: isNextSlotError,
+    error: nextSlotError,
+  } = api.stocks.getNextAvailableSlotNumber?.useQuery(
+    { machine_id: machineId },
+    {
+      enabled: isOpen,
+      staleTime: 0,
+      refetchOnMount: true,
+      refetchOnWindowFocus: false,
+      retry: false,
+    }
+  ) || {
+    data: undefined,
+    refetch: () => Promise.resolve(),
+    isError: false,
+    error: undefined,
+  };
 
   // Mutation pour ajouter un slot
   const addSlotMutation = api.stocks.addSlot.useMutation({
@@ -41,10 +52,7 @@ export function AddSlotModal({
     retryDelay: 1000, // Attendre 1 seconde entre les tentatives
     onSuccess: () => {
       onSlotAdded?.();
-      // Invalider et refetch les queries liées
-      utils.stocks.getNextAvailableSlotNumber.invalidate({
-        machine_id: machineId,
-      });
+      // On ferme le modal; pas d'invalidation immédiate de getNextAvailableSlotNumber pour éviter un refetch en erreur
       onClose();
       resetForm();
     },
@@ -66,7 +74,6 @@ export function AddSlotModal({
 
   const resetForm = () => {
     setSelectedProductId("");
-    setSlotNumber(1);
     setInitialQuantity(0);
   };
 
@@ -85,10 +92,22 @@ export function AddSlotModal({
       return;
     }
 
+    if (
+      isNextSlotError ||
+      nextSlotNumber === undefined ||
+      nextSlotNumber === null
+    ) {
+      alert(
+        nextSlotError?.message ||
+          "Aucun slot disponible. Libérez un slot avant d'ajouter."
+      );
+      return;
+    }
+
     addSlotMutation.mutate({
       machine_id: machineId,
       product_id: selectedProductId,
-      slot_number: nextSlotNumber || slotNumber,
+      slot_number: nextSlotNumber,
       initial_quantity: initialQuantity,
     });
   };
@@ -136,13 +155,20 @@ export function AddSlotModal({
               type="number"
               min="1"
               max="6"
-              value={nextSlotNumber || slotNumber}
+              value={nextSlotNumber ?? ""}
               disabled={true}
               className="bg-gray-50"
             />
-            <p className="text-sm text-gray-500 mt-1">
-              Prochain slot disponible: {nextSlotNumber || "Calcul..."}
-            </p>
+            {isNextSlotError ? (
+              <p className="text-sm text-red-600 mt-1">
+                {nextSlotError?.message ||
+                  "Aucun slot disponible (maximum 6 slots par machine). Libérez un slot avant d'ajouter."}
+              </p>
+            ) : (
+              <p className="text-sm text-gray-500 mt-1">
+                Prochain slot disponible: {nextSlotNumber ?? "Calcul..."}
+              </p>
+            )}
           </div>
 
           <div>

@@ -37,6 +37,83 @@ export class MachinesService {
     return this.mapMachine(machine);
   }
 
+  /**
+   * Statistiques agrégées pour une machine
+   */
+  async getMachineStats(machineId: string) {
+    // Comptages de slots
+    const [totalSlots, lowStockCount, outOfStockCount] = await Promise.all([
+      this.prisma.stock.count({ where: { machine_id: machineId } }),
+      this.prisma.stock.count({
+        where: {
+          machine_id: machineId,
+          quantity: { gt: 0 },
+          // low_threshold >= quantity
+          // Prisma n'autorise pas la comparaison directe entre champs,
+          // on récupérera via filter côté code si nécessaire.
+        },
+      }),
+      this.prisma.stock.count({ where: { machine_id: machineId, quantity: 0 } }),
+    ]);
+
+    // Revenus: total et 30 derniers jours (commandes payées)
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    const [ordersPaidAll, ordersPaid30d] = await Promise.all([
+      this.prisma.order.findMany({
+        where: { machine_id: machineId, paid_at: { not: null } },
+        select: { amount_total_cents: true },
+      }),
+      this.prisma.order.findMany({
+        where: {
+          machine_id: machineId,
+          paid_at: { not: null },
+          created_at: { gte: thirtyDaysAgo.toISOString() },
+        },
+        select: { amount_total_cents: true },
+      }),
+    ]);
+
+    const revenueTotalCents = ordersPaidAll.reduce(
+      (sum, o) => sum + (o.amount_total_cents || 0),
+      0,
+    );
+    const revenueLast30dCents = ordersPaid30d.reduce(
+      (sum, o) => sum + (o.amount_total_cents || 0),
+      0,
+    );
+
+    // Calcul lowStockCount réel (quantity > 0 && quantity <= low_threshold)
+    const lowStocks = await this.prisma.stock.findMany({
+      where: { machine_id: machineId },
+      select: { quantity: true, low_threshold: true },
+    });
+    const lowStockCountReal = lowStocks.filter(
+      (s) => s.quantity > 0 && s.quantity <= s.low_threshold,
+    ).length;
+
+    return {
+      machine_id: machineId,
+      totalSlots,
+      lowStockCount: lowStockCountReal,
+      outOfStockCount,
+      revenueTotalCents,
+      revenueLast30dCents,
+      ordersLast30d: ordersPaid30d.length,
+    };
+  }
+
+  /**
+   * Statistiques agrégées pour toutes les machines
+   */
+  async getAllMachineStats() {
+    const machines = await this.prisma.machine.findMany({ select: { id: true } });
+    const stats = await Promise.all(
+      machines.map((m) => this.getMachineStats(m.id)),
+    );
+    return stats;
+  }
+
   async updateMachine(
     id: string,
     updateData: UpdateMachineInput,

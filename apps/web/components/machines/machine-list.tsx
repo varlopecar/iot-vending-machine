@@ -30,16 +30,7 @@ import {
 } from "../ui";
 import { api } from "../../lib/trpc/client";
 
-// Types pour les machines
-type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
-
-interface MachineData {
-  id: string;
-  label: string;
-  location: string;
-  status: MachineStatus;
-  last_update: string;
-}
+// MachineData dérivé directement des retours tRPC
 
 const statusConfig = {
   online: {
@@ -71,6 +62,7 @@ const statusConfig = {
 export function MachineList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
+  // Revenus: affichage 30j par défaut; total en bas de carte
 
   // Récupération des données via tRPC
   const {
@@ -80,24 +72,18 @@ export function MachineList() {
     refetch,
   } = api.machines.getAllMachines.useQuery();
 
-  // Fonction pour calculer des métriques simulées basées sur les données réelles
-  const getMachineMetrics = (machine: MachineData) => {
-    // Simulation de métriques basées sur l'ID de la machine
-    const seed = machine.id.charCodeAt(machine.id.length - 1);
-    return {
-      stockLevel: Math.max(20, 90 - (seed % 70)),
-      lastOrder: `${seed % 60} min`,
-      revenue: Number((50 + (seed % 200)).toFixed(2)),
-      totalProducts: 8 + (seed % 8),
-      lowStockProducts: seed % 4,
-      outOfStockProducts: seed % 3,
-      ordersToday: 5 + (seed % 25),
-      lastMaintenance: new Date(Date.now() - (seed % 30) * 24 * 60 * 60 * 1000)
-        .toISOString()
-        .split("T")[0],
-      temperature: Number((3.5 + (seed % 20) / 10).toFixed(1)),
-      connectivity: ["strong", "medium", "weak"][seed % 3],
-    };
+  // Stats agrégées (revenus, stocks)
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const { data: stats } = (api as any).machines.getAllMachineStats.useQuery();
+
+  type MachineStat = {
+    machine_id: string;
+    totalSlots: number;
+    lowStockCount: number;
+    outOfStockCount: number;
+    revenueTotalCents: number;
+    revenueLast30dCents: number;
+    ordersLast30d: number;
   };
 
   const filteredMachines =
@@ -110,9 +96,12 @@ export function MachineList() {
       return matchesSearch && matchesStatus;
     }) || [];
 
-  // Calculer les machines incomplètes (en supposant que out_of_service = configuration incomplète)
+  // Calculer les machines incomplètes via les stats (moins de 6 slots configurés)
+  const statsById = new Map(
+    ((stats as MachineStat[] | undefined) || []).map((s) => [s.machine_id, s])
+  );
   const incompleteMachines =
-    machines?.filter((machine) => machine.status === "out_of_service") || [];
+    machines?.filter((m) => (statsById.get(m.id)?.totalSlots || 0) < 6) || [];
   const incompleteCount = incompleteMachines.length;
 
   if (isLoading) {
@@ -165,18 +154,7 @@ export function MachineList() {
     );
   }
 
-  const getConnectivityIcon = (connectivity: string | undefined) => {
-    switch (connectivity) {
-      case "strong":
-        return <Wifi className="h-4 w-4 text-green-500" />;
-      case "medium":
-        return <Wifi className="h-4 w-4 text-yellow-500" />;
-      case "weak":
-        return <Wifi className="h-4 w-4 text-red-500" />;
-      default:
-        return <WifiOff className="h-4 w-4 text-gray-500" />;
-    }
-  };
+  // Icône connectivité simulée retirée
 
   return (
     <div className="space-y-6">
@@ -222,14 +200,17 @@ export function MachineList() {
                   <Link key={machine.id} href={`/machines/${machine.id}`}>
                     <Badge
                       variant="outline"
-                      className="hover:bg-yellow-100 cursor-pointer"
+                      className="hover:bg-yellow-100 cursor-pointer text-amber-900 border-yellow-300 px-3"
                     >
                       {machine.label}
                     </Badge>
                   </Link>
                 ))}
                 {incompleteCount > 3 && (
-                  <Badge variant="outline">
+                  <Badge
+                    variant="outline"
+                    className="text-amber-900 border-yellow-300 px-3"
+                  >
                     +{incompleteCount - 3} autre
                     {incompleteCount - 3 > 1 ? "s" : ""}
                   </Badge>
@@ -256,47 +237,53 @@ export function MachineList() {
                 />
               </div>
             </div>
-            <div
-              className="flex gap-2 flex-wrap"
-              role="group"
-              aria-label="Filtres par statut"
-            >
-              <Button
-                variant={statusFilter === "all" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("all")}
-                aria-pressed={statusFilter === "all"}
-                aria-label="Afficher toutes les machines"
+            <div className="flex gap-4 flex-wrap items-center">
+              <div
+                className="flex gap-2 flex-wrap"
+                role="group"
+                aria-label="Filtres par statut"
               >
-                Toutes
-              </Button>
-              <Button
-                variant={statusFilter === "online" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("online")}
-                aria-pressed={statusFilter === "online"}
-                aria-label="Afficher uniquement les machines en ligne"
-              >
-                En ligne
-              </Button>
-              <Button
-                variant={statusFilter === "maintenance" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("maintenance")}
-                aria-pressed={statusFilter === "maintenance"}
-                aria-label="Afficher uniquement les machines en maintenance"
-              >
-                Maintenance
-              </Button>
-              <Button
-                variant={statusFilter === "offline" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setStatusFilter("offline")}
-                aria-pressed={statusFilter === "offline"}
-                aria-label="Afficher uniquement les machines hors ligne"
-              >
-                Hors ligne
-              </Button>
+                <Button
+                  variant={statusFilter === "all" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("all")}
+                  aria-pressed={statusFilter === "all"}
+                  aria-label="Afficher toutes les machines"
+                >
+                  Toutes
+                </Button>
+                <Button
+                  variant={statusFilter === "online" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("online")}
+                  aria-pressed={statusFilter === "online"}
+                  aria-label="Afficher uniquement les machines en ligne"
+                >
+                  En ligne
+                </Button>
+                <Button
+                  variant={
+                    statusFilter === "maintenance" ? "primary" : "outline"
+                  }
+                  size="sm"
+                  onClick={() => setStatusFilter("maintenance")}
+                  aria-pressed={statusFilter === "maintenance"}
+                  aria-label="Afficher uniquement les machines en maintenance"
+                >
+                  Maintenance
+                </Button>
+                <Button
+                  variant={statusFilter === "offline" ? "primary" : "outline"}
+                  size="sm"
+                  onClick={() => setStatusFilter("offline")}
+                  aria-pressed={statusFilter === "offline"}
+                  aria-label="Afficher uniquement les machines hors ligne"
+                >
+                  Hors ligne
+                </Button>
+              </div>
+
+              {/* Pas de filtre revenus, 30j par défaut */}
             </div>
           </div>
         </CardContent>
@@ -307,21 +294,43 @@ export function MachineList() {
         {filteredMachines.map((machine, index) => {
           const statusInfo = statusConfig[machine.status];
           const StatusIcon = statusInfo.icon;
-          const metrics = getMachineMetrics(machine);
+          const stat = (stats as MachineStat[] | undefined)?.find(
+            (s) => s.machine_id === machine.id
+          );
+          const revenueTotal = (stat?.revenueTotalCents || 0) / 100;
+          const revenue30d = (stat?.revenueLast30dCents || 0) / 100;
+          const revenueValue = revenue30d;
+          const revenueLabel = "Revenus 30j";
+          const orders30d = stat?.ordersLast30d || 0;
+          const stockLevel = stat
+            ? Math.max(
+                0,
+                Math.min(
+                  100,
+                  stat.totalSlots > 0
+                    ? ((stat.totalSlots - (stat.outOfStockCount || 0)) /
+                        stat.totalSlots) *
+                        100
+                    : 0
+                )
+              )
+            : 0;
 
           return (
             <motion.div
               key={machine.id}
+              className="h-full"
               initial={{ opacity: 0, y: 20 }}
               animate={{ opacity: 1, y: 0 }}
               transition={{ delay: index * 0.1 }}
             >
-              <Link href={`/machines/${machine.id}`} className="block">
+              <Link href={`/machines/${machine.id}`} className="block h-full">
                 <Card
-                  className="group hover:shadow-lg transition-all duration-200"
+                  className="group hover:shadow-lg transition-all duration-200 h-full min-h-80 flex flex-col overflow-hidden"
                   role="article"
                   aria-labelledby={`machine-title-${machine.id}`}
                 >
+                  {/* Badge in-card au lieu d'un header */}
                   <CardHeader className="pb-4">
                     <div className="flex items-start justify-between">
                       <div className="flex-1">
@@ -335,7 +344,7 @@ export function MachineList() {
                           <MapPin className="h-4 w-4" aria-hidden="true" />
                           <span>{machine.location}</span>
                         </div>
-                        <div className="flex items-center gap-2">
+                        <div className="flex items-center gap-2 flex-wrap">
                           <Badge
                             variant={statusInfo.variant}
                             className="text-xs"
@@ -347,12 +356,14 @@ export function MachineList() {
                             />
                             {statusInfo.label}
                           </Badge>
-                          <span
-                            aria-label={`Connectivité: ${metrics.connectivity}`}
-                          >
-                            {getConnectivityIcon(metrics.connectivity)}
-                          </span>
+                          {(statsById.get(machine.id)?.totalSlots || 0) < 6 && (
+                            <div className="inline-flex items-center gap-1 text-xs text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
+                              <AlertTriangle className="h-3 w-3" />
+                              Incomplète
+                            </div>
+                          )}
                         </div>
+                        {/* pas d'info connectivité réelle pour l'instant */}
                       </div>
                       <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200 flex gap-1">
                         <Button
@@ -387,7 +398,7 @@ export function MachineList() {
                     </div>
                   </CardHeader>
 
-                  <CardContent className="space-y-4">
+                  <CardContent className="space-y-4 flex-grow">
                     {/* Revenue and Orders */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center gap-2">
@@ -396,12 +407,14 @@ export function MachineList() {
                           aria-hidden="true"
                         />
                         <div>
-                          <div className="text-muted-foreground">Revenus</div>
+                          <div className="text-muted-foreground">
+                            {revenueLabel}
+                          </div>
                           <div
                             className="font-semibold text-lg"
-                            aria-label={`Revenus: ${metrics.revenue} euros`}
+                            aria-label={`${revenueLabel}: ${revenueValue} euros`}
                           >
-                            {metrics.revenue}€
+                            {revenueValue.toFixed(2)}€
                           </div>
                         </div>
                       </div>
@@ -411,12 +424,12 @@ export function MachineList() {
                           aria-hidden="true"
                         />
                         <div>
-                          <div className="text-muted-foreground">Commandes</div>
+                          <div className="text-muted-foreground">Cmd 30j</div>
                           <div
                             className="font-semibold text-lg"
-                            aria-label={`Commandes aujourd'hui: ${metrics.ordersToday}`}
+                            aria-label={`Commandes sur 30 jours: ${orders30d}`}
                           >
-                            {metrics.ordersToday}
+                            {orders30d}
                           </div>
                         </div>
                       </div>
@@ -430,34 +443,34 @@ export function MachineList() {
                         </span>
                         <span
                           className={
-                            metrics.stockLevel > 70
+                            stockLevel > 70
                               ? "text-green-600"
-                              : metrics.stockLevel > 30
+                              : stockLevel > 30
                                 ? "text-yellow-600"
                                 : "text-red-600"
                           }
-                          aria-label={`Niveau de stock: ${metrics.stockLevel}%`}
+                          aria-label={`Niveau de stock: ${Math.round(stockLevel)}%`}
                         >
-                          {metrics.stockLevel}%
+                          {Math.round(stockLevel)}%
                         </span>
                       </div>
                       <div
                         className="w-full bg-muted rounded-full h-2"
                         role="progressbar"
-                        aria-valuenow={metrics.stockLevel}
+                        aria-valuenow={Math.round(stockLevel)}
                         aria-valuemin={0}
                         aria-valuemax={100}
                         aria-label="Niveau de stock global"
                       >
                         <div
                           className={`h-2 rounded-full transition-all duration-300 ${
-                            metrics.stockLevel > 70
+                            stockLevel > 70
                               ? "bg-green-500"
-                              : metrics.stockLevel > 30
+                              : stockLevel > 30
                                 ? "bg-yellow-500"
                                 : "bg-red-500"
                           }`}
-                          style={{ width: `${metrics.stockLevel}%` }}
+                          style={{ width: `${stockLevel}%` }}
                         />
                       </div>
                     </div>
@@ -467,18 +480,18 @@ export function MachineList() {
                       <div className="text-center p-2 bg-muted/50 rounded-lg">
                         <div
                           className="font-semibold"
-                          aria-label={`Total produits: ${metrics.totalProducts}`}
+                          aria-label={`Slots configurés: ${stat?.totalSlots ?? 0}`}
                         >
-                          {metrics.totalProducts}
+                          {stat?.totalSlots ?? 0}
                         </div>
-                        <div className="text-muted-foreground">Total</div>
+                        <div className="text-muted-foreground">Slots</div>
                       </div>
                       <div className="text-center p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
                         <div
                           className="font-semibold text-yellow-700 dark:text-yellow-400"
-                          aria-label={`Produits en stock faible: ${metrics.lowStockProducts}`}
+                          aria-label={`Slots faible stock: ${stat?.lowStockCount ?? 0}`}
                         >
-                          {metrics.lowStockProducts}
+                          {stat?.lowStockCount ?? 0}
                         </div>
                         <div className="text-yellow-600 dark:text-yellow-500">
                           Stock faible
@@ -487,9 +500,9 @@ export function MachineList() {
                       <div className="text-center p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
                         <div
                           className="font-semibold text-red-700 dark:text-red-400"
-                          aria-label={`Produits en rupture: ${metrics.outOfStockProducts}`}
+                          aria-label={`Slots vides: ${stat?.outOfStockCount ?? 0}`}
                         >
-                          {metrics.outOfStockProducts}
+                          {stat?.outOfStockCount ?? 0}
                         </div>
                         <div className="text-red-600 dark:text-red-500">
                           Rupture
@@ -499,9 +512,8 @@ export function MachineList() {
 
                     {/* Additional Info */}
                     <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
-                      <div>Dernière commande: {metrics.lastOrder}</div>
-                      <div>Température: {metrics.temperature}°C</div>
-                      <div>Maintenance: {metrics.lastMaintenance}</div>
+                      <div>Total revenus: {revenueTotal.toFixed(2)}€</div>
+                      <div>Cmd 30j: {orders30d}</div>
                       <div>
                         Dernière mise à jour:{" "}
                         {new Date(machine.last_update).toLocaleDateString(

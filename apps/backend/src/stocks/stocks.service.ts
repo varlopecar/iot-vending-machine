@@ -195,6 +195,18 @@ export class StocksService {
       },
     });
 
+    // Mettre la machine en ONLINE si maintenant 6 slots sont configurés
+    const countAfterCreate = await this.prisma.stock.count({
+      where: { machine_id: slotData.machine_id },
+    });
+
+    if (countAfterCreate >= 6) {
+      await this.prisma.machine.update({
+        where: { id: slotData.machine_id },
+        data: { status: 'ONLINE' },
+      });
+    }
+
     return this.mapStock(stock);
   }
 
