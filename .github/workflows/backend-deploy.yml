@@ -144,7 +144,7 @@ jobs:
           echo "- Scalingo will automatically deploy when pushed to main" >> $GITHUB_STEP_SUMMARY
           echo "- Check your Scalingo dashboard for deployment status" >> $GITHUB_STEP_SUMMARY
 
-    notify:
+  notify:
     name: Notify Build Status
     runs-on: ubuntu-latest
     needs: [test, build]
