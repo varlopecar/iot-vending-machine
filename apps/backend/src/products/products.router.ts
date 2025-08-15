@@ -45,7 +45,7 @@ export class ProductsRouter {
 
   @Mutation({
     input: z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       data: updateProductSchema,
     }),
     output: productSchema,
@@ -58,7 +58,7 @@ export class ProductsRouter {
   }
 
   @Mutation({
-    input: z.object({ id: z.uuid() }),
+    input: z.object({ id: z.string().min(1) }),
     output: z.boolean(),
   })
   deleteProduct(@Input('id') id: string) {

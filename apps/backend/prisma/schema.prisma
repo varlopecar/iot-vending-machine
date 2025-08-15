@@ -35,12 +35,17 @@ model Product {
   id                String  @id @default(cuid())
   name              String
   description       String
+  // Prix de vente
   price             Decimal @db.Decimal(10, 2)
+  // Prix d'achat (pour calcul de marge)
+  purchase_price    Decimal @db.Decimal(10, 2)
+  // Catégorie du produit
+  category          String
   sku               String? // Nouveau: identifiant unique produit pour import CSV
   ingredients       String
   ingredients_list  String[]  // Liste structurée des ingrédients
   allergens         String
-  allergens_list    String[]  // Liste structurée des allergènes
+  allergens_list    String[] @default([]) // Liste structurée des allergènes (optionnelle côté métier)
   nutritional_value String
   nutritional       Json?     // Valeurs nutritionnelles structurées {calories, protein, carbs, fat}
   image_url         String
@@ -52,6 +57,7 @@ model Product {
   order_items OrderItem[]
 
   @@unique([sku]) // SKU doit être unique si fourni
+  @@index([category])
   @@map("products")
 }
 
@@ -368,3 +374,4 @@ enum PickupStatus {
   COMPLETED
   FAILED
 }
+

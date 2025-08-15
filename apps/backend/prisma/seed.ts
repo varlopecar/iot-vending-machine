@@ -133,6 +133,8 @@ async function main() {
         name: 'Coca-Cola',
         description: 'Refreshing cola drink',
         price: 2.5,
+        purchase_price: 1.0,
+        category: 'Boissons',
         sku: 'COCA_001',
         ingredients:
           'Carbonated water, sugar, caramel, phosphoric acid, natural flavors, caffeine',
@@ -151,6 +153,8 @@ async function main() {
         name: 'Chips Classic',
         description: 'Crispy potato chips',
         price: 1.8,
+        purchase_price: 0.7,
+        category: 'Snacks',
         sku: 'CHIPS_001',
         ingredients: 'Potatoes, vegetable oil, salt',
         // ingredients_list removed
@@ -168,6 +172,8 @@ async function main() {
         name: 'Water Bottle',
         description: 'Pure spring water',
         price: 1.2,
+        purchase_price: 0.4,
+        category: 'Boissons',
         sku: 'WATER_001',
         ingredients: 'Spring water',
         // ingredients_list removed
@@ -185,6 +191,8 @@ async function main() {
         name: 'Kinder Bueno',
         description: 'Chocolate bar with hazelnut cream',
         price: 2.8,
+        purchase_price: 1.5,
+        category: 'Confiseries',
         sku: 'KINDER_001',
         ingredients:
           'Sugar, vegetable fats, hazelnuts, cocoa mass, skimmed milk powder',
@@ -203,6 +211,8 @@ async function main() {
         name: 'Energy Bar',
         description: 'High protein energy bar',
         price: 3.2,
+        purchase_price: 1.2,
+        category: 'Snacks',
         sku: 'ENERGY_001',
         ingredients: 'Oats, honey, nuts, dried fruits, protein isolate',
         // ingredients_list removed

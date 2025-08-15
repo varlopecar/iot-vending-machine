@@ -6,26 +6,51 @@ import { X, Upload, Package } from "lucide-react";
 import { Button, Input, Card } from "@/components/ui";
 import { Product } from "./product-card";
 
-interface AddProductModalProps {
+interface ProductWithMetrics extends Product {
+  cost: number;
+  margin: number;
+  stock: number;
+  sold: number;
+  category: string;
+  allergens_list?: string[];
+  nutritional?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    serving?: string;
+  };
+}
+
+interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (product: Omit<Product, "id" | "sold"> & {
-    allergens?: string;
-    calories?: string;
-    protein?: string;
-    carbs?: string;
-    fat?: string;
-    serving?: string;
-  }) => void;
+  onEditProduct: (
+    productId: string,
+    product: {
+      name?: string;
+      category?: string;
+      price?: number;
+      purchase_price?: number;
+      allergens?: string;
+      calories?: string;
+      protein?: string;
+      carbs?: string;
+      fat?: string;
+      serving?: string;
+    }
+  ) => void;
+  product: ProductWithMetrics | null;
 }
 
 const categories = ["Boissons", "Snacks", "Confiseries", "Sandwichs", "Autres"];
 
-export function AddProductModal({
+export function EditProductModal({
   isOpen,
   onClose,
-  onAddProduct,
-}: AddProductModalProps) {
+  onEditProduct,
+  product,
+}: EditProductModalProps) {
   const [formData, setFormData] = useState({
     name: "",
     category: categories[0],
@@ -46,6 +71,25 @@ export function AddProductModal({
   const modalRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+
+  // Initialize form with product data
+  useEffect(() => {
+    if (product && isOpen) {
+      setFormData({
+        name: product.name || "",
+        category: product.category || categories[0],
+        price: product.price?.toString() || "",
+        cost: product.cost?.toString() || "",
+        image: product.image || "",
+        allergens: product.allergens_list?.join(", ") || "",
+        calories: product.nutritional?.calories?.toString() || "",
+        protein: product.nutritional?.protein?.toString() || "",
+        carbs: product.nutritional?.carbs?.toString() || "",
+        fat: product.nutritional?.fat?.toString() || "",
+        serving: product.nutritional?.serving || "",
+      });
+    }
+  }, [product, isOpen]);
 
   // Focus management
   useEffect(() => {
@@ -88,14 +132,13 @@ export function AddProductModal({
 
     const cost = parseFloat(formData.cost);
     if (!formData.cost || isNaN(cost) || cost <= 0) {
-      newErrors.cost = "Le prix d'achat doit être un nombre positif";
+      newErrors.cost = "Le prix d&apos;achat doit être un nombre positif";
     }
 
-    // Image est optionnelle, on utilise une image par défaut
-
     // Check if cost is greater than price
-                        if (!newErrors.price && !newErrors.cost && cost >= price) {
-      newErrors.cost = "Le prix d&apos;achat doit être inférieur au prix de vente";
+    if (!newErrors.price && !newErrors.cost && cost >= price) {
+      newErrors.cost =
+        "Le prix d&apos;achat doit être inférieur au prix de vente";
     }
 
     setErrors(newErrors);
@@ -105,7 +148,7 @@ export function AddProductModal({
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    if (!validateForm()) {
+    if (!validateForm() || !product) {
       return;
     }
 
@@ -115,14 +158,11 @@ export function AddProductModal({
       const price = parseFloat(formData.price);
       const cost = parseFloat(formData.cost);
 
-      const newProduct = {
+      const updateData = {
         name: formData.name.trim(),
         category: formData.category || "",
         price,
-        cost,
-        margin: price - cost,
-        stock: 0, // Stock initial à 0
-        image: formData.image || "/assets/images/coca.png", // Image par défaut
+        purchase_price: cost,
         allergens: formData.allergens,
         calories: formData.calories,
         protein: formData.protein,
@@ -131,26 +171,10 @@ export function AddProductModal({
         serving: formData.serving,
       };
 
-      await onAddProduct(newProduct);
-
-      // Reset form
-      setFormData({
-        name: "",
-        category: categories[0],
-        price: "",
-        cost: "",
-        image: "",
-        allergens: "",
-        calories: "",
-        protein: "",
-        carbs: "",
-        fat: "",
-        serving: "",
-      });
-
+      await onEditProduct(product.id, updateData);
       onClose();
     } catch (error) {
-      console.error("Erreur lors de l'ajout du produit:", error);
+      console.error("Erreur lors de la modification du produit:", error);
     } finally {
       setIsSubmitting(false);
     }
@@ -166,7 +190,7 @@ export function AddProductModal({
     }
   };
 
-  if (!isOpen) return null;
+  if (!isOpen || !product) return null;
 
   return (
     <AnimatePresence>
@@ -187,7 +211,7 @@ export function AddProductModal({
           initial={{ opacity: 0, scale: 0.95 }}
           animate={{ opacity: 1, scale: 1 }}
           exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-md"
+          className="relative w-full max-w-md max-h-[90vh] overflow-y-auto"
           role="dialog"
           aria-modal="true"
           aria-labelledby="modal-title"
@@ -196,7 +220,7 @@ export function AddProductModal({
             {/* Header */}
             <div className="flex items-center justify-between mb-6">
               <h2 id="modal-title" className="text-xl font-semibold">
-                Ajouter un produit
+                Modifier le produit
               </h2>
               <Button
                 variant="ghost"
@@ -215,14 +239,14 @@ export function AddProductModal({
               {/* Nom du produit */}
               <div>
                 <label
-                  htmlFor="product-name"
+                  htmlFor="edit-product-name"
                   className="block text-sm font-medium mb-1"
                 >
                   Nom du produit *
                 </label>
                 <Input
                   ref={firstInputRef}
-                  id="product-name"
+                  id="edit-product-name"
                   type="text"
                   value={formData.name}
                   onChange={(e) => handleInputChange("name", e.target.value)}
@@ -245,13 +269,13 @@ export function AddProductModal({
               {/* Catégorie */}
               <div>
                 <label
-                  htmlFor="product-category"
+                  htmlFor="edit-product-category"
                   className="block text-sm font-medium mb-1"
                 >
                   Catégorie *
                 </label>
                 <select
-                  id="product-category"
+                  id="edit-product-category"
                   value={formData.category}
                   onChange={(e) =>
                     handleInputChange("category", e.target.value)
@@ -270,13 +294,13 @@ export function AddProductModal({
               <div className="grid grid-cols-2 gap-4">
                 <div>
                   <label
-                    htmlFor="product-price"
+                    htmlFor="edit-product-price"
                     className="block text-sm font-medium mb-1"
                   >
                     Prix de vente (€) *
                   </label>
                   <Input
-                    id="product-price"
+                    id="edit-product-price"
                     type="number"
                     step="0.01"
                     min="0"
@@ -300,13 +324,13 @@ export function AddProductModal({
 
                 <div>
                   <label
-                    htmlFor="product-cost"
+                    htmlFor="edit-product-cost"
                     className="block text-sm font-medium mb-1"
                   >
-                    Prix d'achat (€) *
+                    Prix d&apos;achat (€) *
                   </label>
                   <Input
-                    id="product-cost"
+                    id="edit-product-cost"
                     type="number"
                     step="0.01"
                     min="0"
@@ -332,16 +356,18 @@ export function AddProductModal({
               {/* Allergènes (optionnel) */}
               <div>
                 <label
-                  htmlFor="product-allergens"
+                  htmlFor="edit-product-allergens"
                   className="block text-sm font-medium mb-1"
                 >
                   Allergènes (optionnel)
                 </label>
                 <Input
-                  id="product-allergens"
+                  id="edit-product-allergens"
                   type="text"
                   value={formData.allergens}
-                  onChange={(e) => handleInputChange("allergens", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("allergens", e.target.value)
+                  }
                   placeholder="Ex: Gluten, Arachides, Lait (séparés par des virgules)"
                   className="placeholder-gray"
                 />
@@ -358,66 +384,72 @@ export function AddProductModal({
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label
-                      htmlFor="product-calories"
+                      htmlFor="edit-product-calories"
                       className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
                     >
                       Calories (kcal)
                     </label>
                     <Input
-                      id="product-calories"
+                      id="edit-product-calories"
                       type="number"
                       min="0"
                       value={formData.calories}
-                      onChange={(e) => handleInputChange("calories", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("calories", e.target.value)
+                      }
                       placeholder="150"
                       className="placeholder-gray"
                     />
                   </div>
                   <div>
                     <label
-                      htmlFor="product-protein"
+                      htmlFor="edit-product-protein"
                       className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
                     >
                       Protéines (g)
                     </label>
                     <Input
-                      id="product-protein"
+                      id="edit-product-protein"
                       type="number"
                       step="0.1"
                       min="0"
                       value={formData.protein}
-                      onChange={(e) => handleInputChange("protein", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("protein", e.target.value)
+                      }
                       placeholder="2.5"
                       className="placeholder-gray"
                     />
                   </div>
                   <div>
                     <label
-                      htmlFor="product-carbs"
+                      htmlFor="edit-product-carbs"
                       className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
                     >
                       Glucides (g)
                     </label>
                     <Input
-                      id="product-carbs"
+                      id="edit-product-carbs"
                       type="number"
                       step="0.1"
                       min="0"
                       value={formData.carbs}
-                      onChange={(e) => handleInputChange("carbs", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("carbs", e.target.value)
+                      }
                       placeholder="35"
                       className="placeholder-gray"
                     />
                   </div>
                   <div>
                     <label
-                      htmlFor="product-fat"
+                      htmlFor="edit-product-fat"
                       className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
                     >
                       Lipides (g)
                     </label>
                     <Input
-                      id="product-fat"
+                      id="edit-product-fat"
                       type="number"
                       step="0.1"
                       min="0"
@@ -430,66 +462,22 @@ export function AddProductModal({
                 </div>
                 <div className="mt-3">
                   <label
-                    htmlFor="product-serving"
+                    htmlFor="edit-product-serving"
                     className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
                   >
                     Portion de référence
                   </label>
                   <Input
-                    id="product-serving"
+                    id="edit-product-serving"
                     type="text"
                     value={formData.serving}
-                    onChange={(e) => handleInputChange("serving", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("serving", e.target.value)
+                    }
                     placeholder="Ex: 100g, 33cl, 1 pièce"
                     className="placeholder-gray"
                   />
                 </div>
-              </div>
-
-              {/* Image */}
-              <div>
-                <label className="block text-sm font-medium mb-1">
-                  Image du produit *
-                </label>
-                <div className="flex items-center gap-4">
-                  <div className="relative h-16 w-16 bg-light-tertiary dark:bg-dark-tertiary rounded-lg overflow-hidden">
-                    {formData.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={formData.image}
-                        alt="Aperçu du produit"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-light-textSecondary dark:text-dark-textSecondary">
-                        <Package className="h-6 w-6" />
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    aria-label="Sélectionner une image"
-                  >
-                    <Upload className="h-4 w-4 mr-2" />
-                    Choisir une image
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    aria-label="Fichier image"
-                  />
-                </div>
-                {errors.image && (
-                  <p className="text-sm text-red-600 mt-1" role="alert">
-                    {errors.image}
-                  </p>
-                )}
               </div>
 
               {/* Actions */}
@@ -509,7 +497,7 @@ export function AddProductModal({
                   disabled={isSubmitting}
                   aria-describedby="submit-help"
                 >
-                  {isSubmitting ? "Ajout..." : "Ajouter le produit"}
+                  {isSubmitting ? "Modification..." : "Modifier le produit"}
                 </Button>
               </div>
 

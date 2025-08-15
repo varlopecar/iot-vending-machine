@@ -103,7 +103,12 @@ const appRouter = t.router({
       id: z.string().min(1),
       name: z.string(),
       description: z.string(),
-      price: z.number().positive(),
+      // Prix de vente
+      price: z.number().min(0),
+      // Prix d'achat
+      purchase_price: z.number().min(0),
+      // Catégorie libre pour le back-office
+      category: z.string().min(1),
       ingredients: z.string(),
       ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
@@ -118,14 +123,19 @@ const appRouter = t.router({
           serving: z.string().optional(),
         })
         .optional(),
-      image_url: z.url(),
+      image_url: z.string(),
       is_active: z.boolean(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getProductById: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
       id: z.string().min(1),
       name: z.string(),
       description: z.string(),
-      price: z.number().positive(),
+      // Prix de vente
+      price: z.number().min(0),
+      // Prix d'achat
+      purchase_price: z.number().min(0),
+      // Catégorie libre pour le back-office
+      category: z.string().min(1),
       ingredients: z.string(),
       ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
@@ -140,14 +150,19 @@ const appRouter = t.router({
           serving: z.string().optional(),
         })
         .optional(),
-      image_url: z.url(),
+      image_url: z.string(),
       is_active: z.boolean(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getProductsByCategory: publicProcedure.input(z.object({ category: z.string() })).output(z.array(z.object({
       id: z.string().min(1),
       name: z.string(),
       description: z.string(),
-      price: z.number().positive(),
+      // Prix de vente
+      price: z.number().min(0),
+      // Prix d'achat
+      purchase_price: z.number().min(0),
+      // Catégorie libre pour le back-office
+      category: z.string().min(1),
       ingredients: z.string(),
       ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
@@ -162,19 +177,16 @@ const appRouter = t.router({
           serving: z.string().optional(),
         })
         .optional(),
-      image_url: z.url(),
+      image_url: z.string(),
       is_active: z.boolean(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     createProduct: publicProcedure.input(z.object({
-      id: z.string().min(1),
-      name: z.string(),
-      description: z.string(),
+      name: z.string().min(1),
+      category: z.string().min(1),
       price: z.number().positive(),
-      ingredients: z.string(),
-      ingredients_list: z.array(z.string()).optional(),
-      allergens: z.string(),
+      purchase_price: z.number().positive(),
+      // Optionnels
       allergens_list: z.array(z.string()).optional(),
-      nutritional_value: z.string(),
       nutritional: z
         .object({
           calories: z.number().optional(),
@@ -184,15 +196,16 @@ const appRouter = t.router({
           serving: z.string().optional(),
         })
         .optional(),
-      image_url: z.url(),
-      is_active: z.boolean(),
-    }).omit({
-      id: true,
     })).output(z.object({
       id: z.string().min(1),
       name: z.string(),
       description: z.string(),
-      price: z.number().positive(),
+      // Prix de vente
+      price: z.number().min(0),
+      // Prix d'achat
+      purchase_price: z.number().min(0),
+      // Catégorie libre pour le back-office
+      category: z.string().min(1),
       ingredients: z.string(),
       ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
@@ -207,21 +220,18 @@ const appRouter = t.router({
           serving: z.string().optional(),
         })
         .optional(),
-      image_url: z.url(),
+      image_url: z.string(),
       is_active: z.boolean(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     updateProduct: publicProcedure.input(z.object({
-      id: z.uuid(),
+      id: z.string().min(1),
       data: z.object({
-        id: z.string().min(1),
-        name: z.string(),
-        description: z.string(),
+        name: z.string().min(1),
+        category: z.string().min(1),
         price: z.number().positive(),
-        ingredients: z.string(),
-        ingredients_list: z.array(z.string()).optional(),
-        allergens: z.string(),
+        purchase_price: z.number().positive(),
+        // Optionnels
         allergens_list: z.array(z.string()).optional(),
-        nutritional_value: z.string(),
         nutritional: z
           .object({
             calories: z.number().optional(),
@@ -231,16 +241,17 @@ const appRouter = t.router({
             serving: z.string().optional(),
           })
           .optional(),
-        image_url: z.url(),
-        is_active: z.boolean(),
-      }).omit({
-        id: true,
       }).partial(),
     })).output(z.object({
       id: z.string().min(1),
       name: z.string(),
       description: z.string(),
-      price: z.number().positive(),
+      // Prix de vente
+      price: z.number().min(0),
+      // Prix d'achat
+      purchase_price: z.number().min(0),
+      // Catégorie libre pour le back-office
+      category: z.string().min(1),
       ingredients: z.string(),
       ingredients_list: z.array(z.string()).optional(),
       allergens: z.string(),
@@ -255,10 +266,10 @@ const appRouter = t.router({
           serving: z.string().optional(),
         })
         .optional(),
-      image_url: z.url(),
+      image_url: z.string(),
       is_active: z.boolean(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    deleteProduct: publicProcedure.input(z.object({ id: z.uuid() })).output(z.boolean()).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+    deleteProduct: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.boolean()).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   orders: t.router({
     getOrderById: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({

@@ -13,6 +13,7 @@ import {
 import { ProductCard, Product } from "./product-card";
 import { ProductFilters } from "./product-filters";
 import { AddProductModal } from "./add-product-modal";
+import { EditProductModal } from "./edit-product-modal";
 import { api } from "@/lib/trpc/client";
 
 // Interface pour les données produits avec métriques calculées
@@ -22,6 +23,14 @@ interface ProductWithMetrics extends Product {
   stock: number;
   sold: number;
   category: string;
+  allergens_list?: string[];
+  nutritional?: {
+    calories?: number;
+    protein?: number;
+    carbs?: number;
+    fat?: number;
+    serving?: string;
+  };
 }
 
 // Fonction pour générer des catégories basées sur les noms de produits
@@ -104,17 +113,20 @@ const getLocalImagePath = (productName: string): string => {
 const getProductMetrics = (product: any): ProductWithMetrics => {
   const seed = product.id.charCodeAt(product.id.length - 1);
   const price = Number(product.price);
+  const purchasePrice = Number(product.purchase_price ?? price * 0.4);
 
   return {
     id: product.id,
     name: product.name,
     price,
     image: getLocalImagePath(product.name), // Utilise l'image locale
-    category: generateCategory(product.name),
-    cost: Number((price * 0.4 + (seed % 50) / 100).toFixed(2)),
-    margin: Number((price * 0.5 + (seed % 30) / 100).toFixed(2)),
+    category: product.category ?? generateCategory(product.name),
+    cost: Number(purchasePrice.toFixed(2)),
+    margin: Number((price - purchasePrice).toFixed(2)),
     stock: Math.max(0, 150 - (seed % 120)),
     sold: 20 + (seed % 100),
+    allergens_list: product.allergens_list || [],
+    nutritional: product.nutritional || undefined,
   };
 };
 
@@ -122,6 +134,9 @@ export function ProductList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedCategory, setSelectedCategory] = useState("Toutes");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
+  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] =
+    useState<ProductWithMetrics | null>(null);
 
   // Récupération des données via tRPC
   const {
@@ -130,6 +145,26 @@ export function ProductList() {
     error,
     refetch,
   } = api.products.getAllProducts.useQuery();
+
+  // Mutations
+  const createProduct = api.products.createProduct.useMutation({
+    onSuccess: () => {
+      refetch();
+      setIsAddModalOpen(false);
+    },
+  });
+
+  const deleteProduct = api.products.deleteProduct.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
+
+  const updateProduct = api.products.updateProduct.useMutation({
+    onSuccess: () => {
+      refetch();
+    },
+  });
 
   // Conversion des données avec métriques
   const products = rawProducts?.map(getProductMetrics) || [];
@@ -201,24 +236,137 @@ export function ProductList() {
   }
 
   // Handle adding new product
-  const handleAddProduct = (
-    newProductData: Omit<ProductWithMetrics, "id" | "sold">
+  const handleAddProduct = async (
+    newProductData: Omit<ProductWithMetrics, "id" | "sold"> & {
+      allergens?: string;
+      calories?: string;
+      protein?: string;
+      carbs?: string;
+      fat?: string;
+      serving?: string;
+    }
   ) => {
-    // TODO: Implement with tRPC mutation
-    console.log("Add product:", newProductData);
+    // Préparer les allergènes
+    const allergens_list = newProductData.allergens
+      ? newProductData.allergens
+          .split(",")
+          .map((a) => a.trim())
+          .filter((a) => a.length > 0)
+      : undefined;
+
+    // Préparer les valeurs nutritionnelles
+    const nutritional =
+      newProductData.calories ||
+      newProductData.protein ||
+      newProductData.carbs ||
+      newProductData.fat ||
+      newProductData.serving
+        ? {
+            calories: newProductData.calories
+              ? parseFloat(newProductData.calories)
+              : undefined,
+            protein: newProductData.protein
+              ? parseFloat(newProductData.protein)
+              : undefined,
+            carbs: newProductData.carbs
+              ? parseFloat(newProductData.carbs)
+              : undefined,
+            fat: newProductData.fat
+              ? parseFloat(newProductData.fat)
+              : undefined,
+            serving: newProductData.serving || undefined,
+          }
+        : undefined;
+
+    await createProduct.mutateAsync({
+      name: newProductData.name,
+      category: newProductData.category,
+      price: newProductData.price,
+      purchase_price: newProductData.cost,
+      allergens_list,
+      nutritional,
+    });
   };
 
   // Handle editing product
   const handleEditProduct = (product: ProductWithMetrics) => {
-    // TODO: Implement edit functionality with tRPC
-    console.log("Edit product:", product);
+    setSelectedProduct(product);
+    setIsEditModalOpen(true);
+  };
+
+  // Handle updating product
+  const handleUpdateProduct = async (
+    productId: string,
+    updateData: {
+      name?: string;
+      category?: string;
+      price?: number;
+      purchase_price?: number;
+      allergens?: string;
+      calories?: string;
+      protein?: string;
+      carbs?: string;
+      fat?: string;
+      serving?: string;
+    }
+  ) => {
+    // Préparer les allergènes
+    const allergens_list = updateData.allergens
+      ? updateData.allergens
+          .split(",")
+          .map((a) => a.trim())
+          .filter((a) => a.length > 0)
+      : undefined;
+
+    // Préparer les valeurs nutritionnelles
+    const nutritional =
+      updateData.calories ||
+      updateData.protein ||
+      updateData.carbs ||
+      updateData.fat ||
+      updateData.serving
+        ? {
+            calories: updateData.calories
+              ? parseFloat(updateData.calories)
+              : undefined,
+            protein: updateData.protein
+              ? parseFloat(updateData.protein)
+              : undefined,
+            carbs: updateData.carbs ? parseFloat(updateData.carbs) : undefined,
+            fat: updateData.fat ? parseFloat(updateData.fat) : undefined,
+            serving: updateData.serving || undefined,
+          }
+        : undefined;
+
+    try {
+      await updateProduct.mutateAsync({
+        id: productId,
+        data: {
+          name: updateData.name,
+          category: updateData.category,
+          price: updateData.price,
+          purchase_price: updateData.purchase_price,
+          allergens_list,
+          nutritional,
+        },
+      });
+      setIsEditModalOpen(false);
+      setSelectedProduct(null);
+    } catch (error) {
+      console.error("Erreur lors de la modification:", error);
+      alert("Erreur lors de la modification du produit. Veuillez réessayer.");
+    }
   };
 
   // Handle deleting product
-  const handleDeleteProduct = (productId: string) => {
+  const handleDeleteProduct = async (productId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
-      // TODO: Implement with tRPC mutation
-      console.log("Delete product:", productId);
+      try {
+        await deleteProduct.mutateAsync({ id: productId });
+      } catch (error) {
+        console.error("Erreur lors de la suppression:", error);
+        alert("Erreur lors de la suppression du produit. Veuillez réessayer.");
+      }
     }
   };
 
@@ -313,6 +461,17 @@ export function ProductList() {
         isOpen={isAddModalOpen}
         onClose={() => setIsAddModalOpen(false)}
         onAddProduct={handleAddProduct}
+      />
+
+      {/* Edit Product Modal */}
+      <EditProductModal
+        isOpen={isEditModalOpen}
+        onClose={() => {
+          setIsEditModalOpen(false);
+          setSelectedProduct(null);
+        }}
+        onEditProduct={handleUpdateProduct}
+        product={selectedProduct}
       />
     </div>
   );
