@@ -306,17 +306,8 @@ export function MachineList() {
             (alert) => alert.machine_id === machine.id
           );
 
-          // Si la machine a une alerte INCOMPLETE, afficher "Incomplète" au lieu du statut normal
-          const hasIncompleteAlert = machineAlert?.type === "INCOMPLETE";
-
-          const statusInfo = hasIncompleteAlert
-            ? {
-                icon: AlertTriangle,
-                label: "Incomplète",
-                variant: "secondary" as const,
-                color: "text-blue-500",
-              }
-            : statusConfig[machine.status];
+          // Le badge principal affiche toujours le statut de la machine
+          const statusInfo = statusConfig[machine.status];
           const StatusIcon = statusInfo.icon;
           const stat = (stats as MachineStat[] | undefined)?.find(
             (s) => s.machine_id === machine.id

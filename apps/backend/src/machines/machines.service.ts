@@ -5,10 +5,17 @@ import {
   Machine,
 } from './machines.schema';
 import { PrismaService } from '../prisma/prisma.service';
+import { AlertsService } from '../alerts/alerts.service';
+import { Logger } from '@nestjs/common';
 
 @Injectable()
 export class MachinesService {
-  constructor(private readonly prisma: PrismaService) {}
+  private readonly logger = new Logger(MachinesService.name);
+
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly alertsService: AlertsService,
+  ) {}
 
   async createMachine(machineData: CreateMachineInput): Promise<Machine> {
     const created = await this.prisma.machine.create({
@@ -21,6 +28,16 @@ export class MachinesService {
         last_update: new Date().toISOString(),
       },
     });
+    
+    // Générer automatiquement les alertes pour la nouvelle machine
+    try {
+      await this.alertsService.updateMachineAlerts(created.id);
+      this.logger.log(`Alertes générées pour la nouvelle machine ${created.id}`);
+    } catch (error) {
+      this.logger.error(`Erreur lors de la génération des alertes pour la machine ${created.id}:`, error);
+      // Ne pas faire échouer la création de la machine si la génération d'alertes échoue
+    }
+    
     return this.mapMachine(created);
   }
 
@@ -99,7 +116,7 @@ export class MachinesService {
     const currentStockQuantity = stockDetails.reduce((sum, s) => sum + s.quantity, 0);
     const maxCapacityTotal = stockDetails.reduce((sum, s) => sum + s.max_capacity, 0);
     const stockPercentage = maxCapacityTotal > 0 
-      ? Math.round((currentStockQuantity / maxCapacityTotal) * 100) 
+      ? Math.min(100, Math.round((currentStockQuantity / maxCapacityTotal) * 100)) // Limite à 100%
       : 0;
 
     return {

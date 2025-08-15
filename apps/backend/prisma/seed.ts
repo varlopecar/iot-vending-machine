@@ -685,18 +685,18 @@ async function main() {
         }
       },
     }),
-    // Alerte machine hors ligne pour la machine C1 (pas de stock_id)
+    // Alerte INCOMPLETE pour la machine 3 (seulement 5 slots au lieu de 6)
     prisma.alert.create({
       data: {
         machine_id: machines[2].id,
-        type: 'MACHINE_OFFLINE',
-        message: `Machine hors ligne depuis plus de 2 heures`,
-        level: 'CRITICAL',
+        type: 'INCOMPLETE',
+        message: `Machine incomplète: 5/6 slots configurés`,
+        level: 'WARNING',
         status: 'OPEN',
         created_at: now,
         metadata: {
-          last_sync: machines[2].last_sync_at,
-          offline_duration_hours: 2
+          configured_slots: 5,
+          total_slots: 6,
         }
       },
     }),
