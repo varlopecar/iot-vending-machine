@@ -1179,42 +1179,6 @@ const appRouter = t.router({
       amountCents: z.number(),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
-  jobs: t.router({
-    getJobsStatus: publicProcedure.output(z.object({
-      expireStaleOrders: z.object({
-        name: z.string(),
-        schedule: z.string(),
-        timezone: z.string(),
-        description: z.string(),
-      }),
-      cleanupStalePaymentIntents: z.object({
-        name: z.string(),
-        schedule: z.string(),
-        timezone: z.string(),
-        description: z.string(),
-      }),
-    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    getJobMetrics: publicProcedure.output(z.object({
-      paymentsExpiredTotal: z.number(),
-      paymentIntentsCanceledTotal: z.number(),
-      stockReleasedTotal: z.number(),
-      jobExecutionTime: z.number(),
-      lastExecutionTime: z.string(),
-    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    runExpireStaleOrdersManually: publicProcedure.output(z.object({
-      ordersExpired: z.number(),
-      paymentIntentsCanceled: z.number(),
-      stockReleased: z.number(),
-      executionTime: z.number(),
-      errors: z.array(z.string()),
-    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    runCleanupStalePaymentIntentsManually: publicProcedure.output(z.object({
-      paymentIntentsCanceled: z.number(),
-      paymentsUpdated: z.number(),
-      executionTime: z.number(),
-      errors: z.array(z.string()),
-    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
-  }),
   restocks: t.router({
     getAllRestocks: publicProcedure.output(z.array(z.object({
       id: z.string().min(1),
