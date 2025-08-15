@@ -12,9 +12,9 @@
   },
   "dependencies": {
     "@tanstack/react-query": "^5.37.1",
-    "@trpc/client": "11.0.0-rc.553",
-    "@trpc/react-query": "11.0.0-rc.553",
-    "@trpc/server": "11.0.0-rc.553",
+    "@trpc/client": "^11.4.4",
+    "@trpc/react-query": "^11.4.4",
+    "@trpc/server": "^11.4.4",
     "clsx": "^2.1.1",
     "framer-motion": "^11.18.2",
     "lucide-react": "^0.379.0",
