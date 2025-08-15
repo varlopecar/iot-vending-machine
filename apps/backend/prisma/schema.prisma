@@ -138,11 +138,6 @@ model Order {
   paid_at                   String?     // Timestamp du paiement réussi
   receipt_url               String?     // URL du reçu Stripe
   
-  // Champs de fidélité
-  loyalty_applied           Boolean?    // Si la fidélité a été appliquée
-  points_earned             Int?        // Points gagnés avec cette commande
-  points_spent              Int?        // Points dépensés avec cette commande
-
   // Fidélité (source de vérité au niveau de la commande)
   points_spent              Int         @default(0)
   points_earned             Int         @default(0)

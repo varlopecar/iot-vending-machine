@@ -287,17 +287,20 @@ async function main() {
     energy.id,
   );
 
-  // Create stocks (slots) avec nouvelles propriétés
+  // Helper function pour générer un low_threshold aléatoire entre 1 et 2
+  const randomLowThreshold = () => Math.floor(Math.random() * 2) + 1;
+
+  // Create stocks (slots) selon les spécifications demandées
   const stocks = await Promise.all([
-    // Machine A1 stocks
+    // MACHINE 1: 6 slots tous remplis (max_capacity=5)
     prisma.stock.create({
       data: {
         machine_id: machines[0].id,
         product_id: products[0].id, // Coca-Cola
-        quantity: 15,
+        quantity: 5,
         slot_number: 1,
-        max_capacity: 20,
-        low_threshold: 3,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
       },
@@ -306,10 +309,10 @@ async function main() {
       data: {
         machine_id: machines[0].id,
         product_id: products[1].id, // Chips
-        quantity: 1, // Stock faible pour générer une alerte
+        quantity: 5,
         slot_number: 2,
-        max_capacity: 15,
-        low_threshold: 2,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
       },
@@ -318,86 +321,182 @@ async function main() {
       data: {
         machine_id: machines[0].id,
         product_id: products[2].id, // Water
-        quantity: 20,
-        slot_number: 3,
-        max_capacity: 25,
-        low_threshold: 5,
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    // Machine B2 stocks
-    prisma.stock.create({
-      data: {
-        machine_id: machines[1].id,
-        product_id: products[0].id, // Coca-Cola
-        quantity: 12,
-        slot_number: 1,
-        max_capacity: 20,
-        low_threshold: 3,
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[1].id,
-        product_id: products[3].id, // Kinder Bueno
-        quantity: 0, // Slot vide pour générer une alerte
-        slot_number: 2,
-        max_capacity: 12,
-        low_threshold: 2,
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[1].id,
-        product_id: products[4].id, // Energy Bar
         quantity: 5,
         slot_number: 3,
-        max_capacity: 10,
-        low_threshold: 2,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
       },
     }),
-    // Démonstration: même produit sur plusieurs slots
     prisma.stock.create({
       data: {
-        machine_id: machines[1].id,
-        product_id: products[0].id, // Coca-Cola aussi sur slot 4
-        quantity: 8,
+        machine_id: machines[0].id,
+        product_id: products[3].id, // Kinder Bueno
+        quantity: 5,
         slot_number: 4,
-        max_capacity: 20,
-        low_threshold: 3,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[0].id,
+        product_id: products[4].id, // Energy Bar
+        quantity: 5,
+        slot_number: 5,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[0].id,
+        product_id: products[0].id, // Coca-Cola (slot 6)
+        quantity: 5,
+        slot_number: 6,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
       },
     }),
 
-    // Compléter la machine A1 avec TOUS les produits disponibles
+    // MACHINE 2: 6 slots dont seulement 2 remplis, le reste à 0
     prisma.stock.create({
       data: {
-        machine_id: machines[0].id,
-        product_id: products[3].id, // Kinder Bueno
-        quantity: 10,
-        slot_number: 4,
-        max_capacity: 12,
-        low_threshold: 2,
+        machine_id: machines[1].id,
+        product_id: products[0].id, // Coca-Cola - REMPLI
+        quantity: 5,
+        slot_number: 1,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
       },
     }),
     prisma.stock.create({
       data: {
-        machine_id: machines[0].id,
-        product_id: products[4].id, // Energy Bar
-        quantity: 8,
+        machine_id: machines[1].id,
+        product_id: products[1].id, // Chips - REMPLI
+        quantity: 5,
+        slot_number: 2,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[1].id,
+        product_id: products[2].id, // Water - VIDE
+        quantity: 0,
+        slot_number: 3,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[1].id,
+        product_id: products[3].id, // Kinder Bueno - VIDE
+        quantity: 0,
+        slot_number: 4,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[1].id,
+        product_id: products[4].id, // Energy Bar - VIDE
+        quantity: 0,
         slot_number: 5,
-        max_capacity: 12,
-        low_threshold: 2,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[1].id,
+        product_id: products[0].id, // Coca-Cola - VIDE
+        quantity: 0,
+        slot_number: 6,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+
+    // MACHINE 3: seulement 5 slots
+    prisma.stock.create({
+      data: {
+        machine_id: machines[2].id,
+        product_id: products[0].id, // Coca-Cola
+        quantity: 3,
+        slot_number: 1,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[2].id,
+        product_id: products[1].id, // Chips
+        quantity: 2,
+        slot_number: 2,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[2].id,
+        product_id: products[2].id, // Water
+        quantity: 4,
+        slot_number: 3,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[2].id,
+        product_id: products[3].id, // Kinder Bueno
+        quantity: 1,
+        slot_number: 4,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[2].id,
+        product_id: products[4].id, // Energy Bar
+        quantity: 5,
+        slot_number: 5,
+        max_capacity: 5,
+        low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
       },
@@ -476,40 +575,39 @@ async function main() {
 
   console.log('📦 Created pickup');
 
-  // Create some alerts based on low stock levels
+  // Create some alerts based on new stock configuration
   const alerts = await Promise.all([
-    // Alerte stock faible pour chips dans machine A1
-    prisma.alert.create({
-      data: {
-        machine_id: machines[0].id,
-        stock_id: stocks[1].id, // Lié au slot Chips
-        type: 'LOW_STOCK',
-        message: `Stock faible: Chips Classic (Slot 2) - ${stocks[1].quantity}/${stocks[1].max_capacity}`,
-        level: 'WARNING',
-        status: 'OPEN',
-        created_at: now,
-        metadata: {
-          slot_number: 2,
-          current_quantity: stocks[1].quantity,
-          threshold: stocks[1].low_threshold,
-          product_name: 'Chips Classic'
-        }
-      },
-    }),
-    // Alerte slot vide pour Kinder Bueno dans machine B2
+    // Alerte slots vides pour machine 2 (slots 3, 4, 5, 6 à 0)
     prisma.alert.create({
       data: {
         machine_id: machines[1].id,
-        stock_id: stocks[4].id, // Lié au slot Kinder Bueno (machine B2, slot 2)
+        stock_id: stocks[8].id, // Water slot (machine 2, slot 3)
         type: 'CRITICAL',
-        message: `Slot vide: Kinder Bueno (Slot 2) - Ravitaillement requis`,
+        message: `Slot vide: Water Bottle (Slot 3) - Ravitaillement requis`,
         level: 'ERROR',
         status: 'OPEN',
         created_at: now,
         metadata: {
-          slot_number: 2,
+          slot_number: 3,
           current_quantity: 0,
-          threshold: stocks[4].low_threshold,
+          threshold: stocks[8].low_threshold,
+          product_name: 'Water Bottle'
+        }
+      },
+    }),
+    prisma.alert.create({
+      data: {
+        machine_id: machines[1].id,
+        stock_id: stocks[9].id, // Kinder Bueno slot (machine 2, slot 4)
+        type: 'CRITICAL',
+        message: `Slot vide: Kinder Bueno (Slot 4) - Ravitaillement requis`,
+        level: 'ERROR',
+        status: 'OPEN',
+        created_at: now,
+        metadata: {
+          slot_number: 4,
+          current_quantity: 0,
+          threshold: stocks[9].low_threshold,
           product_name: 'Kinder Bueno'
         }
       },
@@ -545,24 +643,33 @@ async function main() {
     }),
   ]);
 
-  // Create restock items for the above restock
+  // Create restock items for the above restock (Machine 1)
   const restockItems = await Promise.all([
     prisma.restockItem.create({
       data: {
         restock_id: restocks[0].id,
-        stock_id: stocks[0].id, // Coca-Cola slot
-        quantity_before: 5,
-        quantity_after: 20,
-        quantity_added: 15,
+        stock_id: stocks[0].id, // Coca-Cola slot 1
+        quantity_before: 2,
+        quantity_after: 5,
+        quantity_added: 3,
       },
     }),
     prisma.restockItem.create({
       data: {
         restock_id: restocks[0].id,
-        stock_id: stocks[1].id, // Chips slot
-        quantity_before: 0,
-        quantity_after: 10,
-        quantity_added: 10,
+        stock_id: stocks[1].id, // Chips slot 2
+        quantity_before: 1,
+        quantity_after: 5,
+        quantity_added: 4,
+      },
+    }),
+    prisma.restockItem.create({
+      data: {
+        restock_id: restocks[0].id,
+        stock_id: stocks[2].id, // Water slot 3
+        quantity_before: 3,
+        quantity_after: 5,
+        quantity_added: 2,
       },
     }),
   ]);
@@ -574,21 +681,22 @@ async function main() {
   console.log(`- ${users.length} users created (1 admin, 1 operator, 3 customers)`);
   console.log(`- ${machines.length} machines created`);
   console.log(`- ${products.length} products created`);
-  console.log(`- ${stocks.length} stock entries created (incluant produit dupliqué)`);
+  console.log(`- ${stocks.length} stock entries created`);
   console.log(`- ${orders.length} orders created`);
   console.log(`- ${orderItems.length} order items created`);
   // Loyalty logs supprimés du seed
   console.log(`- 1 pickup created`);
-  console.log(`- ${alerts.length} alerts created (avec relations stock_id)`);
+  console.log(`- ${alerts.length} alerts created`);
   console.log(`- ${restocks.length} restocks created`);
   console.log(`- ${restockItems.length} restock items created`);
   console.log('\n🔑 Admin credentials:');
   console.log('Email: admin@vendingmachine.com');
   console.log('Password: admin123');
-  console.log('\n💡 Features demonstrated:');
-  console.log('- Same product on multiple slots (Coca-Cola on slots 1 & 4 of machine B2)');
-  console.log('- Stock-linked alerts (LOW_STOCK, EMPTY with stock_id)');
-  console.log('- Machine-only alerts (MACHINE_OFFLINE without stock_id)');
+  console.log('\n🤖 Machine Configuration:');
+  console.log('- Machine 1: 6 slots tous remplis (max_capacity=5)');
+  console.log('- Machine 2: 6 slots dont 2 remplis, 4 vides (slots 3-6 à quantity=0)');
+  console.log('- Machine 3: 5 slots avec quantités variables');
+  console.log('- Chaque slot: max_capacity=5, low_threshold=1 ou 2 (aléatoire)');
 }
 
 main()
