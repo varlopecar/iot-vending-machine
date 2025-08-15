@@ -4,10 +4,11 @@ import { z } from 'zod';
 import {
   createStockSchema,
   updateStockSchema,
+  addSlotSchema,
   stockSchema,
   stockWithProductSchema,
 } from './stocks.schema';
-import type { CreateStockInput, UpdateStockInput } from './stocks.schema';
+import type { CreateStockInput, UpdateStockInput, AddSlotInput } from './stocks.schema';
 
 @Router({ alias: 'stocks' })
 export class StocksRouter {
@@ -124,5 +125,21 @@ export class StocksRouter {
     @Input('quantity') quantity: number,
   ) {
     return this.stocksService.removeStockQuantity(id, quantity);
+  }
+
+  @Query({
+    input: z.object({ machine_id: z.string().min(1) }),
+    output: z.number().int().positive(),
+  })
+  getNextAvailableSlotNumber(@Input('machine_id') machineId: string) {
+    return this.stocksService.getNextAvailableSlotNumber(machineId);
+  }
+
+  @Mutation({
+    input: addSlotSchema,
+    output: stockSchema,
+  })
+  addSlot(@Input() slotData: AddSlotInput) {
+    return this.stocksService.addSlot(slotData);
   }
 }

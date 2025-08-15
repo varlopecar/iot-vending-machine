@@ -5,6 +5,7 @@ import {
   createMachineSchema,
   updateMachineSchema,
   machineSchema,
+  machineStatsSchema,
 } from './machines.schema';
 import type { CreateMachineInput, UpdateMachineInput } from './machines.schema';
 
@@ -65,6 +66,14 @@ export class MachinesRouter {
   }
 
   @Mutation({
+    input: z.object({ id: z.string().min(1) }),
+    output: z.boolean(),
+  })
+  deleteMachine(@Input('id') id: string) {
+    return this.machinesService.deleteMachine(id);
+  }
+
+  @Mutation({
     input: z.object({
       id: z.string().min(1),
       status: z.enum(['online', 'offline', 'maintenance', 'out_of_service']),
@@ -77,5 +86,20 @@ export class MachinesRouter {
     status: 'online' | 'offline' | 'maintenance' | 'out_of_service',
   ) {
     return this.machinesService.updateMachineStatus(id, status);
+  }
+
+  @Query({
+    input: z.object({ id: z.string().min(1) }),
+    output: machineStatsSchema,
+  })
+  getMachineStats(@Input('id') id: string) {
+    return this.machinesService.getMachineStats(id);
+  }
+
+  @Query({
+    output: z.array(machineStatsSchema),
+  })
+  getAllMachineStats() {
+    return this.machinesService.getAllMachineStats();
   }
 }

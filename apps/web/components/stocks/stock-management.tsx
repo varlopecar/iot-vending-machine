@@ -389,7 +389,7 @@ export function StockManagement() {
                       <Button
                         variant={
                           stock.status === "out_of_stock"
-                            ? "default"
+                            ? "secondary"
                             : "outline"
                         }
                         size="sm"

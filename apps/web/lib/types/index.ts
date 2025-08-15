@@ -57,3 +57,36 @@ export interface RevenueAnalytics {
 }
 
 export type Theme = 'light' | 'dark'
+
+// Types for Analytics page
+export interface PopularProduct {
+  productId: string
+  productName: string
+  totalSold: number
+  totalRevenueCents: number
+}
+
+export interface TopMachineRevenue {
+  machineId: string
+  machineLabel: string
+  location: string
+  totalRevenueCents: number
+  totalOrders: number
+}
+
+export interface CurrentMonthAnalytics {
+  currentMonth: string
+  popularProducts: PopularProduct[]
+  topMachinesByRevenue: TopMachineRevenue[]
+}
+
+export interface DashboardStats {
+  totalRevenueCents: number
+  revenueGrowthPercent: number
+  totalSales: number
+  salesGrowthPercent: number
+  totalMachines: number
+  onlineMachines: number
+  totalProducts: number
+  activeProducts: number
+}

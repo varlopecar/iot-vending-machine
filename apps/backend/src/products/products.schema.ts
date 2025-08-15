@@ -4,7 +4,12 @@ export const productSchema = z.object({
   id: z.string().min(1),
   name: z.string(),
   description: z.string(),
-  price: z.number().positive(),
+  // Prix de vente
+  price: z.number().min(0),
+  // Prix d'achat
+  purchase_price: z.number().min(0),
+  // Catégorie libre pour le back-office
+  category: z.string().min(1),
   ingredients: z.string(),
   ingredients_list: z.array(z.string()).optional(),
   allergens: z.string(),
@@ -19,23 +24,33 @@ export const productSchema = z.object({
       serving: z.string().optional(),
     })
     .optional(),
-  image_url: z.url(),
+  image_url: z.string(),
   is_active: z.boolean(),
 });
 
-export const createProductSchema = productSchema.omit({
-  id: true,
+// Données minimales requises côté back-office pour créer un produit
+export const createProductSchema = z.object({
+  name: z.string().min(1),
+  category: z.string().min(1),
+  price: z.number().positive(),
+  purchase_price: z.number().positive(),
+  // Optionnels
+  allergens_list: z.array(z.string()).optional(),
+  nutritional: z
+    .object({
+      calories: z.number().optional(),
+      protein: z.number().optional(),
+      carbs: z.number().optional(),
+      fat: z.number().optional(),
+      serving: z.string().optional(),
+    })
+    .optional(),
 });
 
 export const updateProductSchema = createProductSchema.partial();
 
-export const productCategorySchema = z.enum(['snack', 'drink']);
-
-export const productWithCategorySchema = productSchema.extend({
-  category: productCategorySchema.optional(),
-});
+// Catégories non contraintes côté backend pour rester flexible dans le back-office
 
 export type CreateProductInput = z.infer<typeof createProductSchema>;
 export type UpdateProductInput = z.infer<typeof updateProductSchema>;
 export type Product = z.infer<typeof productSchema>;
-export type ProductCategory = z.infer<typeof productCategorySchema>;

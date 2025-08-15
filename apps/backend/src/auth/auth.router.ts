@@ -4,12 +4,14 @@ import { z } from 'zod';
 import {
   createUserSchema,
   loginSchema,
+  adminLoginSchema,
   updateUserSchema,
   userSchema,
 } from './auth.schema';
 import type {
   CreateUserInput,
   LoginInput,
+  AdminLoginInput,
   UpdateUserInput,
 } from './auth.schema';
 
@@ -34,6 +36,17 @@ export class AuthRouter {
   })
   login(@Input() loginData: LoginInput) {
     return this.authService.login(loginData);
+  }
+
+  @Mutation({
+    input: adminLoginSchema,
+    output: z.object({
+      user: userSchema,
+      token: z.string(),
+    }),
+  })
+  adminLogin(@Input() loginData: AdminLoginInput) {
+    return this.authService.adminLogin(loginData);
   }
 
   @Query({

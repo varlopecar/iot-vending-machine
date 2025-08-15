@@ -35,24 +35,9 @@ const navigation = [
     icon: Monitor,
   },
   {
-    name: "Stocks",
-    href: "/stocks",
-    icon: Boxes,
-  },
-  {
-    name: "Commandes",
-    href: "/orders",
-    icon: ShoppingCart,
-  },
-  {
     name: "Statistiques",
     href: "/analytics",
     icon: BarChart3,
-  },
-  {
-    name: "Paramètres",
-    href: "/settings",
-    icon: Settings,
   },
 ];
 
@@ -106,7 +91,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         initial={false}
         animate={{
           x: isMobile ? (isOpen ? 0 : "-100%") : 0,
-          width: isMobile ? 256 : (isOpen ? 256 : 64),
+          width: isMobile ? 256 : isOpen ? 256 : 64,
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
@@ -115,15 +100,19 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       >
         <div className="flex h-full flex-col">
           {/* Logo - Clickable when collapsed on desktop */}
-          <div className={cn(
-            "flex h-16 items-center border-b border-light-border dark:border-dark-border",
-            isOpen ? "px-6" : "px-0 justify-center"
-          )}>
+          <div
+            className={cn(
+              "flex h-16 items-center border-b border-light-border dark:border-dark-border",
+              isOpen ? "px-6" : "px-0 justify-center"
+            )}
+          >
             <div
               className={cn(
                 "flex items-center",
                 isOpen ? "space-x-2" : "",
-                !isOpen && !isMobile && "cursor-pointer hover:opacity-80 transition-opacity"
+                !isOpen &&
+                  !isMobile &&
+                  "cursor-pointer hover:opacity-80 transition-opacity"
               )}
               onClick={!isOpen && !isMobile ? onToggle : undefined}
             >

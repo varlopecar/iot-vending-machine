@@ -9,7 +9,14 @@ import { Product } from "./product-card";
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (product: Omit<Product, "id" | "sold">) => void;
+  onAddProduct: (product: Omit<Product, "id" | "sold"> & {
+    allergens?: string;
+    calories?: string;
+    protein?: string;
+    carbs?: string;
+    fat?: string;
+    serving?: string;
+  }) => void;
 }
 
 const categories = ["Boissons", "Snacks", "Confiseries", "Sandwichs", "Autres"];
@@ -25,6 +32,12 @@ export function AddProductModal({
     price: "",
     cost: "",
     image: "",
+    allergens: "",
+    calories: "",
+    protein: "",
+    carbs: "",
+    fat: "",
+    serving: "",
   });
 
   const [errors, setErrors] = useState<Record<string, string>>({});
@@ -78,13 +91,11 @@ export function AddProductModal({
       newErrors.cost = "Le prix d'achat doit être un nombre positif";
     }
 
-    if (!formData.image.trim()) {
-      newErrors.image = "L'image du produit est requise";
-    }
+    // Image est optionnelle, on utilise une image par défaut
 
     // Check if cost is greater than price
-    if (!newErrors.price && !newErrors.cost && cost >= price) {
-      newErrors.cost = "Le prix d'achat doit être inférieur au prix de vente";
+                        if (!newErrors.price && !newErrors.cost && cost >= price) {
+      newErrors.cost = "Le prix d&apos;achat doit être inférieur au prix de vente";
     }
 
     setErrors(newErrors);
@@ -104,14 +115,20 @@ export function AddProductModal({
       const price = parseFloat(formData.price);
       const cost = parseFloat(formData.cost);
 
-      const newProduct: Omit<Product, "id" | "sold"> = {
+      const newProduct = {
         name: formData.name.trim(),
-        category: formData.category,
+        category: formData.category || "",
         price,
         cost,
         margin: price - cost,
         stock: 0, // Stock initial à 0
-        image: formData.image,
+        image: formData.image || "/assets/images/coca.png", // Image par défaut
+        allergens: formData.allergens,
+        calories: formData.calories,
+        protein: formData.protein,
+        carbs: formData.carbs,
+        fat: formData.fat,
+        serving: formData.serving,
       };
 
       await onAddProduct(newProduct);
@@ -123,6 +140,12 @@ export function AddProductModal({
         price: "",
         cost: "",
         image: "",
+        allergens: "",
+        calories: "",
+        protein: "",
+        carbs: "",
+        fat: "",
+        serving: "",
       });
 
       onClose();
@@ -303,6 +326,123 @@ export function AddProductModal({
                       {errors.cost}
                     </p>
                   )}
+                </div>
+              </div>
+
+              {/* Allergènes (optionnel) */}
+              <div>
+                <label
+                  htmlFor="product-allergens"
+                  className="block text-sm font-medium mb-1"
+                >
+                  Allergènes (optionnel)
+                </label>
+                <Input
+                  id="product-allergens"
+                  type="text"
+                  value={formData.allergens}
+                  onChange={(e) => handleInputChange("allergens", e.target.value)}
+                  placeholder="Ex: Gluten, Arachides, Lait (séparés par des virgules)"
+                  className="placeholder-gray"
+                />
+                <p className="text-xs text-light-textSecondary dark:text-dark-textSecondary mt-1">
+                  Séparez les allergènes par des virgules
+                </p>
+              </div>
+
+              {/* Valeurs nutritionnelles (optionnel) */}
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Valeurs nutritionnelles (optionnel)
+                </label>
+                <div className="grid grid-cols-2 gap-4">
+                  <div>
+                    <label
+                      htmlFor="product-calories"
+                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                    >
+                      Calories (kcal)
+                    </label>
+                    <Input
+                      id="product-calories"
+                      type="number"
+                      min="0"
+                      value={formData.calories}
+                      onChange={(e) => handleInputChange("calories", e.target.value)}
+                      placeholder="150"
+                      className="placeholder-gray"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="product-protein"
+                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                    >
+                      Protéines (g)
+                    </label>
+                    <Input
+                      id="product-protein"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.protein}
+                      onChange={(e) => handleInputChange("protein", e.target.value)}
+                      placeholder="2.5"
+                      className="placeholder-gray"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="product-carbs"
+                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                    >
+                      Glucides (g)
+                    </label>
+                    <Input
+                      id="product-carbs"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.carbs}
+                      onChange={(e) => handleInputChange("carbs", e.target.value)}
+                      placeholder="35"
+                      className="placeholder-gray"
+                    />
+                  </div>
+                  <div>
+                    <label
+                      htmlFor="product-fat"
+                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                    >
+                      Lipides (g)
+                    </label>
+                    <Input
+                      id="product-fat"
+                      type="number"
+                      step="0.1"
+                      min="0"
+                      value={formData.fat}
+                      onChange={(e) => handleInputChange("fat", e.target.value)}
+                      placeholder="0.2"
+                      className="placeholder-gray"
+                    />
+                  </div>
+                </div>
+                <div className="mt-3">
+                  <label
+                    htmlFor="product-serving"
+                    className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                  >
+                    Portion de référence
+                  </label>
+                  <Input
+                    id="product-serving"
+                    type="text"
+                    value={formData.serving}
+                    onChange={(e) => handleInputChange("serving", e.target.value)}
+                    placeholder="Ex: 100g, 33cl, 1 pièce"
+                    className="placeholder-gray"
+                  />
                 </div>
               </div>
 

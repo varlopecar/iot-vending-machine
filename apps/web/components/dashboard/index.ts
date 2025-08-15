@@ -1,3 +1,3 @@
-export { StatsCards } from './stats-cards'
-export { RecentOrders } from './recent-orders'
+export { Dashboard } from './dashboard'
+export { OverviewCards } from './overview-cards'
 export { MachineStatus } from './machine-status'

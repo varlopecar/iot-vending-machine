@@ -6,6 +6,8 @@ export const stockSchema = z.object({
   product_id: z.string().min(1),
   quantity: z.number().int().min(0),
   slot_number: z.number().int().positive(),
+  max_capacity: z.number().int().positive(),
+  low_threshold: z.number().int().min(0),
 });
 
 export const createStockSchema = stockSchema.omit({
@@ -13,6 +15,14 @@ export const createStockSchema = stockSchema.omit({
 });
 
 export const updateStockSchema = createStockSchema.partial();
+
+// Schéma pour ajouter un slot à une machine
+export const addSlotSchema = z.object({
+  machine_id: z.string().min(1),
+  product_id: z.string().min(1),
+  slot_number: z.number().int().positive(),
+  initial_quantity: z.number().int().min(0).default(0),
+});
 
 export const stockWithProductSchema = stockSchema.extend({
   product_name: z.string(),
@@ -33,5 +43,6 @@ export const stockWithProductSchema = stockSchema.extend({
 
 export type CreateStockInput = z.infer<typeof createStockSchema>;
 export type UpdateStockInput = z.infer<typeof updateStockSchema>;
+export type AddSlotInput = z.infer<typeof addSlotSchema>;
 export type Stock = z.infer<typeof stockSchema>;
 export type StockWithProduct = z.infer<typeof stockWithProductSchema>;

@@ -95,22 +95,15 @@ export function ProductCard({
         <CardContent className="space-y-4">
           {/* Image du produit */}
           <div className="relative h-32 w-full bg-light-tertiary dark:bg-dark-border rounded-lg overflow-hidden">
-            {product.image ? (
-              <Image
-                src={product.image}
-                alt={`Photo du produit ${product.name}`}
-                fill
-                className="object-contain"
-                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              />
-            ) : (
-              <div
-                className="flex items-center justify-center h-full text-light-textSecondary dark:text-dark-textSecondary"
-                aria-label="Aucune image disponible"
-              >
-                <Package className="h-8 w-8" />
-              </div>
-            )}
+            <Image
+              src="/assets/images/coca.png"
+              alt={`Photo du produit ${product.name}`}
+              width={200}
+              height={128}
+              className="object-contain w-full h-full"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              priority={false}
+            />
           </div>
 
           {/* Informations de prix */}

@@ -35,12 +35,17 @@ model Product {
   id                String  @id @default(cuid())
   name              String
   description       String
+  // Prix de vente
   price             Decimal @db.Decimal(10, 2)
+  // Prix d'achat (pour calcul de marge)
+  purchase_price    Decimal @db.Decimal(10, 2)
+  // Catégorie du produit
+  category          String
   sku               String? // Nouveau: identifiant unique produit pour import CSV
   ingredients       String
   ingredients_list  String[]  // Liste structurée des ingrédients
   allergens         String
-  allergens_list    String[]  // Liste structurée des allergènes
+  allergens_list    String[] @default([]) // Liste structurée des allergènes (optionnelle côté métier)
   nutritional_value String
   nutritional       Json?     // Valeurs nutritionnelles structurées {calories, protein, carbs, fat}
   image_url         String
@@ -52,6 +57,7 @@ model Product {
   order_items OrderItem[]
 
   @@unique([sku]) // SKU doit être unique si fourni
+  @@index([category])
   @@map("products")
 }
 
@@ -59,7 +65,8 @@ model Machine {
   id           String        @id @default(cuid())
   location     String
   label        String
-  status       MachineStatus @default(ONLINE)
+  contact      String?
+  status       MachineStatus @default(OFFLINE)
   last_sync_at String?       // Nouveau: dernière synchronisation pour affichage online/offline
   created_at   String        @default(dbgenerated("now()::text"))
   last_update  String        @default(dbgenerated("now()::text"))
@@ -130,7 +137,7 @@ model Order {
   stripe_payment_intent_id  String?     @unique // ID de l'intention de paiement Stripe
   paid_at                   String?     // Timestamp du paiement réussi
   receipt_url               String?     // URL du reçu Stripe
-
+  
   // Fidélité (source de vérité au niveau de la commande)
   points_spent              Int         @default(0)
   points_earned             Int         @default(0)
@@ -296,6 +303,7 @@ model Alert {
   message    String?
   level      AlertLevel  @default(WARNING)
   status     AlertStatus @default(OPEN)
+  is_active  Boolean     @default(true) // Pour déduplication: une seule alerte active par machine/type
   created_at String      @default(dbgenerated("now()::text"))
   resolved_at String?    // Quand l'alerte a été résolue
   
@@ -309,6 +317,7 @@ model Alert {
   @@index([machine_id, status, created_at(sort: Desc)])
   @@index([type, status])
   @@index([stock_id, status])
+  @@index([machine_id, type, is_active]) // Pour déduplication
   @@map("alerts")
 }
 
@@ -320,8 +329,9 @@ enum UserRole {
 }
 
 enum AlertType {
-  LOW_STOCK    // Stock faible
-  EMPTY        // Slot vide
+  LOW_STOCK    // Stock faible (≥50% des slots sous le seuil critique)
+  CRITICAL     // Stock critique (≥1 slot vide)
+  INCOMPLETE   // Machine incomplète (slots non configurés)
   MACHINE_OFFLINE // Machine hors ligne
   MAINTENANCE_REQUIRED // Maintenance requise
 }
@@ -359,3 +369,4 @@ enum PickupStatus {
   COMPLETED
   FAILED
 }
+
