@@ -7,6 +7,7 @@ export { default as TabBarSpacer } from './TabBarSpacer';
 export { default as ProfileAvatar } from './ProfileAvatar';
 export { default as UserInfo } from './UserInfo';
 export { default as IdentifierCard } from './IdentifierCard';
+export { default as RealBarcode } from './RealBarcode';
 export { default as SettingsSection } from './SettingsSection';
 export { default as SettingsItem } from './SettingsItem';
 export { default as Header } from './Header';

@@ -1,10 +1,11 @@
 import React, { useCallback, RefObject } from "react";
-import { View, Text, TouchableOpacity, Dimensions } from "react-native";
+import { View, Text, TouchableOpacity } from "react-native";
 import BottomSheet, {
   BottomSheetView,
   BottomSheetBackdrop,
 } from "@gorhom/bottom-sheet";
-import { Image } from "expo-image";
+import { AuthUser } from "../../lib/api";
+import IdentifierCard from "./IdentifierCard";
 
 interface BottomSheetBarcodeProps {
   isDark: boolean;
@@ -13,6 +14,7 @@ interface BottomSheetBarcodeProps {
   snapPoints: (string | number)[];
   onChange: (index: number) => void;
   onClosePress: () => void;
+  user: AuthUser | null; // Ajout de l'utilisateur
 }
 
 export function BottomSheetBarcode({
@@ -22,6 +24,7 @@ export function BottomSheetBarcode({
   snapPoints,
   onChange,
   onClosePress,
+  user,
 }: BottomSheetBarcodeProps) {
   const renderBackdrop = useCallback(
     (props: any) => (
@@ -34,9 +37,6 @@ export function BottomSheetBarcode({
     ),
     []
   );
-
-  const { height } = Dimensions.get("window");
-  const imageHeight = height * 0.3;
 
   return (
     <BottomSheet
@@ -73,17 +73,24 @@ export function BottomSheetBarcode({
           <View className="w-8" />
         </View>
         <View className="flex-1 px-6 pb-6">
-          <View
-            className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg items-center justify-center flex-1`}
-            style={{ padding: 20 }}
-          >
-            <Image
-              source={require("../../assets/images/barcode.jpg")}
-              style={{ width: "100%", height: imageHeight }}
-              contentFit="contain"
-              cachePolicy="memory-disk"
-              transition={200}
-            />
+          <View className="flex-1 justify-center">
+            {user?.barcode ? (
+              <IdentifierCard
+                identifier={user.barcode}
+                onCopy={() => console.log('Code-barres copié:', user.barcode)}
+                showCopyButton={true}
+              />
+            ) : (
+              <View
+                className={`${isDark ? "bg-dark-border" : "bg-light-border"} rounded-lg items-center justify-center flex-1 p-8`}
+              >
+                <Text
+                  className={`${isDark ? "text-dark-text" : "text-light-text"} text-center text-lg`}
+                >
+                  Aucun code-barres disponible
+                </Text>
+              </View>
+            )}
           </View>
         </View>
       </BottomSheetView>
