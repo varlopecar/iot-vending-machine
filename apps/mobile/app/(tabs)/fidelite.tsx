@@ -193,6 +193,7 @@ export default function FideliteScreen() {
           snapPoints={snapPoints}
           onChange={handleSheetChanges}
           onClosePress={handleClosePress}
+          user={user}
         />
       </View>
     </SafeContainer>

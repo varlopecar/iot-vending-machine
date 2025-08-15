@@ -2,6 +2,7 @@ import React from 'react';
 import { View, Text, TouchableOpacity } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useTailwindTheme } from '../../hooks/useTailwindTheme';
+import RealBarcode from './RealBarcode';
 
 interface IdentifierCardProps {
   identifier: string;
@@ -26,22 +27,17 @@ export default function IdentifierCard({
 
   return (
     <View className={`${isDark ? 'bg-white' : 'bg-white'} rounded-2xl p-4 shadow-sm`}>
-      {/* Code-barres simulé */}
-      <View className="h-12 mb-3">
-        <View className="flex-row h-full items-center justify-center">
-          {identifier.split('').map((char, index) => (
-            <View
-              key={index}
-              className={`h-full w-0.5 mx-0.5 ${
-                char === ' ' ? 'bg-transparent' : 'bg-black'
-              }`}
-              style={{
-                height: char === ' ' ? '50%' : '100%',
-                opacity: char === ' ' ? 0 : 1
-              }}
-            />
-          ))}
-        </View>
+      {/* Code-barres réel */}
+      <View className="mb-3 items-center justify-center">
+        <RealBarcode
+          value={identifier}
+          width={2}
+          height={60}
+          format="CODE128"
+          displayValue={false}
+          lineColor="#000000"
+          background="#FFFFFF"
+        />
       </View>
       
       {/* Identifiant numérique */}
