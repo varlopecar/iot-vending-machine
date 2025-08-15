@@ -655,6 +655,169 @@ const appRouter = t.router({
       low_threshold: z.number().int().min(0),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
+  alerts: t.router({
+    getActiveAlerts: publicProcedure.output(z.array(z.object({
+      id: z.string(),
+      machine_id: z.string(),
+      stock_id: z.string().nullable(),
+      type: z.enum(['LOW_STOCK', 'CRITICAL', 'INCOMPLETE', 'MACHINE_OFFLINE', 'MAINTENANCE_REQUIRED']),
+      message: z.string().nullable(),
+      level: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']),
+      status: z.enum(['OPEN', 'RESOLVED', 'IGNORED']),
+      is_active: z.boolean(),
+      created_at: z.string(),
+      resolved_at: z.string().nullable(),
+      metadata: z.any().nullable(),
+    }).extend({
+      machine: z.object({
+        id: z.string(),
+        label: z.string(),
+        location: z.string(),
+        contact: z.string().nullable(),
+        status: z.enum(['ONLINE', 'OFFLINE', 'MAINTENANCE', 'OUT_OF_SERVICE']),
+      }),
+      stock: z.object({
+        id: z.string(),
+        slot_number: z.number(),
+        quantity: z.number(),
+        max_capacity: z.number(),
+        low_threshold: z.number(),
+        product: z.object({
+          id: z.string(),
+          name: z.string(),
+          image_url: z.string(),
+        }),
+      }).nullable(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getMachineAlerts: publicProcedure.input(z.object({ machineId: z.string() })).output(z.array(z.object({
+      id: z.string(),
+      machine_id: z.string(),
+      stock_id: z.string().nullable(),
+      type: z.enum(['LOW_STOCK', 'CRITICAL', 'INCOMPLETE', 'MACHINE_OFFLINE', 'MAINTENANCE_REQUIRED']),
+      message: z.string().nullable(),
+      level: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']),
+      status: z.enum(['OPEN', 'RESOLVED', 'IGNORED']),
+      is_active: z.boolean(),
+      created_at: z.string(),
+      resolved_at: z.string().nullable(),
+      metadata: z.any().nullable(),
+    }).extend({
+      machine: z.object({
+        id: z.string(),
+        label: z.string(),
+        location: z.string(),
+        contact: z.string().nullable(),
+        status: z.enum(['ONLINE', 'OFFLINE', 'MAINTENANCE', 'OUT_OF_SERVICE']),
+      }),
+      stock: z.object({
+        id: z.string(),
+        slot_number: z.number(),
+        quantity: z.number(),
+        max_capacity: z.number(),
+        low_threshold: z.number(),
+        product: z.object({
+          id: z.string(),
+          name: z.string(),
+          image_url: z.string(),
+        }),
+      }).nullable(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getMachineAlertStatus: publicProcedure.input(z.object({ machineId: z.string() })).output(z.object({
+      machineId: z.string(),
+      alertType: z.enum(['LOW_STOCK', 'CRITICAL', 'INCOMPLETE', 'MACHINE_OFFLINE', 'MAINTENANCE_REQUIRED']).nullable(),
+      alertLevel: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']).nullable(),
+      configuredSlots: z.number(),
+      totalSlots: z.number(),
+      emptySlots: z.number(),
+      lowStockSlots: z.number(),
+      slotsAtThreshold: z.number(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getAlertsSummaryByMachine: publicProcedure.output(z.array(z.object({
+      id: z.string(),
+      machine_id: z.string(),
+      stock_id: z.string().nullable(),
+      type: z.enum(['LOW_STOCK', 'CRITICAL', 'INCOMPLETE', 'MACHINE_OFFLINE', 'MAINTENANCE_REQUIRED']),
+      message: z.string().nullable(),
+      level: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']),
+      status: z.enum(['OPEN', 'RESOLVED', 'IGNORED']),
+      is_active: z.boolean(),
+      created_at: z.string(),
+      resolved_at: z.string().nullable(),
+      metadata: z.any().nullable(),
+    }).extend({
+      machine: z.object({
+        id: z.string(),
+        label: z.string(),
+        location: z.string(),
+        contact: z.string().nullable(),
+        status: z.enum(['ONLINE', 'OFFLINE', 'MAINTENANCE', 'OUT_OF_SERVICE']),
+      }),
+      stock: z.object({
+        id: z.string(),
+        slot_number: z.number(),
+        quantity: z.number(),
+        max_capacity: z.number(),
+        low_threshold: z.number(),
+        product: z.object({
+          id: z.string(),
+          name: z.string(),
+          image_url: z.string(),
+        }),
+      }).nullable(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getAlertsSummary: publicProcedure.output(z.object({
+      totalAlerts: z.number(),
+      criticalAlerts: z.number(),
+      lowStockAlerts: z.number(),
+      incompleteAlerts: z.number(),
+      alertsByMachine: z.array(z.object({
+        id: z.string(),
+        machine_id: z.string(),
+        stock_id: z.string().nullable(),
+        type: z.enum(['LOW_STOCK', 'CRITICAL', 'INCOMPLETE', 'MACHINE_OFFLINE', 'MAINTENANCE_REQUIRED']),
+        message: z.string().nullable(),
+        level: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']),
+        status: z.enum(['OPEN', 'RESOLVED', 'IGNORED']),
+        is_active: z.boolean(),
+        created_at: z.string(),
+        resolved_at: z.string().nullable(),
+        metadata: z.any().nullable(),
+      }).extend({
+        machine: z.object({
+          id: z.string(),
+          label: z.string(),
+          location: z.string(),
+          contact: z.string().nullable(),
+          status: z.enum(['ONLINE', 'OFFLINE', 'MAINTENANCE', 'OUT_OF_SERVICE']),
+        }),
+        stock: z.object({
+          id: z.string(),
+          slot_number: z.number(),
+          quantity: z.number(),
+          max_capacity: z.number(),
+          low_threshold: z.number(),
+          product: z.object({
+            id: z.string(),
+            name: z.string(),
+            image_url: z.string(),
+          }),
+        }).nullable(),
+      })),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    updateMachineAlerts: publicProcedure.input(z.object({ machineId: z.string() })).output(z.object({ success: z.boolean(), message: z.string() })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    resolveAlert: publicProcedure.input(z.object({ alertId: z.string() })).output(z.object({ success: z.boolean(), message: z.string() })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    recalculateAllAlerts: publicProcedure.output(z.object({
+      success: z.boolean(),
+      message: z.string(),
+      machinesProcessed: z.number(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    cleanupDuplicateAlerts: publicProcedure.output(z.object({
+      success: z.boolean(),
+      message: z.string(),
+      cleaned: z.number(),
+      machinesProcessed: z.number(),
+    })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
   loyalty: t.router({
     getCurrentPoints: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.number()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getLoyaltyHistory: publicProcedure.input(z.object({ user_id: z.string().min(1) })).output(z.array(z.object({
@@ -1027,6 +1190,7 @@ const appRouter = t.router({
       }).extend({
         slot_number: z.number().int().positive(),
         product_name: z.string(),
+        type: z.enum(['addition', 'removal']).optional(),
         product_image_url: z.string().optional(),
       })),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -1048,6 +1212,7 @@ const appRouter = t.router({
       }).extend({
         slot_number: z.number().int().positive(),
         product_name: z.string(),
+        type: z.enum(['addition', 'removal']).optional(),
         product_image_url: z.string().optional(),
       })),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -1077,6 +1242,7 @@ const appRouter = t.router({
       }).extend({
         slot_number: z.number().int().positive(),
         product_name: z.string(),
+        type: z.enum(['addition', 'removal']).optional(),
         product_image_url: z.string().optional(),
       })),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -1102,6 +1268,7 @@ const appRouter = t.router({
       }).extend({
         slot_number: z.number().int().positive(),
         product_name: z.string(),
+        type: z.enum(['addition', 'removal']).optional(),
         product_image_url: z.string().optional(),
       })),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -1127,6 +1294,7 @@ const appRouter = t.router({
       }).extend({
         slot_number: z.number().int().positive(),
         product_name: z.string(),
+        type: z.enum(['addition', 'removal']).optional(),
         product_image_url: z.string().optional(),
       })),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
@@ -1153,6 +1321,7 @@ const appRouter = t.router({
       }).extend({
         slot_number: z.number().int().positive(),
         product_name: z.string(),
+        type: z.enum(['addition', 'removal']).optional(),
         product_image_url: z.string().optional(),
       })),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)

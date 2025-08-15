@@ -32,6 +32,7 @@ export const restockWithItemsSchema = restockSchema.extend({
   items: z.array(restockItemSchema.extend({
     slot_number: z.number().int().positive(),
     product_name: z.string(),
+    type: z.enum(['addition', 'removal']).optional(),
     product_image_url: z.string().optional(),
   })),
 });

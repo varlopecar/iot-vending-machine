@@ -19,6 +19,7 @@ import { CardPaymentModule } from './card-payment/card-payment.module';
 import { OrderValidationModule } from './order-validation/order-validation.module';
 import { OrderDeliveryModule } from './order-delivery/order-delivery.module';
 import { RestocksModule } from './restocks/restocks.module';
+import { AlertsModule } from './alerts/alerts.module';
 import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middleware';
 
 @Module({
@@ -45,6 +46,7 @@ import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middl
     OrderValidationModule,
     OrderDeliveryModule,
     RestocksModule,
+    AlertsModule,
   ],
   controllers: [],
   providers: [],

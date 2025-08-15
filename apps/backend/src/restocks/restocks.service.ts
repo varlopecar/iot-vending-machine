@@ -1,10 +1,14 @@
 import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { AlertsService } from '../alerts/alerts.service';
 import { CreateRestockInput, RestockToMaxInput, RestockSlotToMaxInput, ManualRestockInput, RestockWithItems } from './restocks.schema';
 
 @Injectable()
 export class RestocksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly alertsService: AlertsService,
+  ) {}
 
   /**
    * Crée un restock avec les quantités spécifiées
@@ -103,7 +107,7 @@ export class RestocksService {
           quantity_before: restockItem.quantity_before,
           quantity_after: restockItem.quantity_after,
           quantity_added: restockItem.quantity_added,
-          type: restockItem.quantity_added >= 0 ? 'addition' : 'removal',
+          type: restockItem.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
           slot_number: stock.slot_number,
           product_name: stock.product.name,
           product_image_url: stock.product.image_url,
@@ -121,6 +125,13 @@ export class RestocksService {
       notes: result.restock.notes || undefined,
       items: result.items,
     };
+    
+    // Déclencher la mise à jour des alertes pour la machine après le restock
+    try {
+      await this.alertsService.updateMachineAlerts(restockData.machine_id);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+    }
   }
 
   /**
@@ -209,15 +220,14 @@ export class RestocksService {
             },
           });
 
-        restockItems.push({
+          restockItems.push({
             id: restockItem.id,
             restock_id: restockItem.restock_id,
             stock_id: restockItem.stock_id,
             quantity_before: restockItem.quantity_before,
             quantity_after: restockItem.quantity_after,
             quantity_added: restockItem.quantity_added,
-          type: (restockItem.quantity_added >= 0 ? 'addition' : 'removal') as 'addition' | 'removal',
-          slot_number: stock.slot_number,
+            slot_number: stock.slot_number,
             product_name: stock.product.name,
             product_image_url: stock.product.image_url,
           });
@@ -226,6 +236,13 @@ export class RestocksService {
 
       return { restock, items: restockItems };
     });
+
+    // Déclencher la mise à jour des alertes pour la machine après le restock
+    try {
+      await this.alertsService.updateMachineAlerts(restockData.machine_id);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+    }
 
     return {
       id: result.restock.id,
@@ -269,7 +286,7 @@ export class RestocksService {
         quantity_before: item.quantity_before,
         quantity_after: item.quantity_after,
         quantity_added: item.quantity_added,
-        type: item.quantity_added >= 0 ? 'addition' : 'removal',
+        type: item.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
         slot_number: item.stock.slot_number,
         product_name: item.stock.product.name,
         product_image_url: item.stock.product.image_url,
@@ -309,7 +326,7 @@ export class RestocksService {
         quantity_before: item.quantity_before,
         quantity_after: item.quantity_after,
         quantity_added: item.quantity_added,
-          type: item.quantity_added >= 0 ? 'addition' : 'removal',
+          type: item.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
         slot_number: item.stock.slot_number,
         product_name: item.stock.product.name,
         product_image_url: item.stock.product.image_url,
@@ -391,7 +408,7 @@ export class RestocksService {
             quantity_before: restockItem.quantity_before,
             quantity_after: restockItem.quantity_after,
             quantity_added: restockItem.quantity_added,
-            type: restockItem.quantity_added >= 0 ? 'addition' : 'removal',
+            type: restockItem.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
             slot_number: stock.slot_number,
             product_name: stock.product.name,
             product_image_url: stock.product.image_url,
@@ -400,13 +417,20 @@ export class RestocksService {
       };
     });
 
+    // Déclencher la mise à jour des alertes pour la machine après le restock
+    try {
+      await this.alertsService.updateMachineAlerts(stock.machine_id);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+    }
+
     return {
       id: result.restock.id,
       machine_id: result.restock.machine_id,
       user_id: result.restock.user_id,
       created_at: result.restock.created_at,
       notes: result.restock.notes || undefined,
-        items: result.items,
+      items: result.items,
     };
   }
 
@@ -493,6 +517,15 @@ export class RestocksService {
         ],
       };
     });
+
+    // Déclencher la mise à jour des alertes pour la machine après le restock
+    try {
+      if (stock) {
+        await this.alertsService.updateMachineAlerts(stock.machine_id);
+      }
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+    }
 
     return {
       id: result.restock.id,

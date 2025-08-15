@@ -28,6 +28,7 @@ import {
 } from "../ui";
 import { api } from "../../lib/trpc/client";
 import { AddMachineModal } from "./add-machine-modal";
+import { MachineAlertBadge } from "./machine-alert-badge";
 
 // MachineData dérivé directement des retours tRPC
 
@@ -75,6 +76,10 @@ export function MachineList() {
   // Stats agrégées (revenus, stocks)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const { data: stats } = (api as any).machines.getAllMachineStats.useQuery();
+
+  // Récupération des alertes par machine
+  const { data: alertsSummary } =
+    api.alerts.getAlertsSummaryByMachine.useQuery();
 
   type MachineStat = {
     machine_id: string;
@@ -298,6 +303,11 @@ export function MachineList() {
           const stat = (stats as MachineStat[] | undefined)?.find(
             (s) => s.machine_id === machine.id
           );
+
+          // Récupérer l'alerte pour cette machine
+          const machineAlert = alertsSummary?.find(
+            (alert) => alert.machine_id === machine.id
+          );
           const revenueTotal = (stat?.revenueTotalCents || 0) / 100;
           const revenue30d = (stat?.revenueLast30dCents || 0) / 100;
           const revenueValue = revenue30d;
@@ -357,12 +367,17 @@ export function MachineList() {
                             />
                             {statusInfo.label}
                           </Badge>
-                          {(statsById.get(machine.id)?.totalSlots || 0) < 6 && (
-                            <div className="inline-flex items-center gap-1 text-xs text-yellow-800 bg-yellow-50 border border-yellow-200 rounded px-2 py-1">
-                              <AlertTriangle className="h-3 w-3" />
-                              Incomplète
-                            </div>
-                          )}
+                          <MachineAlertBadge
+                            alertType={
+                              machineAlert?.type as
+                                | "CRITICAL"
+                                | "LOW_STOCK"
+                                | "INCOMPLETE"
+                                | "MACHINE_OFFLINE"
+                                | "MAINTENANCE_REQUIRED"
+                                | null
+                            }
+                          />
                         </div>
                         {/* pas d'info connectivité réelle pour l'instant */}
                       </div>

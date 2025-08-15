@@ -74,13 +74,11 @@ export function OverviewCards() {
                   card.value
                 )}
               </div>
-              <p className="text-xs text-gray-600 mt-1">
-                {card.loading ? (
-                  <div className="h-3 w-20 bg-gray-200 rounded animate-pulse"></div>
-                ) : (
-                  card.description
-                )}
-              </p>
+              {card.loading ? (
+                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse mt-1"></div>
+              ) : (
+                <p className="text-xs text-gray-600 mt-1">{card.description}</p>
+              )}
             </CardContent>
           </Card>
         );

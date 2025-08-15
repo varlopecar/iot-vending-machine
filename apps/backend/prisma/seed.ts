@@ -491,7 +491,7 @@ async function main() {
       data: {
         machine_id: machines[1].id,
         stock_id: stocks[4].id, // Lié au slot Kinder Bueno (machine B2, slot 2)
-        type: 'EMPTY',
+        type: 'CRITICAL',
         message: `Slot vide: Kinder Bueno (Slot 2) - Ravitaillement requis`,
         level: 'ERROR',
         status: 'OPEN',

@@ -8,10 +8,14 @@ import {
   StockWithProduct,
 } from './stocks.schema';
 import { PrismaService } from '../prisma/prisma.service';
+import { AlertsService } from '../alerts/alerts.service';
 
 @Injectable()
 export class StocksService {
-  constructor(private readonly prisma: PrismaService) {}
+  constructor(
+    private readonly prisma: PrismaService,
+    private readonly alertsService: AlertsService,
+  ) {}
 
   async createStock(stockData: CreateStockInput): Promise<Stock> {
     const stock = await this.prisma.stock.create({
@@ -104,6 +108,16 @@ export class StocksService {
               await tx.stock.update({ where: { id }, data: { ...updateData, quantity: newQuantity } });
             });
             const updated = await this.prisma.stock.findUnique({ where: { id } });
+            
+            // Déclencher la mise à jour des alertes pour la machine
+            try {
+              if (updated) {
+                await this.alertsService.updateMachineAlerts(updated.machine_id);
+              }
+            } catch (error) {
+              console.error('Erreur lors de la mise à jour des alertes:', error);
+            }
+            
             return this.mapStock(updated);
           }
         }
@@ -113,6 +127,14 @@ export class StocksService {
         where: { id },
         data: updateData,
       });
+      
+      // Déclencher la mise à jour des alertes pour la machine
+      try {
+        await this.alertsService.updateMachineAlerts(stock.machine_id);
+      } catch (error) {
+        console.error('Erreur lors de la mise à jour des alertes:', error);
+      }
+      
       return this.mapStock(stock);
     } catch (err) {
       // Ne pas masquer les erreurs de validation en NotFound
@@ -138,6 +160,14 @@ export class StocksService {
       });
     }
     const updated = await this.prisma.stock.update({ where: { id }, data: { quantity } });
+    
+    // Déclencher la mise à jour des alertes pour la machine
+    try {
+      await this.alertsService.updateMachineAlerts(updated.machine_id);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des alertes:', error);
+    }
+    
     return this.mapStock(updated);
   }
 
@@ -263,6 +293,13 @@ export class StocksService {
         where: { id: slotData.machine_id },
         data: { status: 'ONLINE' },
       });
+    }
+
+    // Déclencher la mise à jour des alertes pour la machine après ajout de slot
+    try {
+      await this.alertsService.updateMachineAlerts(slotData.machine_id);
+    } catch (error) {
+      console.error('Erreur lors de la mise à jour des alertes après ajout de slot:', error);
     }
 
     return this.mapStock(stock);

@@ -131,6 +131,11 @@ model Order {
   stripe_payment_intent_id  String?     @unique // ID de l'intention de paiement Stripe
   paid_at                   String?     // Timestamp du paiement réussi
   receipt_url               String?     // URL du reçu Stripe
+  
+  // Champs de fidélité
+  loyalty_applied           Boolean?    // Si la fidélité a été appliquée
+  points_earned             Int?        // Points gagnés avec cette commande
+  points_spent              Int?        // Points dépensés avec cette commande
 
   // Fidélité (source de vérité au niveau de la commande)
   points_spent              Int         @default(0)
@@ -297,6 +302,7 @@ model Alert {
   message    String?
   level      AlertLevel  @default(WARNING)
   status     AlertStatus @default(OPEN)
+  is_active  Boolean     @default(true) // Pour déduplication: une seule alerte active par machine/type
   created_at String      @default(dbgenerated("now()::text"))
   resolved_at String?    // Quand l'alerte a été résolue
   
@@ -310,6 +316,7 @@ model Alert {
   @@index([machine_id, status, created_at(sort: Desc)])
   @@index([type, status])
   @@index([stock_id, status])
+  @@index([machine_id, type, is_active]) // Pour déduplication
   @@map("alerts")
 }
 
@@ -321,8 +328,9 @@ enum UserRole {
 }
 
 enum AlertType {
-  LOW_STOCK    // Stock faible
-  EMPTY        // Slot vide
+  LOW_STOCK    // Stock faible (≥50% des slots sous le seuil critique)
+  CRITICAL     // Stock critique (≥1 slot vide)
+  INCOMPLETE   // Machine incomplète (slots non configurés)
   MACHINE_OFFLINE // Machine hors ligne
   MAINTENANCE_REQUIRED // Maintenance requise
 }

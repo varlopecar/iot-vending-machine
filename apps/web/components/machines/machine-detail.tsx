@@ -24,6 +24,7 @@ import { EmptySlotCard } from "./empty-slot-card";
 import { AddSlotModal } from "./add-slot-modal";
 import { EditSlotModal } from "./edit-slot-modal";
 import { MachineSettingsModal } from "./machine-settings-modal";
+import { MachineAlertBadge } from "./machine-alert-badge";
 import { MachineRestockHistory } from "./machine-restock-history";
 import { api } from "../../lib/trpc/client";
 
@@ -82,6 +83,11 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     error: slotsError,
     refetch: refetchSlots,
   } = api.stocks.getStocksByMachine.useQuery({ machine_id: machineId });
+
+  // Récupération des alertes de la machine
+  const { data: machineAlerts } = api.alerts.getMachineAlerts.useQuery({
+    machineId,
+  });
 
   // Mutation pour ravitailler une machine au maximum
   const restockToMaxMutation = api.restocks.restockToMax.useMutation({
@@ -222,11 +228,28 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             )}
           </div>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-wrap">
           <Badge variant={statusInfo.variant}>
             <StatusIcon className="w-3 h-3 mr-1" />
             {statusInfo.label}
           </Badge>
+          {machineAlerts && machineAlerts.length > 0 && (
+            <div className="flex gap-1 flex-wrap">
+              {machineAlerts.map((alert) => (
+                <MachineAlertBadge
+                  key={alert.id}
+                  alertType={
+                    alert.type as
+                      | "CRITICAL"
+                      | "LOW_STOCK"
+                      | "INCOMPLETE"
+                      | "MACHINE_OFFLINE"
+                      | "MAINTENANCE_REQUIRED"
+                  }
+                />
+              ))}
+            </div>
+          )}
           <Button
             variant="outline"
             size="sm"
