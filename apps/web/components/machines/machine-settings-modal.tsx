@@ -146,18 +146,21 @@ export function MachineSettingsModal({
             />
           </div>
 
-          <div className="flex justify-between pt-4">
+          <div className="space-y-3 pt-4">
+            {/* Bouton Supprimer prend toute la ligne */}
             <Button
               type="button"
               variant="destructive"
               onClick={handleDelete}
               disabled={deleteMutation.isPending}
+              className="w-full"
             >
               {deleteMutation.isPending
                 ? "Suppression..."
                 : "Supprimer la machine"}
             </Button>
-            <div className="space-x-3">
+            {/* Boutons Annuler et Enregistrer sur une ligne, chacun la moitié */}
+            <div className="grid grid-cols-2 gap-3">
               <Button
                 type="button"
                 variant="outline"

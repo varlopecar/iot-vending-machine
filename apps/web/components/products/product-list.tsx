@@ -109,7 +109,7 @@ const getLocalImagePath = (productName: string): string => {
   }
 };
 
-// Fonction pour calculer des métriques simulées basées sur les données réelles
+// Fonction pour calculer des métriques basées sur les données réelles du backend
 const getProductMetrics = (product: any): ProductWithMetrics => {
   const seed = product.id.charCodeAt(product.id.length - 1);
   const price = Number(product.price);
@@ -123,8 +123,8 @@ const getProductMetrics = (product: any): ProductWithMetrics => {
     category: product.category ?? generateCategory(product.name),
     cost: Number(purchasePrice.toFixed(2)),
     margin: Number((price - purchasePrice).toFixed(2)),
-    stock: Math.max(0, 150 - (seed % 120)),
-    sold: 20 + (seed % 100),
+    stock: Math.max(0, 150 - (seed % 120)), // Toujours simulé pour le stock
+    sold: product.soldCount || 0, // Utilise les vraies données de vente du backend
     allergens_list: product.allergens_list || [],
     nutritional: product.nutritional || undefined,
   };
@@ -144,7 +144,7 @@ export function ProductList() {
     isLoading,
     error,
     refetch,
-  } = api.products.getAllProducts.useQuery();
+  } = api.products.getAllProductsWithStats.useQuery();
 
   // Mutations
   const createProduct = api.products.createProduct.useMutation({

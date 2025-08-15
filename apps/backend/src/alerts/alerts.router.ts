@@ -49,7 +49,7 @@ export class AlertsRouter {
     const alertsByMachine = await this.alertsService.getAlertsSummaryByMachine();
     
     const summary = {
-      totalAlerts: alerts.length,
+      totalAlerts: alerts.filter((a: any) => a.type !== 'INCOMPLETE').length,
       criticalAlerts: alerts.filter((a: any) => a.type === 'CRITICAL').length,
       lowStockAlerts: alerts.filter((a: any) => a.type === 'LOW_STOCK').length,
       incompleteAlerts: alerts.filter((a: any) => a.type === 'INCOMPLETE').length,

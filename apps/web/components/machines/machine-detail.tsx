@@ -235,11 +235,14 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           </Badge>
           {machineAlerts && machineAlerts.length > 0 && (
             <div className="flex gap-1 flex-wrap">
-              {machineAlerts.map((alert) => (
+              {/* Regrouper les alertes par type pour éviter les doublons */}
+              {Array.from(
+                new Set(machineAlerts.map((alert) => alert.type))
+              ).map((alertType) => (
                 <MachineAlertBadge
-                  key={alert.id}
+                  key={alertType}
                   alertType={
-                    alert.type as
+                    alertType as
                       | "CRITICAL"
                       | "LOW_STOCK"
                       | "INCOMPLETE"

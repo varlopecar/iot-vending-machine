@@ -10,7 +10,13 @@ import {
 } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
-import { AlertTriangle, AlertCircle, XCircle, MapPin, ExternalLink } from "lucide-react";
+import {
+  AlertTriangle,
+  AlertCircle,
+  XCircle,
+  MapPin,
+  ExternalLink,
+} from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
 
@@ -36,7 +42,11 @@ const alertTypeConfig = {
 } as const;
 
 export function AlertsWidget() {
-  const { data: alertsSummary, isLoading, refetch } = api.alerts.getAlertsSummary.useQuery();
+  const {
+    data: alertsSummary,
+    isLoading,
+    refetch,
+  } = api.alerts.getAlertsSummary.useQuery();
 
   if (isLoading) {
     return (
@@ -106,9 +116,6 @@ export function AlertsWidget() {
         <CardTitle className="flex items-center gap-2">
           <AlertTriangle className="w-5 h-5" />
           Alertes machines
-          <Badge variant="destructive" className="ml-auto">
-            {alertsSummary.totalAlerts}
-          </Badge>
         </CardTitle>
         <CardDescription>
           Surveillance en temps réel de vos machines
@@ -119,17 +126,23 @@ export function AlertsWidget() {
         <div className="flex gap-2 mb-4 flex-wrap">
           {alertsSummary.criticalAlerts > 0 && (
             <Badge variant="destructive" className="text-xs">
-              {alertsSummary.criticalAlerts} critique{alertsSummary.criticalAlerts > 1 ? 's' : ''}
+              {alertsSummary.criticalAlerts} critique
+              {alertsSummary.criticalAlerts > 1 ? "s" : ""}
             </Badge>
           )}
           {alertsSummary.lowStockAlerts > 0 && (
-            <Badge variant="secondary" className="text-xs bg-orange-100 text-orange-800">
-              {alertsSummary.lowStockAlerts} stock faible{alertsSummary.lowStockAlerts > 1 ? 's' : ''}
+            <Badge
+              variant="secondary"
+              className="text-xs bg-orange-100 text-orange-800"
+            >
+              {alertsSummary.lowStockAlerts} stock faible
+              {alertsSummary.lowStockAlerts > 1 ? "s" : ""}
             </Badge>
           )}
           {alertsSummary.incompleteAlerts > 0 && (
             <Badge variant="outline" className="text-xs">
-              {alertsSummary.incompleteAlerts} incomplète{alertsSummary.incompleteAlerts > 1 ? 's' : ''}
+              {alertsSummary.incompleteAlerts} incomplète
+              {alertsSummary.incompleteAlerts > 1 ? "s" : ""}
             </Badge>
           )}
         </div>
@@ -137,7 +150,8 @@ export function AlertsWidget() {
         {/* Liste des alertes par machine */}
         <div className="space-y-3 max-h-80 overflow-y-auto">
           {alertsSummary.alertsByMachine.slice(0, 5).map((alert) => {
-            const config = alertTypeConfig[alert.type as keyof typeof alertTypeConfig];
+            const config =
+              alertTypeConfig[alert.type as keyof typeof alertTypeConfig];
             const Icon = config?.icon || AlertTriangle;
 
             return (
@@ -146,7 +160,9 @@ export function AlertsWidget() {
                 className="flex items-center justify-between p-3 border rounded-lg hover:bg-gray-50 transition-colors"
               >
                 <div className="flex items-center space-x-3 flex-1 min-w-0">
-                  <Icon className={cn("w-5 h-5 flex-shrink-0", config?.iconColor)} />
+                  <Icon
+                    className={cn("w-5 h-5 flex-shrink-0", config?.iconColor)}
+                  />
                   <div className="min-w-0 flex-1">
                     <div className="font-medium text-sm truncate">
                       {alert.machine.label}
@@ -162,9 +178,9 @@ export function AlertsWidget() {
                     )}
                   </div>
                 </div>
-                
+
                 <div className="flex items-center gap-2 flex-shrink-0">
-                  <Badge 
+                  <Badge
                     className={cn("text-xs", config?.color)}
                     variant="outline"
                   >
@@ -189,9 +205,7 @@ export function AlertsWidget() {
               +{alertsSummary.alertsByMachine.length - 5} autres alertes
             </p>
             <Button variant="outline" size="sm" asChild>
-              <Link href="/machines">
-                Voir toutes les machines
-              </Link>
+              <Link href="/machines">Voir toutes les machines</Link>
             </Button>
           </div>
         )}
@@ -207,9 +221,7 @@ export function AlertsWidget() {
             Actualiser
           </Button>
           <Button variant="outline" size="sm" asChild className="flex-1">
-            <Link href="/machines">
-              Gérer machines
-            </Link>
+            <Link href="/machines">Gérer machines</Link>
           </Button>
         </div>
       </CardContent>

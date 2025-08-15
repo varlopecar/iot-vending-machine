@@ -126,6 +126,33 @@ const appRouter = t.router({
       image_url: z.string(),
       is_active: z.boolean(),
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getAllProductsWithStats: publicProcedure.output(z.array(z.object({
+      id: z.string().min(1),
+      name: z.string(),
+      description: z.string(),
+      // Prix de vente
+      price: z.number().min(0),
+      // Prix d'achat
+      purchase_price: z.number().min(0),
+      // Catégorie libre pour le back-office
+      category: z.string().min(1),
+      ingredients: z.string(),
+      ingredients_list: z.array(z.string()).optional(),
+      allergens: z.string(),
+      allergens_list: z.array(z.string()).optional(),
+      nutritional_value: z.string(),
+      nutritional: z
+        .object({
+          calories: z.number().optional(),
+          protein: z.number().optional(),
+          carbs: z.number().optional(),
+          fat: z.number().optional(),
+          serving: z.string().optional(),
+        })
+        .optional(),
+      image_url: z.string(),
+      is_active: z.boolean(),
+    }).extend({ soldCount: z.number() }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getProductById: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.object({
       id: z.string().min(1),
       name: z.string(),

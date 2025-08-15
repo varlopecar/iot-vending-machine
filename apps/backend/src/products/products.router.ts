@@ -20,6 +20,13 @@ export class ProductsRouter {
   }
 
   @Query({
+    output: z.array(productSchema.extend({ soldCount: z.number() })),
+  })
+  getAllProductsWithStats() {
+    return this.productsService.getAllProductsWithStats();
+  }
+
+  @Query({
     input: z.object({ id: z.string().min(1) }),
     output: productSchema,
   })

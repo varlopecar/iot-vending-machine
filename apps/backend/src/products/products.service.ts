@@ -42,6 +42,37 @@ export class ProductsService {
     return products.map(this.mapProduct);
   }
 
+  async getAllProductsWithStats(): Promise<Array<Product & { soldCount: number }>> {
+    const products = await this.prisma.product.findMany({
+      where: { is_active: true },
+      orderBy: { name: 'asc' },
+    });
+
+    // Récupérer les statistiques de vente pour chaque produit
+    const productStats = await Promise.all(
+      products.map(async (product) => {
+        const soldCount = await this.prisma.orderItem.aggregate({
+          where: {
+            product_id: product.id,
+            order: {
+              status: 'COMPLETED' // Seulement les commandes complétées
+            }
+          },
+          _sum: {
+            quantity: true
+          }
+        });
+
+        return {
+          ...this.mapProduct(product),
+          soldCount: soldCount._sum.quantity || 0
+        };
+      })
+    );
+
+    return productStats;
+  }
+
   async getProductById(id: string): Promise<Product> {
     const product = await this.prisma.product.findUnique({ where: { id } });
     if (!product) {

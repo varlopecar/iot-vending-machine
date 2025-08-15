@@ -301,15 +301,25 @@ export function MachineList() {
       {/* Machines Grid */}
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
         {filteredMachines.map((machine, index) => {
-          const statusInfo = statusConfig[machine.status];
-          const StatusIcon = statusInfo.icon;
-          const stat = (stats as MachineStat[] | undefined)?.find(
-            (s) => s.machine_id === machine.id
-          );
-
           // Récupérer l'alerte pour cette machine
           const machineAlert = alertsSummary?.find(
             (alert) => alert.machine_id === machine.id
+          );
+
+          // Si la machine a une alerte INCOMPLETE, afficher "Incomplète" au lieu du statut normal
+          const hasIncompleteAlert = machineAlert?.type === "INCOMPLETE";
+
+          const statusInfo = hasIncompleteAlert
+            ? {
+                icon: AlertTriangle,
+                label: "Incomplète",
+                variant: "secondary" as const,
+                color: "text-blue-500",
+              }
+            : statusConfig[machine.status];
+          const StatusIcon = statusInfo.icon;
+          const stat = (stats as MachineStat[] | undefined)?.find(
+            (s) => s.machine_id === machine.id
           );
           const revenueTotal = (stat?.revenueTotalCents || 0) / 100;
           const revenue30d = (stat?.revenueLast30dCents || 0) / 100;
@@ -491,7 +501,6 @@ export function MachineList() {
                     {/* Additional Info */}
                     <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
                       <div>Total revenus: {revenueTotal.toFixed(2)}€</div>
-                      <div>Cmd 30j: {orders30d}</div>
                       {stat && (
                         <div>
                           Stock: {stat.currentStockQuantity}/

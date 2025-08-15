@@ -36,7 +36,7 @@ export function OverviewCards() {
     },
     {
       title: "Produits",
-      value: dashboardStats?.totalProducts?.toString() || "0",
+      value: dashboardStats?.activeProducts?.toString() || "0",
       description: `${dashboardStats?.activeProducts || 0} actifs`,
       icon: Package,
       loading: isLoading,
