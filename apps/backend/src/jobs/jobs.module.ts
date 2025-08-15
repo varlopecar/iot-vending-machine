@@ -1,5 +1,4 @@
 import { Module } from '@nestjs/common';
-import { ScheduleModule } from '@nestjs/schedule';
 import { PrismaModule } from '../prisma/prisma.module';
 import { StripeModule } from '../stripe/stripe.module';
 import { InventoryModule } from '../inventory/inventory.module';
@@ -10,12 +9,7 @@ import { JobsRouter } from './jobs.router';
 import { MetricsService } from './metrics.service';
 
 @Module({
-  imports: [
-    ScheduleModule.forRoot(),
-    PrismaModule,
-    StripeModule,
-    InventoryModule,
-  ],
+  imports: [PrismaModule, StripeModule, InventoryModule],
   providers: [
     JobsService,
     ExpireStaleOrdersJob,

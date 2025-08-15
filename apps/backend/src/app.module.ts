@@ -15,6 +15,9 @@ import { InventoryModule } from './inventory/inventory.module';
 import { PaymentsModule } from './payments/payments.module';
 import { JobsModule } from './jobs/jobs.module';
 import { HealthModule } from './health/health.module';
+import { CardPaymentModule } from './card-payment/card-payment.module';
+import { OrderValidationModule } from './order-validation/order-validation.module';
+import { OrderDeliveryModule } from './order-delivery/order-delivery.module';
 import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middleware';
 
 @Module({
@@ -35,8 +38,11 @@ import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middl
     WebhooksModule,
     InventoryModule,
     PaymentsModule,
-    JobsModule,
+    // JobsModule, // Temporairement désactivé pour résoudre le conflit ScheduleModule
     HealthModule,
+    CardPaymentModule,
+    OrderValidationModule,
+    OrderDeliveryModule,
   ],
   controllers: [],
   providers: [],
