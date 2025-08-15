@@ -89,6 +89,9 @@ export function MachineList() {
     revenueTotalCents: number;
     revenueLast30dCents: number;
     ordersLast30d: number;
+    currentStockQuantity: number;
+    maxCapacityTotal: number;
+    stockPercentage: number;
   };
 
   const filteredMachines =
@@ -313,19 +316,7 @@ export function MachineList() {
           const revenueValue = revenue30d;
           const revenueLabel = "Revenus 30j";
           const orders30d = stat?.ordersLast30d || 0;
-          const stockLevel = stat
-            ? Math.max(
-                0,
-                Math.min(
-                  100,
-                  stat.totalSlots > 0
-                    ? ((stat.totalSlots - (stat.outOfStockCount || 0)) /
-                        stat.totalSlots) *
-                        100
-                    : 0
-                )
-              )
-            : 0;
+          const stockLevel = stat?.stockPercentage || 0;
 
           return (
             <motion.div
@@ -501,6 +492,12 @@ export function MachineList() {
                     <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
                       <div>Total revenus: {revenueTotal.toFixed(2)}€</div>
                       <div>Cmd 30j: {orders30d}</div>
+                      {stat && (
+                        <div>
+                          Stock: {stat.currentStockQuantity}/
+                          {stat.maxCapacityTotal} produits
+                        </div>
+                      )}
                       <div>
                         Dernière mise à jour:{" "}
                         {new Date(machine.last_update).toLocaleDateString(

@@ -85,14 +85,22 @@ export class MachinesService {
       0,
     );
 
-    // Calcul lowStockCount réel (quantity > 0 && quantity <= low_threshold)
-    const lowStocks = await this.prisma.stock.findMany({
+    // Calcul lowStockCount réel et statistiques de stock
+    const stockDetails = await this.prisma.stock.findMany({
       where: { machine_id: machineId },
-      select: { quantity: true, low_threshold: true },
+      select: { quantity: true, low_threshold: true, max_capacity: true },
     });
-    const lowStockCountReal = lowStocks.filter(
+    
+    const lowStockCountReal = stockDetails.filter(
       (s) => s.quantity > 0 && s.quantity <= s.low_threshold,
     ).length;
+
+    // Calcul des statistiques de stock globales
+    const currentStockQuantity = stockDetails.reduce((sum, s) => sum + s.quantity, 0);
+    const maxCapacityTotal = stockDetails.reduce((sum, s) => sum + s.max_capacity, 0);
+    const stockPercentage = maxCapacityTotal > 0 
+      ? Math.round((currentStockQuantity / maxCapacityTotal) * 100) 
+      : 0;
 
     return {
       machine_id: machineId,
@@ -102,6 +110,9 @@ export class MachinesService {
       revenueTotalCents,
       revenueLast30dCents,
       ordersLast30d: ordersPaid30d.length,
+      currentStockQuantity,
+      maxCapacityTotal,
+      stockPercentage,
     };
   }
 

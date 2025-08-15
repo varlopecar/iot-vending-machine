@@ -10,46 +10,58 @@ import {
 } from "@/components/ui/card";
 import { Monitor, Package, Euro, TrendingUp } from "lucide-react";
 
-export function OverviewCards() {
-  const { data: machines, isLoading: machinesLoading } =
-    api.machines.getAllMachines.useQuery();
-  const { data: products, isLoading: productsLoading } =
-    api.products.getAllProducts.useQuery();
+const formatCurrency = (cents: number) => {
+  return new Intl.NumberFormat("fr-FR", {
+    style: "currency",
+    currency: "EUR",
+  }).format(cents / 100);
+};
 
-  const totalMachines = machines?.length || 0;
-  const onlineMachines =
-    machines?.filter((m) => m.status === "online").length || 0;
-  const totalProducts = products?.length || 0;
-  const activeProducts = products?.filter((p) => p.is_active).length || 0;
+const formatGrowth = (percent: number) => {
+  const sign = percent > 0 ? "+" : "";
+  return `${sign}${percent}%`;
+};
+
+export function OverviewCards() {
+  const { data: dashboardStats, isLoading } =
+    api.analytics.getDashboardStats.useQuery();
 
   const cards = [
     {
       title: "Machines",
-      value: totalMachines,
-      description: `${onlineMachines} en ligne`,
+      value: dashboardStats?.totalMachines?.toString() || "0",
+      description: `${dashboardStats?.onlineMachines || 0} en ligne`,
       icon: Monitor,
-      loading: machinesLoading,
+      loading: isLoading,
     },
     {
       title: "Produits",
-      value: totalProducts,
-      description: `${activeProducts} actifs`,
+      value: dashboardStats?.totalProducts?.toString() || "0",
+      description: `${dashboardStats?.activeProducts || 0} actifs`,
       icon: Package,
-      loading: productsLoading,
+      loading: isLoading,
     },
     {
       title: "Revenus",
-      value: "€2,345",
-      description: "+12% ce mois",
+      value: dashboardStats
+        ? formatCurrency(dashboardStats.totalRevenueCents)
+        : "€0",
+      description: dashboardStats
+        ? `${formatGrowth(dashboardStats.revenueGrowthPercent)} ce mois`
+        : "0% ce mois",
       icon: Euro,
-      loading: false,
+      loading: isLoading,
+      growth: dashboardStats?.revenueGrowthPercent,
     },
     {
       title: "Ventes",
-      value: "156",
-      description: "+8% cette semaine",
+      value: dashboardStats?.totalSales?.toString() || "0",
+      description: dashboardStats
+        ? `${formatGrowth(dashboardStats.salesGrowthPercent)} cette semaine`
+        : "0% cette semaine",
       icon: TrendingUp,
-      loading: false,
+      loading: isLoading,
+      growth: dashboardStats?.salesGrowthPercent,
     },
   ];
 
@@ -77,7 +89,19 @@ export function OverviewCards() {
               {card.loading ? (
                 <div className="h-3 w-20 bg-gray-200 rounded animate-pulse mt-1"></div>
               ) : (
-                <p className="text-xs text-gray-600 mt-1">{card.description}</p>
+                <p
+                  className={`text-xs mt-1 ${
+                    card.growth !== undefined
+                      ? card.growth > 0
+                        ? "text-green-600"
+                        : card.growth < 0
+                          ? "text-red-600"
+                          : "text-gray-600"
+                      : "text-gray-600"
+                  }`}
+                >
+                  {card.description}
+                </p>
               )}
             </CardContent>
           </Card>

@@ -1,4 +1,12 @@
+'use client';
+
+import { PopularProducts, TopMachines, ComingSoonCard } from '@/components/analytics';
+import { TrendingUp, Clock } from 'lucide-react';
+import { api } from '@/lib/trpc/client';
+
 export default function AnalyticsPage() {
+  const { data: analytics, isLoading, error } = api.analytics.getCurrentMonthAnalytics.useQuery();
+
   return (
     <div className="space-y-6">
       <div>
@@ -8,34 +16,38 @@ export default function AnalyticsPage() {
         </p>
       </div>
 
+      {error && (
+        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+          <p className="text-red-800">
+            Erreur lors du chargement des statistiques : {error.message}
+          </p>
+        </div>
+      )}
+
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <div className="bg-gray-100 rounded-lg p-6 flex items-center justify-center h-64">
-          <div className="text-center text-gray-500">
-            <div className="text-lg font-medium mb-2">Produits populaires</div>
-            <p className="text-sm">Classement des produits les plus vendus</p>
-          </div>
-        </div>
+        <PopularProducts 
+          products={analytics?.popularProducts || []} 
+          isLoading={isLoading} 
+        />
 
-        <div className="bg-gray-100 rounded-lg p-6 flex items-center justify-center h-64">
-          <div className="text-center text-gray-500">
-            <div className="text-lg font-medium mb-2">Revenus par machine</div>
-            <p className="text-sm">Performance de chaque distributeur</p>
-          </div>
-        </div>
+        <TopMachines 
+          machines={analytics?.topMachinesByRevenue || []} 
+          isLoading={isLoading} 
+        />
 
-        <div className="bg-gray-100 rounded-lg p-6 flex items-center justify-center h-64">
-          <div className="text-center text-gray-500">
-            <div className="text-lg font-medium mb-2">Évolution des ventes</div>
-            <p className="text-sm">Tendances sur les derniers mois</p>
-          </div>
-        </div>
+        <ComingSoonCard
+          title="Évolution des ventes"
+          description="Tendances et graphiques d'évolution sur les derniers mois"
+          icon={TrendingUp}
+          iconColor="text-purple-600"
+        />
 
-        <div className="bg-gray-100 rounded-lg p-6 flex items-center justify-center h-64">
-          <div className="text-center text-gray-500">
-            <div className="text-lg font-medium mb-2">Horaires de pointe</div>
-            <p className="text-sm">Analyse des pics de fréquentation</p>
-          </div>
-        </div>
+        <ComingSoonCard
+          title="Horaires de pointe"
+          description="Analyse des pics de fréquentation par heure et jour"
+          icon={Clock}
+          iconColor="text-orange-600"
+        />
       </div>
     </div>
   );

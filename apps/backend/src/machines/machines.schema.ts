@@ -34,6 +34,9 @@ export const machineStatsSchema = z.object({
   revenueTotalCents: z.number().int().nonnegative(),
   revenueLast30dCents: z.number().int().nonnegative(),
   ordersLast30d: z.number().int().nonnegative(),
+  currentStockQuantity: z.number().int().nonnegative(), // Stock actuel total
+  maxCapacityTotal: z.number().int().nonnegative(), // Capacité totale maximale
+  stockPercentage: z.number().min(0).max(100), // Pourcentage de stock global
 });
 
 export type MachineStats = z.infer<typeof machineStatsSchema>;

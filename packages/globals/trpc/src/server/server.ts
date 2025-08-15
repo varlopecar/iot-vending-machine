@@ -981,6 +981,9 @@ const appRouter = t.router({
       revenueTotalCents: z.number().int().nonnegative(),
       revenueLast30dCents: z.number().int().nonnegative(),
       ordersLast30d: z.number().int().nonnegative(),
+      currentStockQuantity: z.number().int().nonnegative(), // Stock actuel total
+      maxCapacityTotal: z.number().int().nonnegative(), // Capacité totale maximale
+      stockPercentage: z.number().min(0).max(100), // Pourcentage de stock global
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getAllMachineStats: publicProcedure.output(z.array(z.object({
       machine_id: z.string().min(1),
@@ -990,6 +993,9 @@ const appRouter = t.router({
       revenueTotalCents: z.number().int().nonnegative(),
       revenueLast30dCents: z.number().int().nonnegative(),
       ordersLast30d: z.number().int().nonnegative(),
+      currentStockQuantity: z.number().int().nonnegative(), // Stock actuel total
+      maxCapacityTotal: z.number().int().nonnegative(), // Capacité totale maximale
+      stockPercentage: z.number().min(0).max(100), // Pourcentage de stock global
     }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   pickups: t.router({
@@ -1336,6 +1342,47 @@ const appRouter = t.router({
         product_image_url: z.string().optional(),
       })),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
+  }),
+  analytics: t.router({
+    getPopularProductsCurrentMonth: publicProcedure.output(z.array(z.object({
+      productId: z.string(),
+      productName: z.string(),
+      totalSold: z.number(),
+      totalRevenueCents: z.number(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getTopMachinesByRevenueCurrentMonth: publicProcedure.output(z.array(z.object({
+      machineId: z.string(),
+      machineLabel: z.string(),
+      location: z.string(),
+      totalRevenueCents: z.number(),
+      totalOrders: z.number(),
+    }))).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getCurrentMonthAnalytics: publicProcedure.output(z.object({
+      currentMonth: z.string(),
+      popularProducts: z.array(z.object({
+        productId: z.string(),
+        productName: z.string(),
+        totalSold: z.number(),
+        totalRevenueCents: z.number(),
+      })),
+      topMachinesByRevenue: z.array(z.object({
+        machineId: z.string(),
+        machineLabel: z.string(),
+        location: z.string(),
+        totalRevenueCents: z.number(),
+        totalOrders: z.number(),
+      })),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
+    getDashboardStats: publicProcedure.output(z.object({
+      totalRevenueCents: z.number(),
+      revenueGrowthPercent: z.number(), // Croissance par rapport au mois précédent
+      totalSales: z.number(),
+      salesGrowthPercent: z.number(), // Croissance par rapport à la semaine précédente
+      totalMachines: z.number(),
+      onlineMachines: z.number(),
+      totalProducts: z.number(),
+      activeProducts: z.number(),
+    })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   })
 });
 export type AppRouter = typeof appRouter;

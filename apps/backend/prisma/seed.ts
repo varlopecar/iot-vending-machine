@@ -561,6 +561,79 @@ async function main() {
 
   console.log('🛒 Created order items');
 
+  // Create additional completed orders for analytics (current month)
+  const currentDate = new Date();
+  const startOfMonth = new Date(currentDate.getFullYear(), currentDate.getMonth(), 1);
+  
+  // Helper function to generate random date within current month
+  const randomDateThisMonth = () => {
+    const start = startOfMonth.getTime();
+    const end = currentDate.getTime();
+    return new Date(start + Math.random() * (end - start)).toISOString();
+  };
+
+  // Create more completed orders for analytics
+  const completedOrders: any[] = [];
+  const completedOrderItems: any[] = [];
+  
+  // Generate 50 random completed orders this month
+  for (let i = 0; i < 50; i++) {
+    const randomUser = users[Math.floor(Math.random() * users.length)];
+    const randomMachine = machines[Math.floor(Math.random() * machines.length)];
+    const orderDate = randomDateThisMonth();
+    
+    const order = await prisma.order.create({
+      data: {
+        user_id: randomUser.id,
+        machine_id: randomMachine.id,
+        status: 'COMPLETED',
+        created_at: orderDate,
+        expires_at: new Date(new Date(orderDate).getTime() + 30 * 60 * 1000).toISOString(),
+        qr_code_token: 'qr_completed_' + Math.random().toString(36).substr(2, 9),
+        amount_total_cents: 0, // Will be calculated based on items
+        currency: 'EUR',
+        paid_at: new Date(new Date(orderDate).getTime() + 5 * 60 * 1000).toISOString(), // 5 min after creation
+      },
+    });
+    
+    completedOrders.push(order);
+    
+    // Add 1-2 random products to each order
+    const numItems = Math.random() > 0.3 ? 1 : 2; // 70% chance of 1 item, 30% chance of 2 items
+    let orderTotal = 0;
+    
+    for (let j = 0; j < numItems; j++) {
+      const randomProduct = products[Math.floor(Math.random() * products.length)];
+      const quantity = 1;
+      const unitPriceCents = Math.floor(parseFloat(randomProduct.price.toString()) * 100);
+      const subtotalCents = unitPriceCents * quantity;
+      orderTotal += subtotalCents;
+      
+      const orderItem = await prisma.orderItem.create({
+        data: {
+          order_id: order.id,
+          product_id: randomProduct.id,
+          quantity: quantity,
+          slot_number: Math.floor(Math.random() * 6) + 1, // Random slot 1-6
+          unit_price_cents: unitPriceCents,
+          label: randomProduct.name,
+          subtotal_cents: subtotalCents,
+        },
+      });
+      
+      completedOrderItems.push(orderItem);
+    }
+    
+    // Update order total
+    await prisma.order.update({
+      where: { id: order.id },
+      data: { amount_total_cents: orderTotal },
+    });
+  }
+
+  console.log(`🛒 Created ${completedOrders.length} completed orders for analytics`);
+  console.log(`📦 Created ${completedOrderItems.length} completed order items`);
+
   // Loyalty logs supprimés (l'historique est désormais dérivé de orders)
 
   // Create a pickup
@@ -682,8 +755,8 @@ async function main() {
   console.log(`- ${machines.length} machines created`);
   console.log(`- ${products.length} products created`);
   console.log(`- ${stocks.length} stock entries created`);
-  console.log(`- ${orders.length} orders created`);
-  console.log(`- ${orderItems.length} order items created`);
+  console.log(`- ${orders.length + completedOrders.length} orders created (${orders.length} active + ${completedOrders.length} completed)`);
+  console.log(`- ${orderItems.length + completedOrderItems.length} order items created`);
   // Loyalty logs supprimés du seed
   console.log(`- 1 pickup created`);
   console.log(`- ${alerts.length} alerts created`);
