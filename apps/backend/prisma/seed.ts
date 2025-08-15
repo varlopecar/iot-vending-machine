@@ -650,38 +650,19 @@ async function main() {
 
   // Create some alerts based on new stock configuration
   const alerts = await Promise.all([
-    // Alerte slots vides pour machine 2 (slots 3, 4, 5, 6 à 0)
+    // Alerte CRITICAL agrégée pour machine 2 (4 slots vides sur 6)
     prisma.alert.create({
       data: {
         machine_id: machines[1].id,
-        stock_id: stocks[8].id, // Water slot (machine 2, slot 3)
         type: 'CRITICAL',
-        message: `Slot vide: Water Bottle (Slot 3) - Ravitaillement requis`,
+        message: `Stock critique: 4 slot(s) vide(s) sur 6 configurés`,
         level: 'ERROR',
         status: 'OPEN',
         created_at: now,
         metadata: {
-          slot_number: 3,
-          current_quantity: 0,
-          threshold: stocks[8].low_threshold,
-          product_name: 'Water Bottle'
-        }
-      },
-    }),
-    prisma.alert.create({
-      data: {
-        machine_id: machines[1].id,
-        stock_id: stocks[9].id, // Kinder Bueno slot (machine 2, slot 4)
-        type: 'CRITICAL',
-        message: `Slot vide: Kinder Bueno (Slot 4) - Ravitaillement requis`,
-        level: 'ERROR',
-        status: 'OPEN',
-        created_at: now,
-        metadata: {
-          slot_number: 4,
-          current_quantity: 0,
-          threshold: stocks[9].low_threshold,
-          product_name: 'Kinder Bueno'
+          empty_slots: 4,
+          configured_slots: 6,
+          total_slots: 6,
         }
       },
     }),
