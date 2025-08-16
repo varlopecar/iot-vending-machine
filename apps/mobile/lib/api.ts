@@ -1,6 +1,6 @@
 import Constants from 'expo-constants';
 
-const DEFAULT_API_URL = 'https://463f7f319008.ngrok-free.app';
+const DEFAULT_API_URL = 'https://ae48708d4dd8.ngrok-free.app';
 
 export const API_BASE_URL: string =
   (process.env.EXPO_PUBLIC_API_URL as string) ||
