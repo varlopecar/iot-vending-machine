@@ -101,7 +101,7 @@ export default function PaymentSuccessScreen() {
         // Vider le panier une fois la commande confirmée
         clearCart();
       } catch (e) {
-        console.error("[PaymentSuccess] Erreur chargement order:", e);
+
         if (createOrderStep === 'pending') setCreateOrderStep('error');
         if (fetchQrStep === 'pending') setFetchQrStep('error');
         const message = e instanceof Error ? e.message : 'Erreur inconnue lors de la création de la commande';
@@ -137,7 +137,7 @@ export default function PaymentSuccessScreen() {
       setFetchQrStep('done');
       setIsLoading(false);
     } catch (error) {
-      console.error("Erreur lors du rafraîchissement:", error);
+      
       Alert.alert(
         "Erreur",
         "Impossible de mettre à jour le statut de la commande.",

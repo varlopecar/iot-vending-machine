@@ -57,7 +57,7 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
 
       setClientSecret(paymentIntent.client_secret);
     } catch (error) {
-      console.error("Erreur initialisation:", error);
+      
       onPaymentError("Impossible de préparer le paiement");
     } finally {
       setIsInitializing(false);
@@ -84,7 +84,7 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
       }
       // Si result.error est undefined, c'est une annulation utilisateur, on ne fait rien
     } catch (error) {
-      console.error("Erreur paiement classique:", error);
+      
       onPaymentError(
         error instanceof Error ? error.message : "Erreur inattendue"
       );

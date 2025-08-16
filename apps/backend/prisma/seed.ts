@@ -4,7 +4,7 @@ import * as bcrypt from 'bcrypt';
 const prisma = new PrismaClient();
 
 async function main() {
-  console.log('🌱 Starting database seeding...');
+  
 
   // Clear existing data (ordre important pour les foreign keys)
   await prisma.restockItem.deleteMany();
@@ -20,7 +20,7 @@ async function main() {
   await prisma.machine.deleteMany();
   await prisma.user.deleteMany();
 
-  console.log('🧹 Cleared existing data');
+
 
   // Create users
   const hashedPassword = await bcrypt.hash('password123', 10);
@@ -82,7 +82,7 @@ async function main() {
     }),
   ]);
 
-  console.log('👥 Created users');
+
 
   // Create machines
   const now = new Date().toISOString();
@@ -124,7 +124,7 @@ async function main() {
   await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'b2-ops@vendingmachine.com'} WHERE id = ${machines[1].id}`;
   await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'c1-ops@vendingmachine.com'} WHERE id = ${machines[2].id}`;
 
-  console.log('🤖 Created machines');
+
 
   // Create products
   const products = await Promise.all([
@@ -227,7 +227,7 @@ async function main() {
     }),
   ]);
 
-  console.log('🍫 Created products');
+
 
   // Renseigner les listes d'ingrédients, allergènes et nutrition via SQL (compatibilité types Prisma)
   const [coca, chips, water, kinder, energy] = products;
@@ -503,7 +503,7 @@ async function main() {
     }),
   ]);
 
-  console.log('📦 Created stocks');
+
 
   // Create some orders
   const orders = await Promise.all([
@@ -529,7 +529,7 @@ async function main() {
     }),
   ]);
 
-  console.log('📋 Created orders');
+
 
   // Create order items
   const orderItems = await Promise.all([
@@ -559,7 +559,7 @@ async function main() {
     }),
   ]);
 
-  console.log('🛒 Created order items');
+
 
   // Create additional completed orders for analytics (current month)
   const currentDate = new Date();
@@ -631,8 +631,7 @@ async function main() {
     });
   }
 
-  console.log(`🛒 Created ${completedOrders.length} completed orders for analytics`);
-  console.log(`📦 Created ${completedOrderItems.length} completed order items`);
+
 
   // Loyalty logs supprimés (l'historique est désormais dérivé de orders)
 
@@ -646,7 +645,7 @@ async function main() {
     },
   });
 
-  console.log('📦 Created pickup');
+
 
   // Create some alerts based on new stock configuration
   const alerts = await Promise.all([
@@ -683,7 +682,7 @@ async function main() {
     }),
   ]);
 
-  console.log('🚨 Created alerts');
+
 
   // Create some restock history
   const restocks = await Promise.all([
@@ -728,34 +727,13 @@ async function main() {
     }),
   ]);
 
-  console.log('🔄 Created restock history');
 
-  console.log('✅ Database seeding completed!');
-  console.log('\n📊 Summary:');
-  console.log(`- ${users.length} users created (1 admin, 1 operator, 3 customers)`);
-  console.log(`- ${machines.length} machines created`);
-  console.log(`- ${products.length} products created`);
-  console.log(`- ${stocks.length} stock entries created`);
-  console.log(`- ${orders.length + completedOrders.length} orders created (${orders.length} active + ${completedOrders.length} completed)`);
-  console.log(`- ${orderItems.length + completedOrderItems.length} order items created`);
-  // Loyalty logs supprimés du seed
-  console.log(`- 1 pickup created`);
-  console.log(`- ${alerts.length} alerts created`);
-  console.log(`- ${restocks.length} restocks created`);
-  console.log(`- ${restockItems.length} restock items created`);
-  console.log('\n🔑 Admin credentials:');
-  console.log('Email: admin@vendingmachine.com');
-  console.log('Password: admin123');
-  console.log('\n🤖 Machine Configuration:');
-  console.log('- Machine 1: 6 slots tous remplis (max_capacity=5)');
-  console.log('- Machine 2: 6 slots dont 2 remplis, 4 vides (slots 3-6 à quantity=0)');
-  console.log('- Machine 3: 5 slots avec quantités variables');
-  console.log('- Chaque slot: max_capacity=5, low_threshold=1 ou 2 (aléatoire)');
+
+
 }
 
 main()
   .catch((e) => {
-    console.error('❌ Error during seeding:', e);
     process.exit(1);
   })
   .finally(async () => {

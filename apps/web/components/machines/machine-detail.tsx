@@ -96,7 +96,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
       setRestockingAll(false);
     },
     onError: (error) => {
-      console.error("Erreur lors du ravitaillement:", error);
+      
       setRestockingAll(false);
     },
   });

@@ -130,7 +130,7 @@ export class RestocksService {
     try {
       await this.alertsService.updateMachineAlerts(restockData.machine_id);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+      // Erreur silencieuse pour éviter de faire échouer le restock
     }
   }
 
@@ -241,7 +241,7 @@ export class RestocksService {
     try {
       await this.alertsService.updateMachineAlerts(restockData.machine_id);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+      // Erreur silencieuse pour éviter de faire échouer le restock
     }
 
     return {
@@ -421,7 +421,7 @@ export class RestocksService {
     try {
       await this.alertsService.updateMachineAlerts(stock.machine_id);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+      // Erreur silencieuse pour éviter de faire échouer le restock
     }
 
     return {
@@ -524,7 +524,7 @@ export class RestocksService {
         await this.alertsService.updateMachineAlerts(stock.machine_id);
       }
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des alertes après restock:', error);
+      // Erreur silencieuse pour éviter de faire échouer le restock
     }
 
     return {

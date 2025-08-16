@@ -33,7 +33,7 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children }) => {
     } catch (err) {
       const msg = err instanceof Error ? err.message : 'Erreur Stripe';
       setError(msg);
-      console.error('Erreur Stripe:', err);
+      
     } finally {
       setIsLoading(false);
     }

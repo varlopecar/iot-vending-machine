@@ -65,7 +65,7 @@ export class AlertsService {
       alertLevel = AlertLevel.WARNING;
     }
     // 3. INCOMPLETE indépendant (slots non configurés)
-    // Note: INCOMPLETE est géré séparément car il peut coexister avec LOW/CRITICAL
+
 
     return {
       machineId,

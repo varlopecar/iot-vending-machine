@@ -70,7 +70,7 @@ export class CheckoutRouter {
       }
 
       // Erreur interne
-      console.error('Erreur inattendue dans createIntent:', error);
+
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message:
@@ -125,7 +125,7 @@ export class CheckoutRouter {
       }
 
       // Erreur interne
-      console.error('Erreur inattendue dans getStatus:', error);
+
       throw new TRPCError({
         code: 'INTERNAL_SERVER_ERROR',
         message: 'Erreur interne lors de la récupération du statut',
