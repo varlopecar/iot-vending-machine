@@ -353,7 +353,7 @@ export function ProductList() {
       setIsEditModalOpen(false);
       setSelectedProduct(null);
     } catch (error) {
-      console.error("Erreur lors de la modification:", error);
+      
       alert("Erreur lors de la modification du produit. Veuillez réessayer.");
     }
   };
@@ -364,7 +364,7 @@ export function ProductList() {
       try {
         await deleteProduct.mutateAsync({ id: productId });
       } catch (error) {
-        console.error("Erreur lors de la suppression:", error);
+
         alert("Erreur lors de la suppression du produit. Veuillez réessayer.");
       }
     }

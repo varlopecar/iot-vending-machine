@@ -16,7 +16,7 @@ export const useNativePayment = () => {
     try {
       if (Platform.OS === 'ios') {
         // Pour iOS, on vérifie dynamiquement avec le backend
-        // TODO: Remplacer par votre endpoint tRPC
+    
         try {
           const response = await fetch('https://463f7f319008.ngrok-free.app/trpc/stripe.checkNativePayAvailability', {
             method: 'POST',
@@ -47,14 +47,14 @@ export const useNativePayment = () => {
           const googlePaySupported = await isGooglePaySupportedAsync();
           setSupportsGooglePay(googlePaySupported);
         } catch (error) {
-          console.warn('Erreur vérification Google Pay:', error);
+  
           setSupportsGooglePay(false);
         }
       } else {
         setSupportsGooglePay(false);
       }
     } catch (error) {
-      console.warn('Erreur vérification paiements natifs:', error);
+      
       setSupportsApplePay(false);
       setSupportsGooglePay(false);
     }
@@ -126,13 +126,13 @@ export const useNativePayment = () => {
       });
 
       if (error) {
-        console.error('Erreur initialisation paiement natif:', error);
+
         throw new Error(`Erreur initialisation: ${error.message}`);
       }
 
       return true;
     } catch (error) {
-      console.error('Erreur configuration paiement natif:', error);
+      
       throw error;
     }
   };
@@ -142,7 +142,7 @@ export const useNativePayment = () => {
       const { error } = await presentPaymentSheet();
       
       if (error) {
-        console.error('Erreur paiement natif:', error);
+
         return {
           success: false,
           error: error.message || 'Erreur lors du paiement natif'
@@ -151,7 +151,7 @@ export const useNativePayment = () => {
 
       return { success: true };
     } catch (error) {
-      console.error('Erreur inattendue paiement natif:', error);
+      
       return {
         success: false,
         error: 'Erreur inattendue lors du paiement natif'

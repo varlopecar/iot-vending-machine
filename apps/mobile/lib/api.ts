@@ -28,11 +28,11 @@ export async function trpcMutation<TInput extends object, TOutput>(
     body: JSON.stringify(input),
   });
   const raw = await response.text();
-  console.log(`[tRPC] ${path} → status ${response.status}`);
+  
   if (raw) {
     try {
       const preview = raw.length > 500 ? raw.slice(0, 500) + '…' : raw;
-      console.log(`[tRPC] ${path} → body:`, preview);
+
     } catch {}
   }
 
@@ -51,14 +51,14 @@ export async function trpcMutation<TInput extends object, TOutput>(
 
     // Normalisation des messages usuels
     const normalized = normalizeErrorMessage(serverMessage, response.status);
-    console.error(`[tRPC] ${path} → erreur:`, normalized);
+
     throw new Error(normalized);
   }
 
   // Même en 200, tRPC peut renvoyer un objet avec "error"
   if (parsed?.error?.message) {
     const normalized = normalizeErrorMessage(parsed.error.message, 400);
-    console.error(`[tRPC] ${path} → erreur enveloppe:`, normalized);
+
     throw new Error(normalized);
   }
 
@@ -86,11 +86,11 @@ export async function trpcQuery<TInput extends object | undefined, TOutput>(
     headers,
   });
   const raw = await response.text();
-  console.log(`[tRPC] ${path} [GET] → status ${response.status}`);
+  
   if (raw) {
     try {
       const preview = raw.length > 500 ? raw.slice(0, 500) + '…' : raw;
-      console.log(`[tRPC] ${path} [GET] → body:`, preview);
+
     } catch {}
   }
 
@@ -105,13 +105,13 @@ export async function trpcQuery<TInput extends object | undefined, TOutput>(
     const serverMessage =
       parsed?.error?.message || parsed?.message || raw || `Erreur HTTP ${response.status}`;
     const normalized = normalizeErrorMessage(serverMessage, response.status);
-    console.error(`[tRPC] ${path} [GET] → erreur:`, normalized);
+
     throw new Error(normalized);
   }
 
   if (parsed?.error?.message) {
     const normalized = normalizeErrorMessage(parsed.error.message, 400);
-    console.error(`[tRPC] ${path} [GET] → erreur enveloppe:`, normalized);
+
     throw new Error(normalized);
   }
 

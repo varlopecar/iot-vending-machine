@@ -13,11 +13,7 @@ export function getStripeClient(): Stripe {
       typescript: true,
     });
 
-    console.log('✅ Client Stripe initialisé avec succès');
-    console.log(`📊 Version API: ${env.STRIPE_API_VERSION}`);
-    console.log(
-      `🔑 Mode: ${env.STRIPE_SECRET_KEY.startsWith('sk_test_') ? 'TEST' : 'LIVE'}`,
-    );
+    
   }
 
   return stripeClient;

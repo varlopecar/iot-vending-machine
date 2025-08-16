@@ -68,7 +68,7 @@ export function MachineAlertBadge({
 
   // Vérification de sécurité si le type n'est pas reconnu
   if (!config) {
-    console.warn(`Type d'alerte non reconnu: ${alertType}`);
+
     return null;
   }
 

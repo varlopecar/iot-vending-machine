@@ -96,7 +96,7 @@ export class CardPaymentController {
         };
       }
     } catch (error) {
-      console.error('Erreur lors du traitement du paiement:', error);
+
 
       // Gestion des erreurs Stripe spécifiques
       if (

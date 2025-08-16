@@ -111,9 +111,7 @@ export async function logLocalPaymentEvent(
   try {
     // Vérifier que les méthodes nécessaires existent
     if (!prisma.payment?.findUnique || !prisma.paymentEvent?.create) {
-      console.warn(
-        'Prisma methods not available for logging local payment event',
-      );
+      
       return;
     }
 
@@ -134,10 +132,7 @@ export async function logLocalPaymentEvent(
       });
     }
   } catch (error) {
-    console.error(
-      `Erreur lors de la création de l'événement local ${type}:`,
-      error,
-    );
+
   }
 }
 

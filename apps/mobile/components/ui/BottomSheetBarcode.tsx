@@ -77,7 +77,7 @@ export function BottomSheetBarcode({
             {user?.barcode ? (
               <IdentifierCard
                 identifier={user.barcode}
-                onCopy={() => console.log('Code-barres copié:', user.barcode)}
+                onCopy={() => {}}
                 showCopyButton={true}
               />
             ) : (

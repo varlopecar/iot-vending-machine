@@ -53,7 +53,7 @@ export default function QRCodeScreen() {
           } as const;
           setOrder(mapped);
         } catch (e) {
-          console.error('[QR] Erreur fetch serveur:', e);
+  
         }
       } finally {
         setLoading(false);
@@ -129,7 +129,7 @@ export default function QRCodeScreen() {
       />
       <View className={`${isDark ? 'bg-dark-background' : 'bg-light-background'} flex-1`}>
         <ScrollView className="flex-1 p-4">
-          {/* QR Code - image mock ou token dynamique */}
+  
           {order.qrCodeToken ? (
             <View className="items-center mb-6">
               <Text

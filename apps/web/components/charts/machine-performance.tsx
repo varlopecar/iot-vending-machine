@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Monitor, TrendingUp, TrendingDown } from "lucide-react";
 
-// Mock data pour la performance des machines
+
 const machinePerformanceData = [
   {
     name: "Machine Campus A",

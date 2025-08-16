@@ -174,7 +174,7 @@ export function EditProductModal({
       await onEditProduct(product.id, updateData);
       onClose();
     } catch (error) {
-      console.error("Erreur lors de la modification du produit:", error);
+      
     } finally {
       setIsSubmitting(false);
     }

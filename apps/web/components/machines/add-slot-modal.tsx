@@ -57,7 +57,7 @@ export function AddSlotModal({
       resetForm();
     },
     onError: (error) => {
-      console.error("Erreur lors de l'ajout du slot:", error);
+      
       // Message plus informatif selon le type d'erreur
       if (
         error.message.includes("Server has closed") ||

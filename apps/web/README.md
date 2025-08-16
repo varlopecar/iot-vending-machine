@@ -104,7 +104,7 @@ Le back-office communique avec le backend NestJS via tRPC pour :
 - Obtenir les statistiques et métriques
 - Synchroniser les données en temps réel
 
-## 📋 TODO pour l'intégration réelle
+
 
 - [ ] Connecter les endpoints tRPC réels du backend
 - [ ] Implémenter l'authentification admin

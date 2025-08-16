@@ -93,7 +93,7 @@ export class CleanupStalePaymentIntentsJob {
           },
           {
             OR: [
-              // Note: order_id ne peut pas être null selon le schéma
+          
               // Les paiements orphelins seraient détectés différemment
               {
                 order: {

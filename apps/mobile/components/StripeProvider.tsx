@@ -14,9 +14,9 @@ interface StripeProviderProps {
   children: React.ReactNode;
 }
 
-// Mock de l'API pour récupérer la clé publishable
+
 const fetchPublishableKey = async (): Promise<string> => {
-  // Simulation d'un appel API
+
   await new Promise(resolve => setTimeout(resolve, 500));
   
   // En production, ceci viendra de votre API tRPC
@@ -40,7 +40,7 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children }) => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la récupération de la clé Stripe';
       setError(errorMessage);
-      console.error('Erreur Stripe:', err);
+      
     } finally {
       setIsLoading(false);
     }

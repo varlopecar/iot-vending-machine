@@ -4,7 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { TrendingUp, Euro } from "lucide-react";
 
-// Mock data pour le graphique
+
 const revenueData = [
   { day: "Lun", revenue: 145.5, orders: 23 },
   { day: "Mar", revenue: 189.75, orders: 31 },

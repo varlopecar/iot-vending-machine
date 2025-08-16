@@ -38,7 +38,7 @@ export interface Order {
   date: string;
   items: CartItem[];
   totalPrice: number;
-  // Supporte soit une image mock, soit un token dynamiquement généré
+
   qrCodeImage?: any;
   qrCodeToken?: string;
   expiresAt: Date;

@@ -44,8 +44,7 @@ export const useStripeCheckout = () => {
 const NGROK_URL = 'https://463f7f319008.ngrok-free.app';
       const endpoint = `${NGROK_URL}/trpc/stripe.createPaymentIntent`;
       
-      console.log('📤 Envoi de la requête vers Stripe:', requestBody);
-      console.log('🔗 URL:', endpoint);
+      
 
       const response = await fetch(endpoint, {
         method: 'POST',
@@ -58,23 +57,22 @@ const NGROK_URL = 'https://463f7f319008.ngrok-free.app';
 
       if (!response.ok) {
         const errorText = await response.text();
-        console.error('Réponse du serveur:', response.status, errorText);
+
         throw new Error(`Erreur HTTP ${response.status}: ${errorText}`);
       }
 
       const data = await response.json();
-      console.log('📥 Réponse reçue de Stripe:', data);
-      console.log('✅ Status HTTP:', response.status);
+      
       
       // Format de réponse tRPC : {"result": {"data": ...}}
       if (data.result?.data) {
         return data.result.data;
       } else {
-        console.error('Format de réponse inattendu:', data);
+
         throw new Error('Format de réponse invalide du serveur');
       }
     } catch (error) {
-      console.error('Erreur createPaymentIntent:', error);
+      
       throw error;
     } finally {
       setIsLoading(false);
@@ -115,13 +113,13 @@ const NGROK_URL = 'https://463f7f319008.ngrok-free.app';
       });
 
       if (error) {
-        console.error('Erreur initialisation Payment Sheet:', error);
+
         throw new Error(`Erreur initialisation: ${error.message}`);
       }
 
       return true;
     } catch (error) {
-      console.error('Erreur configuration paiement:', error);
+      
       throw error;
     }
   };
@@ -139,7 +137,7 @@ const NGROK_URL = 'https://463f7f319008.ngrok-free.app';
           };
         }
         
-        console.error('Erreur paiement:', error);
+
         
         return {
           success: false,
@@ -149,7 +147,7 @@ const NGROK_URL = 'https://463f7f319008.ngrok-free.app';
 
       return { success: true };
     } catch (error) {
-      console.error('Erreur inattendue:', error);
+      
       return {
         success: false,
         error: 'Erreur inattendue lors du paiement'
@@ -182,7 +180,7 @@ const NGROK_URL = 'https://463f7f319008.ngrok-free.app';
       
       return result;
     } catch (error) {
-      console.error('Erreur processus de paiement:', error);
+      
       return {
         success: false,
         error: error instanceof Error ? error.message : 'Erreur inconnue'

@@ -179,10 +179,7 @@ export class CheckoutService {
       }
 
       // Erreur interne
-      console.error(
-        `Erreur lors de la création de l'intention de paiement pour la commande ${input.orderId}:`,
-        error,
-      );
+
       throw new BadRequestException(
         "Erreur lors de la création de l'intention de paiement",
       );
@@ -236,10 +233,7 @@ export class CheckoutService {
         throw error;
       }
 
-      console.error(
-        `Erreur lors de la récupération du statut pour la commande ${input.orderId}:`,
-        error,
-      );
+
       throw new BadRequestException('Erreur lors de la récupération du statut');
     }
   }
@@ -260,11 +254,7 @@ export class CheckoutService {
     error: Stripe.errors.StripeError,
     orderId: string,
   ): never {
-    console.error(`Erreur Stripe pour la commande ${orderId}:`, {
-      type: error.type,
-      code: error.code,
-      message: error.message,
-    });
+
 
     switch (error.type) {
       case 'StripeInvalidRequestError':

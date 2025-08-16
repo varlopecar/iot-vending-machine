@@ -52,7 +52,7 @@ export default function IndexScreen() {
         const firstOnline = list.find(m => (m.status || '').toLowerCase() === 'online') || list[0];
         setSelectedMachineId(firstOnline?.id || null);
       } catch (e) {
-        console.error('[Réserver] Erreur chargement machines:', e);
+
       }
     })();
     return () => { cancelled = true; };
@@ -84,7 +84,7 @@ export default function IndexScreen() {
         }));
         if (!cancelled) setProducts(mapped);
       } catch (e) {
-        console.error('[Réserver] Erreur chargement produits machine:', e);
+
       } finally {
         if (!cancelled) setIsLoading(false);
       }

@@ -4,19 +4,7 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
 import { Package, TrendingUp } from "lucide-react";
 
-// Mock data pour les produits les plus vendus
-const topProductsData = [
-  { name: "Coca-Cola 33cl", sold: 156, revenue: 390.0, category: "Boissons" },
-  { name: "Chips Nature 45g", sold: 134, revenue: 241.2, category: "Snacks" },
-  {
-    name: "Eau Minérale 50cl",
-    sold: 123,
-    revenue: 184.5,
-    category: "Boissons",
-  },
-  { name: "Kinder Bueno", sold: 89, revenue: 195.8, category: "Confiseries" },
-  { name: "Sandwich Jambon", sold: 67, revenue: 234.5, category: "Sandwichs" },
-];
+
 
 const categoryColors = {
   Boissons: "bg-blue-500",

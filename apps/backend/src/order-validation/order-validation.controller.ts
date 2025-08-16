@@ -111,7 +111,7 @@ export class OrderValidationController {
         created_at: order.created_at,
       };
     } catch (error) {
-      console.error('Erreur lors de la validation de la commande:', error);
+
 
       if (error instanceof z.ZodError) {
         throw new BadRequestException({
@@ -160,7 +160,7 @@ export class OrderValidationController {
         created_at: order.created_at,
       };
     } catch (error) {
-      console.error('Erreur lors de la validation du token QR:', error);
+
 
       if (error instanceof z.ZodError) {
         throw new BadRequestException({

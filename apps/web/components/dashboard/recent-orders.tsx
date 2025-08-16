@@ -11,7 +11,7 @@ import {
 } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils/format";
 
-// Mock data pour l'exemple
+
 const recentOrders = [
   {
     id: "ORD-001",

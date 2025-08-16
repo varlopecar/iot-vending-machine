@@ -120,7 +120,7 @@ export class OrderDeliveryController {
         items: order.items,
       };
     } catch (error) {
-      console.error('Erreur lors de la confirmation de livraison:', error);
+
 
       if (error instanceof z.ZodError) {
         throw new BadRequestException({
@@ -178,7 +178,7 @@ export class OrderDeliveryController {
         };
       }
 
-      // Note: Dans une vraie application, on préférerait marquer comme "ARCHIVED"
+  
       // plutôt que de supprimer complètement pour garder l'historique
       // Ici, on simule une suppression en mettant à jour le statut
 
@@ -194,7 +194,7 @@ export class OrderDeliveryController {
         previous_status: order.status,
       };
     } catch (error) {
-      console.error('Erreur lors de la suppression de commande:', error);
+
 
       if (error instanceof NotFoundException) {
         return {
@@ -226,7 +226,7 @@ export class OrderDeliveryController {
         order_status: cancelledOrder.status,
       };
     } catch (error) {
-      console.error("Erreur lors de l'annulation de commande:", error);
+
 
       if (error instanceof NotFoundException) {
         return {

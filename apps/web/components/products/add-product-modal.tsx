@@ -150,7 +150,7 @@ export function AddProductModal({
 
       onClose();
     } catch (error) {
-      console.error("Erreur lors de l'ajout du produit:", error);
+      
     } finally {
       setIsSubmitting(false);
     }

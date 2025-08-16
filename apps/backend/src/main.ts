@@ -31,10 +31,6 @@ async function bootstrap() {
 
   await app.listen(env.PORT);
 
-  console.log(`🚀 Serveur démarré sur le port ${env.PORT}`);
-  console.log(`🌍 Environnement: ${env.NODE_ENV}`);
-  console.log(
-    `💳 Stripe configuré en mode: ${env.STRIPE_SECRET_KEY.startsWith('sk_test_') ? 'TEST' : 'LIVE'}`,
-  );
+
 }
 bootstrap();
