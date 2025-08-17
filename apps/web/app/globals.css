@@ -3,12 +3,44 @@
 @tailwind utilities;
 
 @layer base {
+  html {
+    overflow-x: hidden;
+  }
+  
   body {
     @apply bg-light-background text-light-text;
+    overflow-x: hidden;
   }
   
   .dark body {
     @apply bg-dark-background text-dark-text;
+  }
+}
+
+@layer components {
+  /* Prévenir l'overflow horizontal sur les conteneurs principaux */
+  .main-container {
+    overflow-x: hidden;
+    min-width: 0;
+  }
+  
+  /* Gestion du layout responsive */
+  .sidebar-layout {
+    overflow-x: hidden;
+    min-width: 0;
+  }
+  
+  /* Gestion des z-index pour mobile */
+  .mobile-header {
+    z-index: 30;
+  }
+  
+  .mobile-sidebar-toggle {
+    z-index: 50;
+  }
+  
+  .mobile-sidebar {
+    z-index: 40;
   }
 }
 

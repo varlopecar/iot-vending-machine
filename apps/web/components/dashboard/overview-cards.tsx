@@ -67,7 +67,7 @@ export function OverviewCards() {
 
   return (
     <div
-      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 min-w-0 overflow-hidden"
       role="region"
       aria-label="Statistiques de vue d'ensemble"
     >

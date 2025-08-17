@@ -6,7 +6,11 @@ import { AlertsWidget } from "./alerts-widget";
 
 export function Dashboard() {
   return (
-    <main className="space-y-8" role="main" aria-labelledby="dashboard-title">
+    <main
+      className="space-y-8 min-w-0 overflow-hidden"
+      role="main"
+      aria-labelledby="dashboard-title"
+    >
       {/* Header */}
       <header>
         <h2
@@ -30,7 +34,7 @@ export function Dashboard() {
 
       {/* Second Row - Machine Status and Alerts */}
       <section
-        className="grid grid-cols-1 lg:grid-cols-2 gap-6"
+        className="grid grid-cols-1 lg:grid-cols-2 gap-6 min-w-0 overflow-hidden"
         aria-labelledby="status-title"
       >
         <h3 id="status-title" className="sr-only">

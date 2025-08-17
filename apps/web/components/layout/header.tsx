@@ -16,7 +16,7 @@ export function Header({ onSidebarToggle, isSidebarOpen }: HeaderProps) {
 
   return (
     <header
-      className="bg-light-background dark:bg-dark-background border-b border-light-border dark:border-dark-border px-6 py-4"
+      className="bg-light-background dark:bg-dark-background border-b border-light-border dark:border-dark-border px-6 py-4 lg:px-6 pl-20 lg:pl-6 mobile-header"
       role="banner"
     >
       <div className="flex items-center justify-between">

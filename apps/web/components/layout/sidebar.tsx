@@ -67,7 +67,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <Button
         variant="ghost"
         size="sm"
-        className="fixed top-4 left-4 z-50 lg:hidden"
+        className="fixed top-4 left-4 z-50 lg:hidden bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border shadow-sm mobile-sidebar-toggle"
         onClick={onToggle}
         aria-label={
           isOpen
@@ -108,15 +108,16 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-light-surface dark:bg-dark-surface border-r border-light-border dark:border-dark-border shadow-lg h-screen"
+          "fixed inset-y-0 left-0 z-50 bg-light-surface dark:bg-dark-surface border-r border-light-border dark:border-dark-border shadow-lg h-screen overflow-hidden",
+          isMobile ? "mobile-sidebar" : ""
         )}
         aria-label="Navigation principale"
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col min-w-0">
           {/* Logo - Clickable when collapsed on desktop */}
           <div
             className={cn(
-              "flex h-16 items-center border-b border-light-border dark:border-dark-border",
+              "flex h-16 items-center border-b border-light-border dark:border-dark-border flex-shrink-0",
               isOpen ? "px-6" : "px-0 justify-center"
             )}
           >
@@ -170,7 +171,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
 
           {/* Navigation */}
           <nav
-            className="flex-1 px-4 py-6 space-y-2 overflow-y-auto"
+            className="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden"
             aria-label="Menu de navigation"
           >
             {navigation.map((item) => {
@@ -225,7 +226,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-light-border dark:border-dark-border">
+          <div className="p-4 border-t border-light-border dark:border-dark-border flex-shrink-0">
             <AnimatePresence mode="wait">
               {isOpen && (
                 <motion.div
