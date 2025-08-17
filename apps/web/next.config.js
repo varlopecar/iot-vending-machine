@@ -12,6 +12,32 @@ const nextConfig = {
   },
   transpilePackages: [],
 
+  // Vercel deployment optimizations
+  output: 'standalone',
+
+  // Environment variable validation
+  env: {
+    NEXT_PUBLIC_APP_ENV: process.env.NEXT_PUBLIC_APP_ENV || 'development',
+  },
+
+  // Security headers (additional to vercel.json)
+  async headers() {
+    return [
+      {
+        source: '/(.*)',
+        headers: [
+          {
+            key: 'X-DNS-Prefetch-Control',
+            value: 'on'
+          },
+          {
+            key: 'Strict-Transport-Security',
+            value: 'max-age=63072000; includeSubDomains; preload'
+          },
+        ],
+      },
+    ];
+  },
 };
 
 export default nextConfig;
