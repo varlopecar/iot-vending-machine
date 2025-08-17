@@ -117,8 +117,10 @@ export function MachineList() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Machines</h1>
-            <p className="text-muted-foreground">
+            <h2 className="text-3xl font-bold tracking-tight text-light-text dark:text-dark-text">
+              Machines
+            </h2>
+            <p className="text-light-text dark:text-dark-textSecondary">
               Surveillez et gérez vos machines de distribution
             </p>
           </div>
@@ -139,8 +141,10 @@ export function MachineList() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Machines</h1>
-            <p className="text-muted-foreground">
+            <h2 className="text-3xl font-bold tracking-tight text-light-text dark:text-dark-text">
+              Machines
+            </h2>
+            <p className="text-light-text dark:text-dark-textSecondary">
               Surveillez et gérez vos machines de distribution
             </p>
           </div>
@@ -169,8 +173,10 @@ export function MachineList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Machines</h1>
-          <p className="text-muted-foreground">
+          <h2 className="text-3xl font-bold tracking-tight text-light-text dark:text-dark-text">
+            Machines
+          </h2>
+          <p className="text-light-text dark:text-dark-textSecondary">
             Surveillez et gérez vos machines de distribution
           </p>
         </div>
@@ -193,7 +199,10 @@ export function MachineList() {
           transition={{ duration: 0.3 }}
         >
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle
+              className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <div className="flex-1">
               <h3 className="font-medium text-yellow-800 mb-1">
                 {incompleteCount} machine{incompleteCount > 1 ? "s" : ""}{" "}
@@ -236,7 +245,10 @@ export function MachineList() {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <Search
+                  className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-light-text dark:text-dark-textSecondary"
+                  aria-hidden="true"
+                />
                 <Input
                   placeholder="Rechercher une machine..."
                   value={searchTerm}
@@ -339,11 +351,11 @@ export function MachineList() {
                       <div className="flex-1">
                         <CardTitle
                           id={`machine-title-${machine.id}`}
-                          className="text-lg mb-2"
+                          className="text-lg mb-2 text-light-text dark:text-dark-text"
                         >
                           {machine.label}
                         </CardTitle>
-                        <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
+                        <div className="flex items-center gap-1 text-sm text-light-text dark:text-dark-textSecondary mb-2">
                           <MapPin className="h-4 w-4" aria-hidden="true" />
                           <span>{machine.location}</span>
                         </div>
@@ -365,8 +377,6 @@ export function MachineList() {
                                 | "CRITICAL"
                                 | "LOW_STOCK"
                                 | "INCOMPLETE"
-                                | "MACHINE_OFFLINE"
-                                | "MAINTENANCE_REQUIRED"
                                 | null
                             }
                           />
@@ -386,11 +396,11 @@ export function MachineList() {
                           aria-hidden="true"
                         />
                         <div>
-                          <div className="text-muted-foreground">
+                          <div className="text-light-text dark:text-dark-textSecondary">
                             {revenueLabel}
                           </div>
                           <div
-                            className="font-semibold text-lg"
+                            className="font-semibold text-lg text-light-text dark:text-dark-text"
                             aria-label={`${revenueLabel}: ${revenueValue} euros`}
                           >
                             {revenueValue.toFixed(2)}€
@@ -403,9 +413,11 @@ export function MachineList() {
                           aria-hidden="true"
                         />
                         <div>
-                          <div className="text-muted-foreground">Cmd 30j</div>
+                          <div className="text-light-text dark:text-dark-textSecondary">
+                            Cmd 30j
+                          </div>
                           <div
-                            className="font-semibold text-lg"
+                            className="font-semibold text-lg text-light-text dark:text-dark-text"
                             aria-label={`Commandes sur 30 jours: ${orders30d}`}
                           >
                             {orders30d}
@@ -417,17 +429,17 @@ export function MachineList() {
                     {/* Stock Status */}
                     <div className="space-y-2">
                       <div className="flex justify-between text-sm">
-                        <span className="text-muted-foreground">
+                        <span className="text-light-text dark:text-dark-textSecondary">
                           Stock global
                         </span>
                         <span
-                          className={
+                          className={`font-bold ${
                             stockLevel > 70
-                              ? "text-green-600"
+                              ? "text-green-800 dark:text-green-300"
                               : stockLevel > 30
-                                ? "text-yellow-600"
-                                : "text-red-600"
-                          }
+                                ? "text-yellow-800 dark:text-yellow-300"
+                                : "text-red-800 dark:text-red-300"
+                          }`}
                           aria-label={`Niveau de stock: ${Math.round(stockLevel)}%`}
                         >
                           {Math.round(stockLevel)}%
@@ -456,41 +468,43 @@ export function MachineList() {
 
                     {/* Product Stats */}
                     <div className="grid grid-cols-3 gap-2 text-xs">
-                      <div className="text-center p-2 bg-muted/50 rounded-lg">
+                      <div className="text-center p-2 bg-gray-100 dark:bg-gray-800 rounded-lg">
                         <div
-                          className="font-semibold"
+                          className="font-semibold text-gray-800 dark:text-gray-100"
                           aria-label={`Slots configurés: ${stat?.totalSlots ?? 0}`}
                         >
                           {stat?.totalSlots ?? 0}
                         </div>
-                        <div className="text-muted-foreground">Slots</div>
+                        <div className="text-gray-700 dark:text-gray-300">
+                          Slots
+                        </div>
                       </div>
-                      <div className="text-center p-2 bg-yellow-100 dark:bg-yellow-900/20 rounded-lg">
+                      <div className="text-center p-2 bg-orange-100 dark:bg-orange-900/30 rounded-lg">
                         <div
-                          className="font-semibold text-yellow-700 dark:text-yellow-400"
+                          className="font-semibold text-orange-800 dark:text-orange-200"
                           aria-label={`Slots faible stock: ${stat?.lowStockCount ?? 0}`}
                         >
                           {stat?.lowStockCount ?? 0}
                         </div>
-                        <div className="text-yellow-600 dark:text-yellow-500">
+                        <div className="text-orange-700 dark:text-orange-300">
                           Stock faible
                         </div>
                       </div>
-                      <div className="text-center p-2 bg-red-100 dark:bg-red-900/20 rounded-lg">
+                      <div className="text-center p-2 bg-red-100 dark:bg-red-900/30 rounded-lg">
                         <div
-                          className="font-semibold text-red-700 dark:text-red-400"
+                          className="font-semibold text-red-800 dark:text-red-200"
                           aria-label={`Slots vides: ${stat?.outOfStockCount ?? 0}`}
                         >
                           {stat?.outOfStockCount ?? 0}
                         </div>
-                        <div className="text-red-600 dark:text-red-500">
+                        <div className="text-red-700 dark:text-red-300">
                           Rupture
                         </div>
                       </div>
                     </div>
 
                     {/* Additional Info */}
-                    <div className="text-xs text-muted-foreground space-y-1 pt-2 border-t">
+                    <div className="text-xs text-light-text dark:text-dark-textSecondary space-y-1 pt-2 border-t">
                       <div>Total revenus: {revenueTotal.toFixed(2)}€</div>
                       {stat && (
                         <div>
@@ -529,11 +543,13 @@ export function MachineList() {
           aria-live="polite"
         >
           <Monitor
-            className="h-12 w-12 text-muted-foreground mx-auto mb-4"
+            className="h-12 w-12 text-light-text dark:text-dark-textSecondary mx-auto mb-4"
             aria-hidden="true"
           />
-          <h3 className="text-lg font-medium mb-2">Aucune machine trouvée</h3>
-          <p className="text-muted-foreground">
+          <h3 className="text-lg font-medium mb-2 text-light-text dark:text-dark-text">
+            Aucune machine trouvée
+          </h3>
+          <p className="text-light-text dark:text-dark-textSecondary">
             {searchTerm || statusFilter !== "all"
               ? "Aucune machine ne correspond à vos critères de recherche."
               : "Aucune machine n'est configurée pour le moment."}

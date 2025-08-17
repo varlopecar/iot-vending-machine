@@ -136,7 +136,7 @@ export function AlertsWidget() {
           aria-label="Résumé des alertes"
         >
           {alertsSummary.criticalAlerts > 0 && (
-            <Badge className="text-xs !bg-red-600 !text-white !border-red-700 dark:!bg-red-800 dark:!text-white dark:!border-red-700">
+            <Badge variant="destructive" className="text-xs">
               {alertsSummary.criticalAlerts} critique
               {alertsSummary.criticalAlerts > 1 ? "s" : ""}
             </Badge>
