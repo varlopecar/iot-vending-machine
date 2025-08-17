@@ -183,7 +183,7 @@ export function MachineRestockHistory({
       <CardContent>
         {showInitialButton && (
           <div className="flex items-center justify-center py-4">
-            <Button variant="secondary" onClick={handleShow}>
+            <Button variant="ghost" onClick={handleShow}>
               <History className="w-4 h-4 mr-2" /> Afficher l'historique
             </Button>
           </div>

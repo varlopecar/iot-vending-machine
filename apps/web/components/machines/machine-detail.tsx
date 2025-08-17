@@ -211,15 +211,15 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             </Button>
           </Link>
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">
+            <h2 className="text-3xl font-bold tracking-tight text-light-text dark:text-dark-text">
               {machine.label}
-            </h1>
-            <div className="flex items-center gap-2 text-muted-foreground mt-1">
+            </h2>
+            <div className="flex items-center gap-2 text-light-text dark:text-dark-textSecondary mt-1">
               <MapPin className="w-4 h-4" />
               <span>{machine.location}</span>
             </div>
             {machine.contact && (
-              <div className="flex items-center gap-2 text-muted-foreground mt-1">
+              <div className="flex items-center gap-2 text-light-text dark:text-dark-textSecondary mt-1">
                 <span className="text-sm">Contact:</span>
                 <a href={`mailto:${machine.contact}`} className="underline">
                   {machine.contact}
@@ -272,7 +272,10 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           transition={{ delay: 0.1 }}
         >
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+            <AlertTriangle
+              className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5"
+              aria-hidden="true"
+            />
             <div className="flex-1">
               <h3 className="font-medium text-yellow-800 mb-1">
                 Configuration incomplète
@@ -307,31 +310,35 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           </CardHeader>
           <CardContent>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-              <div className="text-center p-4 bg-muted/50 rounded-lg">
-                <div className="text-2xl font-bold">{totalSlots}</div>
-                <div className="text-sm text-muted-foreground">
+              <div className="text-center p-4 bg-light-secondary/20 dark:bg-dark-secondary/20 rounded-lg">
+                <div className="text-2xl font-bold text-light-text dark:text-dark-text">
+                  {totalSlots}
+                </div>
+                <div className="text-sm text-light-text dark:text-dark-textSecondary">
                   Slots totaux
                 </div>
               </div>
               <div className="text-center p-4 bg-red-50 dark:bg-red-900/20 rounded-lg">
-                <div className="text-2xl font-bold text-red-600">
+                <div className="text-2xl font-bold text-red-600 dark:text-red-400">
                   {emptySlots}
                 </div>
-                <div className="text-sm text-muted-foreground">Slots vides</div>
+                <div className="text-sm text-light-text dark:text-dark-textSecondary">
+                  Slots vides
+                </div>
               </div>
               <div className="text-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg">
-                <div className="text-2xl font-bold text-yellow-600">
+                <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                   {lowStockSlots}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-light-text dark:text-dark-textSecondary">
                   Stock faible
                 </div>
               </div>
               <div className="text-center p-4 bg-green-50 dark:bg-green-900/20 rounded-lg">
-                <div className="text-2xl font-bold text-green-600">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400">
                   {fullSlots}
                 </div>
-                <div className="text-sm text-muted-foreground">
+                <div className="text-sm text-light-text dark:text-dark-textSecondary">
                   Slots pleins
                 </div>
               </div>
@@ -390,7 +397,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               <Package className="w-5 h-5" />
               Slots de la machine
               {totalSlots > 0 && (
-                <Badge variant="secondary">{totalSlots}/6 slots</Badge>
+                <Badge variant="default">{totalSlots}/6 slots</Badge>
               )}
               {totalSlots === 0 && <Badge variant="outline">0/6 slots</Badge>}
             </CardTitle>
@@ -436,7 +443,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             {/* Message si aucun slot du tout */}
             {totalSlots === 0 && (
               <div className="text-center py-8">
-                <p className="text-muted-foreground mb-4">
+                <p className="text-light-text dark:text-dark-textSecondary mb-4">
                   Cliquez sur "Ajouter un produit" ci-dessus pour commencer la
                   configuration.
                 </p>

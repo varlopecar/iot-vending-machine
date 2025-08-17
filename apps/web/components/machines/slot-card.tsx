@@ -152,7 +152,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               {/* Informations du slot */}
               <div className="flex-1 min-w-0">
                 <div className="flex items-center gap-2 mb-1">
-                  <span className="text-xs font-mono text-muted-foreground bg-muted px-2 py-1 rounded">
+                  <span className="text-xs font-mono text-light-text dark:text-dark-textSecondary bg-light-secondary/20 dark:bg-dark-secondary/20 px-2 py-1 rounded">
                     Slot {slot.slot_number}
                   </span>
                   <Badge variant={config.variant} className="text-xs">
@@ -162,12 +162,12 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
                 </div>
                 <h3
                   id={`slot-title-${slot.id}`}
-                  className="font-semibold text-sm leading-tight truncate"
+                  className="font-semibold text-sm leading-tight truncate text-light-text dark:text-dark-text"
                   title={slot.product_name}
                 >
                   {slot.product_name}
                 </h3>
-                <p className="text-xs text-muted-foreground mt-1">
+                <p className="text-xs text-light-text dark:text-dark-textSecondary mt-1">
                   {slot.product_price.toFixed(2)}€
                 </p>
               </div>
@@ -181,8 +181,10 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
           {/* Indicateur de stock visuel */}
           <div className="space-y-2">
             <div className="flex justify-between text-xs">
-              <span className="text-muted-foreground">Stock</span>
-              <span className={`font-medium ${config.color}`}>
+              <span className="text-light-text dark:text-dark-textSecondary">
+                Stock
+              </span>
+              <span className={`font-bold text-light-text dark:text-dark-text`}>
                 {slot.quantity}/{slot.max_capacity}
               </span>
             </div>
