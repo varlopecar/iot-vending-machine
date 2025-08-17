@@ -1,11 +1,19 @@
-'use client';
+"use client";
 
-import { PopularProducts, TopMachines, ComingSoonCard } from '@/components/analytics';
-import { TrendingUp, Clock } from 'lucide-react';
-import { api } from '@/lib/trpc/client';
+import {
+  PopularProducts,
+  TopMachines,
+  ComingSoonCard,
+} from "@/components/analytics";
+import { TrendingUp, Clock } from "lucide-react";
+import { api } from "@/lib/trpc/client";
 
 export default function AnalyticsPage() {
-  const { data: analytics, isLoading, error } = api.analytics.getCurrentMonthAnalytics.useQuery();
+  const {
+    data: analytics,
+    isLoading,
+    error,
+  } = api.analytics.getCurrentMonthAnalytics.useQuery();
 
   return (
     <div className="space-y-6">
@@ -25,14 +33,14 @@ export default function AnalyticsPage() {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-        <PopularProducts 
-          products={analytics?.popularProducts || []} 
-          isLoading={isLoading} 
+        <PopularProducts
+          products={analytics?.popularProducts || []}
+          isLoading={isLoading}
         />
 
-        <TopMachines 
-          machines={analytics?.topMachinesByRevenue || []} 
-          isLoading={isLoading} 
+        <TopMachines
+          machines={analytics?.topMachinesByRevenue || []}
+          isLoading={isLoading}
         />
 
         <ComingSoonCard

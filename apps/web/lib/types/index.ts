@@ -1,9 +1,14 @@
 // Types du back-office partagés
 export interface DashboardStats {
-  totalOrders: number
-  totalRevenue: number
+  totalRevenueCents: number
+  revenueGrowthPercent: number
+  totalSales: number
+  salesGrowthPercent: number
   totalMachines: number
-  activeMachines: number
+  onlineMachines: number
+  totalProducts: number
+  activeProducts: number
+  totalOrders: number
   lowStockItems: number
   outOfStockItems: number
 }
@@ -78,15 +83,4 @@ export interface CurrentMonthAnalytics {
   currentMonth: string
   popularProducts: PopularProduct[]
   topMachinesByRevenue: TopMachineRevenue[]
-}
-
-export interface DashboardStats {
-  totalRevenueCents: number
-  revenueGrowthPercent: number
-  totalSales: number
-  salesGrowthPercent: number
-  totalMachines: number
-  onlineMachines: number
-  totalProducts: number
-  activeProducts: number
 }

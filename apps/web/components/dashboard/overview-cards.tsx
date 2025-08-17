@@ -44,60 +44,80 @@ export function OverviewCards() {
     {
       title: "Revenus",
       value: dashboardStats
-        ? formatCurrency(dashboardStats.totalRevenueCents)
+        ? formatCurrency(dashboardStats.totalRevenueCents || 0)
         : "€0",
       description: dashboardStats
-        ? `${formatGrowth(dashboardStats.revenueGrowthPercent)} ce mois`
+        ? `${formatGrowth(dashboardStats.revenueGrowthPercent || 0)} ce mois`
         : "0% ce mois",
       icon: Euro,
       loading: isLoading,
-      growth: dashboardStats?.revenueGrowthPercent,
+      growth: dashboardStats?.revenueGrowthPercent || 0,
     },
     {
       title: "Ventes",
       value: dashboardStats?.totalSales?.toString() || "0",
       description: dashboardStats
-        ? `${formatGrowth(dashboardStats.salesGrowthPercent)} cette semaine`
+        ? `${formatGrowth(dashboardStats.salesGrowthPercent || 0)} cette semaine`
         : "0% cette semaine",
       icon: TrendingUp,
       loading: isLoading,
-      growth: dashboardStats?.salesGrowthPercent,
+      growth: dashboardStats?.salesGrowthPercent || 0,
     },
   ];
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+    <div
+      className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6"
+      role="region"
+      aria-label="Statistiques de vue d'ensemble"
+    >
       {cards.map((card, index) => {
         const Icon = card.icon;
 
         return (
-          <Card key={index}>
+          <Card
+            key={index}
+            role="article"
+            aria-labelledby={`card-title-${index}`}
+          >
             <CardHeader className="flex flex-row items-center justify-between space-y-0 pb-2">
-              <CardTitle className="text-sm font-medium">
+              <CardTitle
+                id={`card-title-${index}`}
+                className="text-sm font-medium text-light-text dark:text-dark-text"
+              >
                 {card.title}
               </CardTitle>
-              <Icon className="h-4 w-4 text-gray-600" />
+              <Icon
+                className="h-4 w-4 text-light-textSecondary dark:text-dark-textSecondary"
+                aria-hidden="true"
+              />
             </CardHeader>
             <CardContent>
-              <div className="text-2xl font-bold">
+              <div className="text-2xl font-bold text-light-text dark:text-dark-text">
                 {card.loading ? (
-                  <div className="h-8 w-16 bg-gray-200 rounded animate-pulse"></div>
+                  <div
+                    className="h-8 w-16 bg-gray-200 dark:bg-gray-700 rounded animate-pulse"
+                    aria-hidden="true"
+                  ></div>
                 ) : (
                   card.value
                 )}
               </div>
               {card.loading ? (
-                <div className="h-3 w-20 bg-gray-200 rounded animate-pulse mt-1"></div>
+                <div
+                  className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded animate-pulse mt-1"
+                  aria-hidden="true"
+                ></div>
               ) : (
                 <p
-                  className={`text-xs mt-1 ${
+                  className={`text-sm mt-2 ${
                     card.growth !== undefined
                       ? card.growth > 0
-                        ? "text-green-600"
+                        ? "text-green-700 dark:text-green-400"
                         : card.growth < 0
-                          ? "text-red-600"
-                          : "text-gray-600"
-                      : "text-gray-600"
+                          ? "text-red-700 dark:text-red-300"
+                          : "text-light-textSecondary dark:text-dark-textSecondary"
+                      : "text-light-textSecondary dark:text-dark-textSecondary"
                   }`}
                 >
                   {card.description}
