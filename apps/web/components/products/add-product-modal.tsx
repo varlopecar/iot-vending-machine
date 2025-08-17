@@ -9,14 +9,16 @@ import { Product } from "./product-card";
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (product: Omit<Product, "id" | "sold"> & {
-    allergens?: string;
-    calories?: string;
-    protein?: string;
-    carbs?: string;
-    fat?: string;
-    serving?: string;
-  }) => void;
+  onAddProduct: (
+    product: Omit<Product, "id" | "sold"> & {
+      allergens?: string;
+      calories?: string;
+      protein?: string;
+      carbs?: string;
+      fat?: string;
+      serving?: string;
+    }
+  ) => void;
 }
 
 const categories = ["Boissons", "Snacks", "Confiseries", "Sandwichs", "Autres"];
@@ -94,8 +96,9 @@ export function AddProductModal({
     // Image est optionnelle, on utilise une image par défaut
 
     // Check if cost is greater than price
-                        if (!newErrors.price && !newErrors.cost && cost >= price) {
-      newErrors.cost = "Le prix d&apos;achat doit être inférieur au prix de vente";
+    if (!newErrors.price && !newErrors.cost && cost >= price) {
+      newErrors.cost =
+        "Le prix d&apos;achat doit être inférieur au prix de vente";
     }
 
     setErrors(newErrors);
@@ -216,7 +219,7 @@ export function AddProductModal({
               <div>
                 <label
                   htmlFor="product-name"
-                  className="block text-sm font-medium mb-1"
+                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                 >
                   Nom du produit *
                 </label>
@@ -246,7 +249,7 @@ export function AddProductModal({
               <div>
                 <label
                   htmlFor="product-category"
-                  className="block text-sm font-medium mb-1"
+                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                 >
                   Catégorie *
                 </label>
@@ -271,7 +274,7 @@ export function AddProductModal({
                 <div>
                   <label
                     htmlFor="product-price"
-                    className="block text-sm font-medium mb-1"
+                    className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                   >
                     Prix de vente (€) *
                   </label>
@@ -301,7 +304,7 @@ export function AddProductModal({
                 <div>
                   <label
                     htmlFor="product-cost"
-                    className="block text-sm font-medium mb-1"
+                    className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                   >
                     Prix d'achat (€) *
                   </label>
@@ -333,7 +336,7 @@ export function AddProductModal({
               <div>
                 <label
                   htmlFor="product-allergens"
-                  className="block text-sm font-medium mb-1"
+                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                 >
                   Allergènes (optionnel)
                 </label>
@@ -341,25 +344,27 @@ export function AddProductModal({
                   id="product-allergens"
                   type="text"
                   value={formData.allergens}
-                  onChange={(e) => handleInputChange("allergens", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("allergens", e.target.value)
+                  }
                   placeholder="Ex: Gluten, Arachides, Lait (séparés par des virgules)"
                   className="placeholder-gray"
                 />
-                <p className="text-xs text-light-textSecondary dark:text-dark-textSecondary mt-1">
+                <p className="text-xs text-light-text dark:text-dark-textSecondary mt-1">
                   Séparez les allergènes par des virgules
                 </p>
               </div>
 
               {/* Valeurs nutritionnelles (optionnel) */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-light-text dark:text-dark-text">
                   Valeurs nutritionnelles (optionnel)
                 </label>
                 <div className="grid grid-cols-2 gap-4">
                   <div>
                     <label
                       htmlFor="product-calories"
-                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                     >
                       Calories (kcal)
                     </label>
@@ -368,7 +373,9 @@ export function AddProductModal({
                       type="number"
                       min="0"
                       value={formData.calories}
-                      onChange={(e) => handleInputChange("calories", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("calories", e.target.value)
+                      }
                       placeholder="150"
                       className="placeholder-gray"
                     />
@@ -376,7 +383,7 @@ export function AddProductModal({
                   <div>
                     <label
                       htmlFor="product-protein"
-                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                     >
                       Protéines (g)
                     </label>
@@ -386,7 +393,9 @@ export function AddProductModal({
                       step="0.1"
                       min="0"
                       value={formData.protein}
-                      onChange={(e) => handleInputChange("protein", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("protein", e.target.value)
+                      }
                       placeholder="2.5"
                       className="placeholder-gray"
                     />
@@ -394,7 +403,7 @@ export function AddProductModal({
                   <div>
                     <label
                       htmlFor="product-carbs"
-                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                     >
                       Glucides (g)
                     </label>
@@ -404,7 +413,9 @@ export function AddProductModal({
                       step="0.1"
                       min="0"
                       value={formData.carbs}
-                      onChange={(e) => handleInputChange("carbs", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("carbs", e.target.value)
+                      }
                       placeholder="35"
                       className="placeholder-gray"
                     />
@@ -412,7 +423,7 @@ export function AddProductModal({
                   <div>
                     <label
                       htmlFor="product-fat"
-                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                     >
                       Lipides (g)
                     </label>
@@ -431,7 +442,7 @@ export function AddProductModal({
                 <div className="mt-3">
                   <label
                     htmlFor="product-serving"
-                    className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                    className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                   >
                     Portion de référence
                   </label>
@@ -439,7 +450,9 @@ export function AddProductModal({
                     id="product-serving"
                     type="text"
                     value={formData.serving}
-                    onChange={(e) => handleInputChange("serving", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("serving", e.target.value)
+                    }
                     placeholder="Ex: 100g, 33cl, 1 pièce"
                     className="placeholder-gray"
                   />
@@ -448,7 +461,7 @@ export function AddProductModal({
 
               {/* Image */}
               <div>
-                <label className="block text-sm font-medium mb-1">
+                <label className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text">
                   Image du produit *
                 </label>
                 <div className="flex items-center gap-4">
@@ -461,7 +474,7 @@ export function AddProductModal({
                         className="h-full w-full object-cover"
                       />
                     ) : (
-                      <div className="flex items-center justify-center h-full text-light-textSecondary dark:text-dark-textSecondary">
+                      <div className="flex items-center justify-center h-full text-light-text dark:text-dark-textSecondary">
                         <Package className="h-6 w-6" />
                       </div>
                     )}
@@ -515,7 +528,7 @@ export function AddProductModal({
 
               <p
                 id="submit-help"
-                className="text-xs text-light-textSecondary dark:text-dark-textSecondary"
+                className="text-xs text-light-text dark:text-dark-textSecondary"
               >
                 * Champs obligatoires
               </p>
