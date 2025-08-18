@@ -115,7 +115,7 @@ export class StocksService {
                 await this.alertsService.updateMachineAlerts(updated.machine_id);
               }
             } catch (error) {
-              console.error('Erreur lors de la mise à jour des alertes:', error);
+              // Erreur silencieuse pour éviter de faire échouer la mise à jour
             }
             
             return this.mapStock(updated);
@@ -132,7 +132,7 @@ export class StocksService {
       try {
         await this.alertsService.updateMachineAlerts(stock.machine_id);
       } catch (error) {
-        console.error('Erreur lors de la mise à jour des alertes:', error);
+        // Erreur silencieuse pour éviter de faire échouer la mise à jour
       }
       
       return this.mapStock(stock);
@@ -165,7 +165,7 @@ export class StocksService {
     try {
       await this.alertsService.updateMachineAlerts(updated.machine_id);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des alertes:', error);
+      // Erreur silencieuse pour éviter de faire échouer la mise à jour
     }
     
     return this.mapStock(updated);
@@ -299,7 +299,7 @@ export class StocksService {
     try {
       await this.alertsService.updateMachineAlerts(slotData.machine_id);
     } catch (error) {
-      console.error('Erreur lors de la mise à jour des alertes après ajout de slot:', error);
+
     }
 
     return this.mapStock(stock);

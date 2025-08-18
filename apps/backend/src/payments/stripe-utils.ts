@@ -20,13 +20,11 @@ export function extractReceiptUrlFromPaymentIntent(
       }
     }
 
-    // Fallback: chercher dans les charges si latest_charge n'est pas disponible
-    // Note: Les charges ne sont pas directement accessibles via l'API PaymentIntent
-    // mais peuvent être récupérées via une requête séparée si nécessaire
+
 
     return null;
   } catch (error) {
-    console.warn("Erreur lors de l'extraction de l'URL du reçu:", error);
+
     return null;
   }
 }
@@ -44,13 +42,9 @@ export function extractErrorCodeFromPaymentIntent(
       return paymentIntent.last_payment_error.code;
     }
 
-    // Fallback: chercher dans les charges
-    // Note: Les charges ne sont pas directement accessibles via l'API PaymentIntent
-    // mais peuvent être récupérées via une requête séparée si nécessaire
-
     return null;
   } catch (error) {
-    console.warn("Erreur lors de l'extraction du code d'erreur:", error);
+
     return null;
   }
 }
@@ -68,13 +62,9 @@ export function extractErrorMessageFromPaymentIntent(
       return paymentIntent.last_payment_error.message;
     }
 
-    // Fallback: chercher dans les charges
-    // Note: Les charges ne sont pas directement accessibles via l'API PaymentIntent
-    // mais peuvent être récupérées via une requête séparée si nécessaire
-
     return null;
   } catch (error) {
-    console.warn("Erreur lors de l'extraction du message d'erreur:", error);
+
     return null;
   }
 }

@@ -27,35 +27,7 @@ interface CheckoutScreenProps {
   onError?: (error: string) => void;
 }
 
-// Mock des appels tRPC - à remplacer par la vraie implémentation
-const mockCheckoutAPI = {
-  createIntent: async (orderId: string): Promise<CheckoutCreateIntentResponse> => {
-    // Simulation d'un délai réseau
-    await new Promise(resolve => setTimeout(resolve, 1000));
-    
-    return {
-      publishableKey: 'pk_test_...', // Sera récupéré depuis le serveur
-      paymentIntentClientSecret: 'pi_test_secret_...',
-      customerId: 'cus_test_...',
-      ephemeralKey: 'ek_test_...',
-    };
-  },
-  
-  getStatus: async (orderId: string): Promise<CheckoutGetStatusResponse> => {
-    await new Promise(resolve => setTimeout(resolve, 500));
-    
-    return {
-      orderStatus: 'REQUIRES_PAYMENT',
-      paymentStatus: 'requires_payment_method',
-      paidAt: null,
-      receiptUrl: null,
-      amountTotalCents: 2500,
-      currency: 'EUR',
-      qrCodeToken: null,
-      stripePaymentIntentId: null,
-    };
-  },
-};
+
 
 export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
   orderId,
@@ -77,7 +49,8 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
       setState(prev => ({ ...prev, status: 'loading' }));
       
       // 1. Créer l'intention de paiement
-      const paymentData = await mockCheckoutAPI.createIntent(orderId);
+      // Implémentation à venir
+    throw new Error('API de checkout non implémentée');
       
       // 2. Configurer PaymentSheet
       const config: PaymentSheetConfig = {
@@ -148,7 +121,8 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
     
     const interval = setInterval(async () => {
       try {
-        const status = await mockCheckoutAPI.getStatus(orderId);
+        // Implémentation à venir
+      throw new Error('API de statut non implémentée');
         
         if (status.orderStatus === 'PAID' && status.qrCodeToken) {
           // Paiement confirmé, arrêter le polling
@@ -166,7 +140,7 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
         setState(prev => ({ ...prev, orderStatus: status }));
         
       } catch (error) {
-        console.error('Erreur lors du polling:', error);
+
       }
     }, 2000); // Polling toutes les 2 secondes
 

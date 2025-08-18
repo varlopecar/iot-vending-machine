@@ -50,7 +50,7 @@ export default function CommandesScreen() {
           setLocalOrders(mapped);
         }
       } catch (e) {
-        console.error('[Commandes] Erreur chargement:', e);
+
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -59,7 +59,7 @@ export default function CommandesScreen() {
     return () => { cancelled = true; };
   }, [user?.id]);
 
-  // Ne plus refléter les mocks du contexte pour éviter les données obsolètes
+
 
   // Déclenche un re-render toutes les minutes pour rafraîchir le compte à rebours
   useEffect(() => {
@@ -91,7 +91,7 @@ export default function CommandesScreen() {
             setLocalOrders(mapped);
           }
         } catch (e) {
-          console.error('[Commandes] Erreur re-focus:', e);
+  
         }
       };
       refetch();

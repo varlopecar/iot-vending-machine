@@ -90,7 +90,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
       setIsRestocking(false);
     },
     onError: (error) => {
-      console.error("Erreur lors du ravitaillement:", error);
+      
       setIsRestocking(false);
       if (
         error.message.includes("Server has closed") ||

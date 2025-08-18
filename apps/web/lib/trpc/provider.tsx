@@ -10,9 +10,8 @@ export function TRPCProvider({ children }: { children: React.ReactNode }) {
     () =>
       new QueryClient({
         logger: {
-          log: console.log,
-          warn: console.warn,
-          // Désactive l'affichage des erreurs dans la console (les UI gèrent l'alerte)
+          
+
           error: () => {},
         },
         defaultOptions: {

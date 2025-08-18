@@ -53,8 +53,8 @@ export default function LoginScreen() {
   };
 
   const handleForgotPassword = () => {
-    console.log("Mot de passe oublié");
-    // TODO: Implémenter la logique de récupération de mot de passe
+
+
   };
 
   return (

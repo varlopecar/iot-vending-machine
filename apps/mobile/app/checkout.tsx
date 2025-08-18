@@ -24,7 +24,7 @@ export default function CheckoutScreen() {
   });
 
   const handlePaymentSuccess = (result: PaymentResult) => {
-    console.log("Paiement réussi:", result);
+    
 
     Alert.alert(
       "Paiement réussi ! 🎉",
@@ -50,7 +50,7 @@ export default function CheckoutScreen() {
   };
 
   const handlePaymentError = (error: string) => {
-    console.error("Erreur de paiement:", error);
+    
 
     Alert.alert(
       "Erreur de paiement ❌",

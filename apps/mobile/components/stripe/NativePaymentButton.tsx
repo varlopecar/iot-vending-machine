@@ -54,7 +54,7 @@ export const NativePaymentButton: React.FC<NativePaymentButtonProps> = ({
         onError(result.error || "Paiement échoué");
       }
     } catch (error) {
-      console.error("Erreur paiement natif:", error);
+      
       onError(error instanceof Error ? error.message : "Erreur inattendue");
     } finally {
       setIsProcessing(false);

@@ -27,62 +27,7 @@ import {
   Badge,
 } from "@/components/ui";
 
-// Mock data pour l'exemple
-const mockOrders = [
-  {
-    id: "ORD-001",
-    customerName: "Jean Dupont",
-    customerEmail: "jean.dupont@email.com",
-    items: [
-      { name: "Coca-Cola 33cl", price: 2.5, quantity: 1 },
-      { name: "Chips Nature 45g", price: 1.8, quantity: 1 },
-    ],
-    total: 4.3,
-    machine: "Machine Campus A",
-    location: "Bâtiment Sciences",
-    status: "completed" as const,
-    paymentMethod: "card",
-    qrCode: "QR123456789",
-    orderDate: "2024-01-15T14:30:00Z",
-    pickupDate: "2024-01-15T14:35:00Z",
-    expiresAt: null,
-  },
-  {
-    id: "ORD-002",
-    customerName: "Marie Martin",
-    customerEmail: "marie.martin@email.com",
-    items: [{ name: "Eau Minérale 50cl", price: 1.5, quantity: 2 }],
-    total: 3.0,
-    machine: "Machine Cafétéria",
-    location: "Cafétéria principale",
-    status: "pending" as const,
-    paymentMethod: "card",
-    qrCode: "QR987654321",
-    orderDate: "2024-01-15T15:20:00Z",
-    pickupDate: null,
-    expiresAt: "2024-01-15T17:20:00Z",
-  },
-  {
-    id: "ORD-003",
-    customerName: "Pierre Bernard",
-    customerEmail: "pierre.bernard@email.com",
-    items: [
-      { name: "Kinder Bueno", price: 2.2, quantity: 2 },
-      { name: "Coca-Cola 33cl", price: 2.5, quantity: 1 },
-    ],
-    total: 6.9,
-    machine: "Machine Bibliothèque",
-    location: "Bibliothèque universitaire",
-    status: "expired" as const,
-    paymentMethod: "apple_pay",
-    qrCode: "QR456789123",
-    orderDate: "2024-01-14T16:45:00Z",
-    pickupDate: null,
-    expiresAt: "2024-01-14T18:45:00Z",
-  },
-  {
-    id: "ORD-004",
-    customerName: "Sophie Dubois",
+
     customerEmail: "sophie.dubois@email.com",
     items: [{ name: "Chips Nature 45g", price: 1.8, quantity: 1 }],
     total: 1.8,
@@ -134,7 +79,7 @@ const paymentMethods = {
 export function OrderList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [orders] = useState(mockOrders);
+  const [orders] = useState([]);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =

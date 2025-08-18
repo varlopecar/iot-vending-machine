@@ -26,60 +26,7 @@ import {
   Badge,
 } from "@/components/ui";
 
-// Mock data pour l'exemple
-const mockStockItems = [
-  {
-    id: "STOCK-001",
-    productId: "PROD-001",
-    productName: "Coca-Cola 33cl",
-    category: "Boissons",
-    machineId: "MAC-001",
-    machineName: "Machine Campus A",
-    machineLocation: "Bâtiment Sciences",
-    currentStock: 12,
-    maxCapacity: 15,
-    minThreshold: 5,
-    lastRefill: "2024-01-10",
-    avgConsumption: 8.5,
-    daysRemaining: 1.4,
-    status: "low_stock" as const,
-    price: 2.5,
-  },
-  {
-    id: "STOCK-002",
-    productId: "PROD-002",
-    productName: "Chips Nature 45g",
-    category: "Snacks",
-    machineId: "MAC-001",
-    machineName: "Machine Campus A",
-    machineLocation: "Bâtiment Sciences",
-    currentStock: 0,
-    maxCapacity: 10,
-    minThreshold: 3,
-    lastRefill: "2024-01-08",
-    avgConsumption: 5.2,
-    daysRemaining: 0,
-    status: "out_of_stock" as const,
-    price: 1.8,
-  },
-  {
-    id: "STOCK-003",
-    productId: "PROD-003",
-    productName: "Eau Minérale 50cl",
-    category: "Boissons",
-    machineId: "MAC-002",
-    machineName: "Machine Cafétéria",
-    machineLocation: "Cafétéria principale",
-    currentStock: 8,
-    maxCapacity: 12,
-    minThreshold: 4,
-    lastRefill: "2024-01-12",
-    avgConsumption: 6.8,
-    daysRemaining: 1.2,
-    status: "ok" as const,
-    price: 1.5,
-  },
-];
+
 
 const statusConfig = {
   out_of_stock: {
@@ -109,7 +56,7 @@ export function StockManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [machineFilter, setMachineFilter] = useState("all");
-  const [stocks] = useState(mockStockItems);
+  const [stocks] = useState([]);
 
   const filteredStocks = stocks.filter((stock) => {
     const matchesSearch =

@@ -26,7 +26,7 @@ export class StripeService {
 
       // Configuration des méthodes de paiement selon la plateforme
       // Pour les tests, on utilise uniquement automatic_payment_methods
-      // TODO: Réactiver Apple Pay/Google Pay quand le compte Stripe sera configuré
+  
       const paymentMethodOptions: any = {
         automatic_payment_methods: {
           enabled: true,
@@ -189,7 +189,6 @@ export class StripeService {
     try {
       // Vérifier que Stripe est disponible
       if (!this.stripe?.accounts?.retrieve) {
-        console.warn('Stripe accounts.retrieve method not available');
         return false;
       }
 
@@ -204,7 +203,6 @@ export class StripeService {
       // les capabilities du compte pour Apple Pay
       return canProcessPayments;
     } catch (error) {
-      console.warn('Erreur lors de la vérification Apple Pay:', error);
       return false;
     }
   }
@@ -216,7 +214,6 @@ export class StripeService {
     try {
       // Vérifier que Stripe est disponible
       if (!this.stripe?.accounts?.retrieve) {
-        console.warn('Stripe accounts.retrieve method not available');
         return false;
       }
 
@@ -224,7 +221,6 @@ export class StripeService {
       const account = await this.stripe.accounts.retrieve();
       return account.charges_enabled === true;
     } catch (error) {
-      console.warn('Erreur lors de la vérification Google Pay:', error);
       return false;
     }
   }

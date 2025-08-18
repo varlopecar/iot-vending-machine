@@ -38,7 +38,7 @@ export default function ProfilScreen() {
         {/* Header avec avatar et bouton paramètres */}
         <View className="items-center mt-6 mb-8">
           <ProfileAvatar
-            imageUri={require("../../assets/images/test.png")}
+            imageUri={null}
             size="large"
             showSettingsIcon={true}
             onSettingsPress={handleSettingsPress}

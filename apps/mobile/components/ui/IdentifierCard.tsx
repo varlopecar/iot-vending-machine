@@ -22,7 +22,7 @@ export default function IdentifierCard({
       onCopy();
     }
     // Ici on pourrait ajouter la logique pour copier dans le presse-papiers
-    console.log('Copied identifier:', identifier);
+    
   };
 
   return (
