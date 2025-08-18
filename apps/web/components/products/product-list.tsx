@@ -190,8 +190,10 @@ export function ProductList() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Produits</h1>
-            <p className="text-light-textSecondary dark:text-dark-textSecondary">
+            <h2 className="text-3xl font-bold tracking-tight text-light-text dark:text-dark-text">
+              Produits
+            </h2>
+            <p className="text-light-text dark:text-dark-textSecondary">
               Gérez votre catalogue de produits
             </p>
           </div>
@@ -212,8 +214,10 @@ export function ProductList() {
       <div className="space-y-6">
         <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
           <div>
-            <h1 className="text-3xl font-bold tracking-tight">Produits</h1>
-            <p className="text-light-textSecondary dark:text-dark-textSecondary">
+            <h2 className="text-3xl font-bold tracking-tight text-light-text dark:text-dark-text">
+              Produits
+            </h2>
+            <p className="text-light-text dark:text-dark-textSecondary">
               Gérez votre catalogue de produits
             </p>
           </div>
@@ -379,8 +383,10 @@ export function ProductList() {
         className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4"
       >
         <div>
-          <h1 className="text-3xl font-bold tracking-tight">Produits</h1>
-          <p className="text-light-textSecondary dark:text-dark-textSecondary">
+          <h2 className="text-3xl font-bold tracking-tight text-light-text dark:text-dark-text">
+            Produits
+          </h2>
+          <p className="text-light-text dark:text-dark-textSecondary">
             Gérez votre catalogue de produits
           </p>
         </div>
@@ -430,7 +436,7 @@ export function ProductList() {
         ) : (
           <Card>
             <CardContent className="flex flex-col items-center justify-center py-12">
-              <div className="text-light-textSecondary dark:text-dark-textSecondary text-center">
+              <div className="text-light-text dark:text-dark-textSecondary text-center">
                 <div className="text-4xl mb-4">📦</div>
                 <h3 className="text-lg font-medium mb-2">
                   Aucun produit trouvé

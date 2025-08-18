@@ -240,7 +240,7 @@ export function EditProductModal({
               <div>
                 <label
                   htmlFor="edit-product-name"
-                  className="block text-sm font-medium mb-1"
+                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                 >
                   Nom du produit *
                 </label>
@@ -270,7 +270,7 @@ export function EditProductModal({
               <div>
                 <label
                   htmlFor="edit-product-category"
-                  className="block text-sm font-medium mb-1"
+                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                 >
                   Catégorie *
                 </label>
@@ -295,7 +295,7 @@ export function EditProductModal({
                 <div>
                   <label
                     htmlFor="edit-product-price"
-                    className="block text-sm font-medium mb-1"
+                    className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                   >
                     Prix de vente (€) *
                   </label>
@@ -325,7 +325,7 @@ export function EditProductModal({
                 <div>
                   <label
                     htmlFor="edit-product-cost"
-                    className="block text-sm font-medium mb-1"
+                    className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                   >
                     Prix d&apos;achat (€) *
                   </label>
@@ -357,7 +357,7 @@ export function EditProductModal({
               <div>
                 <label
                   htmlFor="edit-product-allergens"
-                  className="block text-sm font-medium mb-1"
+                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
                 >
                   Allergènes (optionnel)
                 </label>
@@ -378,7 +378,7 @@ export function EditProductModal({
 
               {/* Valeurs nutritionnelles (optionnel) */}
               <div>
-                <label className="block text-sm font-medium mb-2">
+                <label className="block text-sm font-medium mb-2 text-light-text dark:text-dark-text">
                   Valeurs nutritionnelles (optionnel)
                 </label>
                 <div className="grid grid-cols-2 gap-4">
@@ -404,7 +404,7 @@ export function EditProductModal({
                   <div>
                     <label
                       htmlFor="edit-product-protein"
-                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                     >
                       Protéines (g)
                     </label>
@@ -424,7 +424,7 @@ export function EditProductModal({
                   <div>
                     <label
                       htmlFor="edit-product-carbs"
-                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                     >
                       Glucides (g)
                     </label>
@@ -444,7 +444,7 @@ export function EditProductModal({
                   <div>
                     <label
                       htmlFor="edit-product-fat"
-                      className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                     >
                       Lipides (g)
                     </label>
@@ -463,7 +463,7 @@ export function EditProductModal({
                 <div className="mt-3">
                   <label
                     htmlFor="edit-product-serving"
-                    className="block text-xs text-light-textSecondary dark:text-dark-textSecondary mb-1"
+                    className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
                   >
                     Portion de référence
                   </label>
@@ -503,7 +503,7 @@ export function EditProductModal({
 
               <p
                 id="submit-help"
-                className="text-xs text-light-textSecondary dark:text-dark-textSecondary"
+                className="text-xs text-light-text dark:text-dark-textSecondary"
               >
                 * Champs obligatoires
               </p>

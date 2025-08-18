@@ -67,10 +67,21 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
       <Button
         variant="ghost"
         size="sm"
-        className="fixed top-4 left-4 z-50 lg:hidden"
+        className="fixed top-4 left-4 z-50 lg:hidden bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border shadow-sm mobile-sidebar-toggle"
         onClick={onToggle}
+        aria-label={
+          isOpen
+            ? "Fermer le menu de navigation"
+            : "Ouvrir le menu de navigation"
+        }
+        aria-expanded={isOpen}
+        aria-controls="sidebar-navigation"
       >
-        {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+        {isOpen ? (
+          <X className="h-5 w-5" aria-hidden="true" />
+        ) : (
+          <Menu className="h-5 w-5" aria-hidden="true" />
+        )}
       </Button>
 
       {/* Mobile backdrop */}
@@ -82,12 +93,14 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
             exit={{ opacity: 0 }}
             className="fixed inset-0 z-40 bg-black/20 backdrop-blur-sm lg:hidden"
             onClick={onToggle}
+            aria-hidden="true"
           />
         )}
       </AnimatePresence>
 
       {/* Sidebar */}
       <motion.aside
+        id="sidebar-navigation"
         initial={false}
         animate={{
           x: isMobile ? (isOpen ? 0 : "-100%") : 0,
@@ -95,14 +108,16 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         }}
         transition={{ duration: 0.3, ease: "easeInOut" }}
         className={cn(
-          "fixed inset-y-0 left-0 z-50 bg-light-surface dark:bg-dark-surface border-r border-light-border dark:border-dark-border shadow-lg h-screen"
+          "fixed inset-y-0 left-0 z-50 bg-light-surface dark:bg-dark-surface border-r border-light-border dark:border-dark-border shadow-lg h-screen overflow-hidden",
+          isMobile ? "mobile-sidebar" : ""
         )}
+        aria-label="Navigation principale"
       >
-        <div className="flex h-full flex-col">
+        <div className="flex h-full flex-col min-w-0">
           {/* Logo - Clickable when collapsed on desktop */}
           <div
             className={cn(
-              "flex h-16 items-center border-b border-light-border dark:border-dark-border",
+              "flex h-16 items-center border-b border-light-border dark:border-dark-border flex-shrink-0",
               isOpen ? "px-6" : "px-0 justify-center"
             )}
           >
@@ -115,9 +130,29 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                   "cursor-pointer hover:opacity-80 transition-opacity"
               )}
               onClick={!isOpen && !isMobile ? onToggle : undefined}
+              role={!isOpen && !isMobile ? "button" : undefined}
+              tabIndex={!isOpen && !isMobile ? 0 : undefined}
+              onKeyDown={
+                !isOpen && !isMobile
+                  ? (e) => {
+                      if (e.key === "Enter" || e.key === " ") {
+                        e.preventDefault();
+                        onToggle();
+                      }
+                    }
+                  : undefined
+              }
+              aria-label={
+                !isOpen && !isMobile
+                  ? "Développer le menu de navigation"
+                  : undefined
+              }
             >
               <div className="h-8 w-8 rounded-lg bg-light-secondary/20 dark:bg-dark-secondary/20 flex items-center justify-center">
-                <Monitor className="h-5 w-5 text-light-secondary dark:text-dark-secondary" />
+                <Monitor
+                  className="h-5 w-5 text-light-secondary dark:text-dark-secondary"
+                  aria-hidden="true"
+                />
               </div>
               <AnimatePresence mode="wait">
                 {isOpen && (
@@ -125,7 +160,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     initial={{ opacity: 0, width: 0 }}
                     animate={{ opacity: 1, width: "auto" }}
                     exit={{ opacity: 0, width: 0 }}
-                    className="text-lg font-bold overflow-hidden"
+                    className="text-lg font-bold overflow-hidden text-light-text dark:text-dark-text"
                   >
                     VendingAdmin
                   </motion.span>
@@ -135,7 +170,10 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-2 overflow-y-auto">
+          <nav
+            className="flex-1 px-4 py-6 space-y-2 overflow-y-auto overflow-x-hidden"
+            aria-label="Menu de navigation"
+          >
             {navigation.map((item) => {
               const isActive = pathname === item.href;
               const Icon = item.icon;
@@ -153,8 +191,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                       : "text-light-textSecondary dark:text-dark-textSecondary hover:text-light-text dark:hover:text-dark-text hover:bg-light-tertiary dark:hover:bg-dark-tertiary"
                   )}
                   title={!isOpen ? item.name : undefined}
+                  aria-current={isActive ? "page" : undefined}
                 >
-                  <Icon className="h-5 w-5 flex-shrink-0" />
+                  <Icon className="h-5 w-5 flex-shrink-0" aria-hidden="true" />
                   <AnimatePresence mode="wait">
                     {isOpen && (
                       <motion.span
@@ -171,12 +210,13 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                     <motion.div
                       layoutId="activeIndicator"
                       className="ml-auto h-2 w-2 rounded-full bg-light-buttonText dark:bg-dark-buttonText"
+                      aria-hidden="true"
                     />
                   )}
 
                   {/* Tooltip for collapsed state */}
                   {!isOpen && (
-                    <div className="absolute left-full ml-2 px-2 py-1 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50">
+                    <div className="absolute left-full ml-2 px-2 py-1 bg-light-surface dark:bg-dark-surface border border-light-border dark:border-dark-border rounded-md text-xs opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-50 text-light-text dark:text-dark-text">
                       {item.name}
                     </div>
                   )}
@@ -186,7 +226,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
           </nav>
 
           {/* Footer */}
-          <div className="p-4 border-t border-light-border dark:border-dark-border">
+          <div className="p-4 border-t border-light-border dark:border-dark-border flex-shrink-0">
             <AnimatePresence mode="wait">
               {isOpen && (
                 <motion.div

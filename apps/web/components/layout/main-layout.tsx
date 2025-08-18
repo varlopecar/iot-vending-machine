@@ -12,11 +12,21 @@ export function MainLayout({ children }: MainLayoutProps) {
   const [isSidebarOpen, setIsSidebarOpen] = useState(true);
 
   return (
-    <div className="min-h-screen bg-light-background dark:bg-dark-background">
-      <Sidebar isOpen={isSidebarOpen} onToggle={() => setIsSidebarOpen(!isSidebarOpen)} />
-      <div className={`transition-all duration-300 ${isSidebarOpen ? 'lg:ml-64' : 'lg:ml-16'}`}>
-        <Header onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)} isSidebarOpen={isSidebarOpen} />
-        <main className="flex-1 p-6">{children}</main>
+    <div className="min-h-screen bg-light-background dark:bg-dark-background overflow-x-hidden">
+      <Sidebar
+        isOpen={isSidebarOpen}
+        onToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+      />
+      <div
+        className={`transition-all duration-300 ease-in-out ${
+          isSidebarOpen ? "lg:pl-64" : "lg:pl-16"
+        }`}
+      >
+        <Header
+          onSidebarToggle={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+        />
+        <main className="flex-1 p-6 min-w-0">{children}</main>
       </div>
     </div>
   );

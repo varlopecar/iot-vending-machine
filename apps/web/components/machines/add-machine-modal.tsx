@@ -45,14 +45,14 @@ export function AddMachineModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg p-6 w-full max-w-md mx-4">
+      <div className="bg-light-background dark:bg-dark-background rounded-lg p-6 w-full max-w-md mx-4 border border-light-border dark:border-dark-border">
         <div className="flex justify-between items-center mb-4">
-          <h2 className="text-xl font-semibold text-gray-900">
+          <h2 className="text-xl font-semibold text-light-text dark:text-dark-text">
             Ajouter une machine
           </h2>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600"
+            className="text-light-textSecondary dark:text-dark-textSecondary hover:text-light-text dark:hover:text-dark-text"
             aria-label="Fermer"
           >
             <svg
@@ -75,7 +75,7 @@ export function AddMachineModal({
           <div>
             <label
               htmlFor="label"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-light-text dark:text-dark-text mb-1"
             >
               Nom de la machine <span className="text-red-500">*</span>
             </label>
@@ -90,7 +90,7 @@ export function AddMachineModal({
           <div>
             <label
               htmlFor="location"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-light-text dark:text-dark-text mb-1"
             >
               Localisation <span className="text-red-500">*</span>
             </label>
@@ -105,7 +105,7 @@ export function AddMachineModal({
           <div>
             <label
               htmlFor="contact"
-              className="block text-sm font-medium text-gray-700 mb-1"
+              className="block text-sm font-medium text-light-text dark:text-dark-text mb-1"
             >
               Contact email (responsable)
             </label>
@@ -116,7 +116,7 @@ export function AddMachineModal({
               onChange={(e) => setContact(e.target.value)}
               placeholder="email@exemple.com"
             />
-            <p className="text-xs text-gray-500 mt-1">
+            <p className="text-xs text-light-textSecondary dark:text-dark-textSecondary mt-1">
               Le statut initial sera Hors ligne. Vous pourrez l'activer après
               configuration.
             </p>

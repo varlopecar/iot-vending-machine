@@ -53,15 +53,15 @@ export function ProductCard({
         <CardHeader className="pb-4">
           <div className="flex items-start justify-between">
             <div className="flex-1">
-              <CardTitle
+              <h3
                 id={`product-name-${product.id}`}
-                className="text-lg mb-1 line-clamp-1 cursor-help"
+                className="text-lg mb-1 line-clamp-1 cursor-help font-semibold"
                 title={product.name}
               >
                 {product.name}
-              </CardTitle>
+              </h3>
               <div className="flex items-center gap-2 mb-2">
-                <Badge variant="outline" className="text-xs">
+                <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
                   <Tag className="h-4 w-4 mr-1" />
                   {product.category}
                 </Badge>
@@ -109,18 +109,18 @@ export function ProductCard({
           {/* Informations de prix */}
           <div className="grid grid-cols-2 gap-4">
             <div>
-              <div className="text-light-textSecondary dark:text-dark-textSecondary text-sm">
+              <div className="text-light-text dark:text-dark-textSecondary text-sm">
                 Prix de vente
               </div>
-              <div className="font-semibold text-lg">
+              <div className="font-semibold text-lg text-light-text dark:text-dark-text">
                 {formatCurrency(product.price)}
               </div>
             </div>
             <div>
-              <div className="text-light-textSecondary dark:text-dark-textSecondary text-sm">
+              <div className="text-light-text dark:text-dark-textSecondary text-sm">
                 Marge
               </div>
-              <div className="font-semibold text-lg text-green-600">
+              <div className="font-semibold text-lg text-green-800 dark:text-green-400">
                 {formatCurrency(product.margin)}
               </div>
             </div>
@@ -128,10 +128,12 @@ export function ProductCard({
 
           {/* Statistiques */}
           <div className="text-left">
-            <div className="text-light-textSecondary dark:text-dark-textSecondary text-sm">
+            <div className="text-light-text dark:text-dark-textSecondary text-sm">
               Vendus
             </div>
-            <div className="font-medium text-lg">{product.sold} unités</div>
+            <div className="font-medium text-lg text-light-text dark:text-dark-text">
+              {product.sold} unités
+            </div>
           </div>
         </CardContent>
       </Card>
