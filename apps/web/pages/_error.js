@@ -1,3 +1,6 @@
+import PropTypes from 'prop-types';
+import Link from 'next/link';
+
 function Error({ statusCode }) {
     return (
         <div style={{
@@ -17,10 +20,10 @@ function Error({ statusCode }) {
                 </h2>
                 <p style={{ color: '#6b7280', marginBottom: '2rem' }}>
                     {statusCode === 404
-                        ? 'La page que vous recherchez n\'existe pas.'
-                        : 'Une erreur inattendue s\'est produite.'}
+                        ? 'La page que vous recherchez n&apos;existe pas.'
+                        : 'Une erreur inattendue s&apos;est produite.'}
                 </p>
-                <a
+                <Link
                     href="/"
                     style={{
                         display: 'inline-flex',
@@ -35,12 +38,16 @@ function Error({ statusCode }) {
                         textDecoration: 'none'
                     }}
                 >
-                    Retour à l'accueil
-                </a>
+                    Retour à l&apos;accueil
+                </Link>
             </div>
         </div>
     );
 }
+
+Error.propTypes = {
+    statusCode: PropTypes.number,
+};
 
 Error.getInitialProps = ({ res, err }) => {
     const statusCode = res ? res.statusCode : err ? err.statusCode : 404;

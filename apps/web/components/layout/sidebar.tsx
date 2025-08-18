@@ -8,10 +8,7 @@ import {
   LayoutDashboard,
   Package,
   Monitor,
-  Boxes,
-  ShoppingCart,
   BarChart3,
-  Settings,
   Menu,
   X,
 } from "lucide-react";
@@ -111,8 +108,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 "flex items-center",
                 isOpen ? "space-x-2" : "",
                 !isOpen &&
-                  !isMobile &&
-                  "cursor-pointer hover:opacity-80 transition-opacity"
+                !isMobile &&
+                "cursor-pointer hover:opacity-80 transition-opacity"
               )}
               onClick={!isOpen && !isMobile ? onToggle : undefined}
             >

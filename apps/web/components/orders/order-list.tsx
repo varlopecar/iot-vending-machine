@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Search,
-  Filter,
   Download,
   Eye,
   ShoppingCart,
@@ -20,8 +19,6 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Button,
   Input,
   Badge,
@@ -378,14 +375,13 @@ export function OrderList() {
                         )}
                         {timeRemaining && order.status === "pending" && (
                           <div
-                            className={`text-xs mt-1 ${
-                              timeRemaining === "Expirée"
+                            className={`text-xs mt-1 ${timeRemaining === "Expirée"
                                 ? "text-red-600"
                                 : timeRemaining.includes("min") &&
-                                    !timeRemaining.includes("h")
+                                  !timeRemaining.includes("h")
                                   ? "text-orange-600"
                                   : "text-yellow-600"
-                            }`}
+                              }`}
                           >
                             Expire dans: {timeRemaining}
                           </div>
@@ -400,7 +396,7 @@ export function OrderList() {
                         <div className="text-xs text-muted-foreground mb-2">
                           {
                             paymentMethods[
-                              order.paymentMethod as keyof typeof paymentMethods
+                            order.paymentMethod as keyof typeof paymentMethods
                             ]
                           }
                         </div>

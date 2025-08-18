@@ -25,7 +25,7 @@ import { MachineSettingsModal } from "./machine-settings-modal";
 import { MachineAlertBadge } from "./machine-alert-badge";
 import { MachineRestockHistory } from "./machine-restock-history";
 import { api } from "../../lib/trpc/client";
-import type { Stock, Alert, MachineStatus, AlertType } from "@/lib/types/trpc";
+import type { Stock, Alert, MachineStatus } from "@/lib/types/trpc";
 
 
 

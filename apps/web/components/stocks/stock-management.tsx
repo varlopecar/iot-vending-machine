@@ -4,14 +4,11 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Search,
-  Filter,
   Plus,
   Minus,
   Package,
   AlertTriangle,
   XCircle,
-  TrendingUp,
-  Monitor,
   RefreshCw,
   Download,
   Upload,
@@ -19,8 +16,6 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Button,
   Input,
   Badge,
@@ -108,7 +103,7 @@ const statusConfig = {
 export function StockManagement() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [machineFilter, setMachineFilter] = useState("all");
+  const [machineFilter] = useState("all");
   const [stocks] = useState(mockStockItems);
 
   const filteredStocks = stocks.filter((stock) => {
@@ -331,13 +326,12 @@ export function StockManagement() {
                         </div>
                         <div className="w-full bg-muted rounded-full h-2">
                           <div
-                            className={`h-2 rounded-full transition-all duration-300 ${
-                              stock.status === "out_of_stock"
+                            className={`h-2 rounded-full transition-all duration-300 ${stock.status === "out_of_stock"
                                 ? "bg-red-500"
                                 : stock.status === "low_stock"
                                   ? "bg-yellow-500"
                                   : "bg-green-500"
-                            }`}
+                              }`}
                             style={{ width: `${stockPercentage}%` }}
                           />
                         </div>

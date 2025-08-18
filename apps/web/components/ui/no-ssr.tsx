@@ -8,7 +8,7 @@ interface NoSSRProps {
   fallback?: ReactNode;
 }
 
-const NoSSRWrapper = ({ children, fallback = null }: NoSSRProps) => {
+const NoSSRWrapper = ({ children }: NoSSRProps) => {
   return <>{children}</>;
 };
 

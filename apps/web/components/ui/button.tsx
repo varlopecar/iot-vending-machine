@@ -41,11 +41,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
     if (asChild) {
       // Si asChild est true, on retourne seulement les props de style et on laisse l'enfant gérer le rendu
       const child = React.Children.only(props.children as React.ReactElement);
-      const { children: _children, ...restProps } = props;
 
+      const childProps = child.props as Record<string, any> || {};
       return React.cloneElement(child, {
-        ...restProps,
-        className: cn(baseClasses, (child.props as any)?.className),
+        ...childProps,
+        className: cn(baseClasses, childProps.className),
         ref,
       } as any);
     }

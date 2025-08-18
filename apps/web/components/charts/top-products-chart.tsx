@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { Package, TrendingUp } from "lucide-react";
+import { Package } from "lucide-react";
 
 // Mock data pour les produits les plus vendus
 const topProductsData = [
@@ -66,11 +66,10 @@ export function TopProductsChart() {
                     {product.category}
                   </span>
                   <div
-                    className={`w-2 h-2 rounded-full ${
-                      categoryColors[
-                        product.category as keyof typeof categoryColors
+                    className={`w-2 h-2 rounded-full ${categoryColors[
+                      product.category as keyof typeof categoryColors
                       ]
-                    }`}
+                      }`}
                   />
                   <span className="text-xs text-green-600 font-medium">
                     {product.revenue.toFixed(2)}€
@@ -82,11 +81,10 @@ export function TopProductsChart() {
                     initial={{ width: 0 }}
                     animate={{ width: `${(product.sold / maxSold) * 100}%` }}
                     transition={{ delay: index * 0.1 + 0.2, duration: 0.6 }}
-                    className={`h-2 rounded-full ${
-                      categoryColors[
-                        product.category as keyof typeof categoryColors
+                    className={`h-2 rounded-full ${categoryColors[
+                      product.category as keyof typeof categoryColors
                       ]
-                    }`}
+                      }`}
                   />
                 </div>
               </div>

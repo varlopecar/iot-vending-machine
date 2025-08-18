@@ -4,7 +4,6 @@ import { api } from "@/lib/trpc/client";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -90,15 +89,14 @@ export function OverviewCards() {
                 <div className="h-3 w-20 bg-gray-200 rounded animate-pulse mt-1"></div>
               ) : (
                 <p
-                  className={`text-xs mt-1 ${
-                    card.growth !== undefined
+                  className={`text-xs mt-1 ${card.growth !== undefined
                       ? card.growth > 0
                         ? "text-green-600"
                         : card.growth < 0
                           ? "text-red-600"
                           : "text-gray-600"
                       : "text-gray-600"
-                  }`}
+                    }`}
                 >
                   {card.description}
                 </p>

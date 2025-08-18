@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui";
-import { TrendingUp, Euro } from "lucide-react";
+import { Euro } from "lucide-react";
 
 // Mock data pour le graphique
 const revenueData = [

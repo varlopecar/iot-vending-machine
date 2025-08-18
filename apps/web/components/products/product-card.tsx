@@ -2,7 +2,7 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Edit, Trash2, Package, CatIcon, Tag } from "lucide-react";
+import { Edit, Trash2, Tag } from "lucide-react";
 import {
   Card,
   CardContent,

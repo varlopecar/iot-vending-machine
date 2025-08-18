@@ -1,6 +1,5 @@
 "use client";
 
-import { api } from "@/lib/trpc/client";
 import { OverviewCards } from "./overview-cards";
 import { MachineStatus } from "./machine-status";
 import { AlertsWidget } from "./alerts-widget";
