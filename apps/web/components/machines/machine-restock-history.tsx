@@ -27,24 +27,24 @@ export function MachineRestockHistory({
 
   const restocks = data as
     | Array<{
+      id: string;
+      machine_id: string;
+      user_id: string;
+      created_at: string;
+      notes?: string;
+      items: Array<{
         id: string;
-        machine_id: string;
-        user_id: string;
-        created_at: string;
-        notes?: string;
-        items: Array<{
-          id: string;
-          restock_id: string;
-          stock_id: string;
-          quantity_before: number;
-          quantity_after: number;
-          quantity_added: number;
-          slot_number: number;
-          product_name: string;
-          product_image_url?: string;
-          type?: RestockItemType;
-        }>;
-      }>
+        restock_id: string;
+        stock_id: string;
+        quantity_before: number;
+        quantity_after: number;
+        quantity_added: number;
+        slot_number: number;
+        product_name: string;
+        product_image_url?: string;
+        type?: RestockItemType;
+      }>;
+    }>
     | undefined;
 
   // Applique le filtre de type au niveau des items, puis enlève les restocks vides
@@ -57,7 +57,7 @@ export function MachineRestockHistory({
           filterType === "all"
             ? true
             : (it.type ?? (it.quantity_added >= 0 ? "addition" : "removal")) ===
-              filterType
+            filterType
         ),
       }))
       .filter((r) => r.items.length > 0);
@@ -102,7 +102,7 @@ export function MachineRestockHistory({
     let dataToExport = restocks;
     if (!dataToExport) {
       const result = await refetch();
-      // @ts-expect-error react-query returns data on result
+
       dataToExport = (result?.data || []) as typeof restocks;
     }
     if (!dataToExport || dataToExport.length === 0) {

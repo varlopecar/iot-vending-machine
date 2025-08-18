@@ -1,12 +1,11 @@
 /** @type {import('next').NextConfig} */
 const nextConfig = {
-  experimental: {
-    turbo: {
-      rules: {
-        '*.svg': {
-          loaders: ['@svgr/webpack'],
-          as: '*.js',
-        },
+  // Move turbo config to turbopack as recommended
+  turbopack: {
+    rules: {
+      '*.svg': {
+        loaders: ['@svgr/webpack'],
+        as: '*.js',
       },
     },
   },
@@ -14,6 +13,10 @@ const nextConfig = {
 
   // Vercel deployment optimizations
   output: 'standalone',
+
+  // Disable static optimization for error pages to prevent context issues
+  skipTrailingSlashRedirect: true,
+  skipMiddlewareUrlNormalize: true,
 
   // Environment variable validation
   env: {

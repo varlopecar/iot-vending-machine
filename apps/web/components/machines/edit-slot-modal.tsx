@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { Button, Input } from "../ui";
 import { api } from "../../lib/trpc/client";
+import type { Product } from "@/lib/types/trpc";
 
 interface EditSlotModalProps {
   isOpen: boolean;
@@ -140,7 +141,7 @@ export function EditSlotModal({
               {productsLoading && <option>Chargement...</option>}
               {!productsLoading && (
                 <>
-                  {products?.map((p) => (
+                  {products?.map((p: Product) => (
                     <option key={p.id} value={p.id}>
                       {p.name} - {p.price}€
                     </option>

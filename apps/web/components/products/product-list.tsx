@@ -6,8 +6,6 @@ import { Plus, RefreshCw } from "lucide-react";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Button,
 } from "@/components/ui";
 import { ProductCard, Product } from "./product-card";
@@ -15,6 +13,7 @@ import { ProductFilters } from "./product-filters";
 import { AddProductModal } from "./add-product-modal";
 import { EditProductModal } from "./edit-product-modal";
 import { api } from "@/lib/trpc/client";
+import type { Product as TRPCProduct } from "@/lib/types/trpc";
 
 // Interface pour les données produits avec métriques calculées
 interface ProductWithMetrics extends Product {
@@ -110,7 +109,7 @@ const getLocalImagePath = (productName: string): string => {
 };
 
 // Fonction pour calculer des métriques basées sur les données réelles du backend
-const getProductMetrics = (product: any): ProductWithMetrics => {
+const getProductMetrics = (product: TRPCProduct & { soldCount?: number }): ProductWithMetrics => {
   const seed = product.id.charCodeAt(product.id.length - 1);
   const price = Number(product.price);
   const purchasePrice = Number(product.purchase_price ?? price * 0.4);
@@ -172,11 +171,11 @@ export function ProductList() {
   // Génération dynamique des catégories
   const categories = [
     "Toutes",
-    ...Array.from(new Set(products.map((p) => p.category))),
+    ...Array.from(new Set(products.map((p: ProductWithMetrics) => p.category))),
   ];
 
   // Filter products based on search and category
-  const filteredProducts = products.filter((product) => {
+  const filteredProducts = products.filter((product: ProductWithMetrics) => {
     const matchesSearch =
       product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
       product.category.toLowerCase().includes(searchTerm.toLowerCase());
@@ -249,33 +248,33 @@ export function ProductList() {
     // Préparer les allergènes
     const allergens_list = newProductData.allergens
       ? newProductData.allergens
-          .split(",")
-          .map((a) => a.trim())
-          .filter((a) => a.length > 0)
+        .split(",")
+        .map((a) => a.trim())
+        .filter((a) => a.length > 0)
       : undefined;
 
     // Préparer les valeurs nutritionnelles
     const nutritional =
       newProductData.calories ||
-      newProductData.protein ||
-      newProductData.carbs ||
-      newProductData.fat ||
-      newProductData.serving
+        newProductData.protein ||
+        newProductData.carbs ||
+        newProductData.fat ||
+        newProductData.serving
         ? {
-            calories: newProductData.calories
-              ? parseFloat(newProductData.calories)
-              : undefined,
-            protein: newProductData.protein
-              ? parseFloat(newProductData.protein)
-              : undefined,
-            carbs: newProductData.carbs
-              ? parseFloat(newProductData.carbs)
-              : undefined,
-            fat: newProductData.fat
-              ? parseFloat(newProductData.fat)
-              : undefined,
-            serving: newProductData.serving || undefined,
-          }
+          calories: newProductData.calories
+            ? parseFloat(newProductData.calories)
+            : undefined,
+          protein: newProductData.protein
+            ? parseFloat(newProductData.protein)
+            : undefined,
+          carbs: newProductData.carbs
+            ? parseFloat(newProductData.carbs)
+            : undefined,
+          fat: newProductData.fat
+            ? parseFloat(newProductData.fat)
+            : undefined,
+          serving: newProductData.serving || undefined,
+        }
         : undefined;
 
     await createProduct.mutateAsync({
@@ -313,29 +312,29 @@ export function ProductList() {
     // Préparer les allergènes
     const allergens_list = updateData.allergens
       ? updateData.allergens
-          .split(",")
-          .map((a) => a.trim())
-          .filter((a) => a.length > 0)
+        .split(",")
+        .map((a) => a.trim())
+        .filter((a) => a.length > 0)
       : undefined;
 
     // Préparer les valeurs nutritionnelles
     const nutritional =
       updateData.calories ||
-      updateData.protein ||
-      updateData.carbs ||
-      updateData.fat ||
-      updateData.serving
+        updateData.protein ||
+        updateData.carbs ||
+        updateData.fat ||
+        updateData.serving
         ? {
-            calories: updateData.calories
-              ? parseFloat(updateData.calories)
-              : undefined,
-            protein: updateData.protein
-              ? parseFloat(updateData.protein)
-              : undefined,
-            carbs: updateData.carbs ? parseFloat(updateData.carbs) : undefined,
-            fat: updateData.fat ? parseFloat(updateData.fat) : undefined,
-            serving: updateData.serving || undefined,
-          }
+          calories: updateData.calories
+            ? parseFloat(updateData.calories)
+            : undefined,
+          protein: updateData.protein
+            ? parseFloat(updateData.protein)
+            : undefined,
+          carbs: updateData.carbs ? parseFloat(updateData.carbs) : undefined,
+          fat: updateData.fat ? parseFloat(updateData.fat) : undefined,
+          serving: updateData.serving || undefined,
+        }
         : undefined;
 
     try {
@@ -417,7 +416,7 @@ export function ProductList() {
       >
         {filteredProducts.length > 0 ? (
           <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-            {filteredProducts.map((product, index) => (
+            {filteredProducts.map((product: ProductWithMetrics, index: number) => (
               <ProductCard
                 key={product.id}
                 product={product}

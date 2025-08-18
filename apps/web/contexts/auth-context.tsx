@@ -37,6 +37,12 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
 
   useEffect(() => {
+    // Only run on client side
+    if (typeof window === "undefined") {
+      setIsLoading(false);
+      return;
+    }
+
     // Check if user is already logged in
     const storedToken = localStorage.getItem("admin_token");
     const storedUser = localStorage.getItem("admin_user");
@@ -59,15 +65,19 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const login = (newToken: string, newUser: User) => {
     setToken(newToken);
     setUser(newUser);
-    localStorage.setItem("admin_token", newToken);
-    localStorage.setItem("admin_user", JSON.stringify(newUser));
+    if (typeof window !== "undefined") {
+      localStorage.setItem("admin_token", newToken);
+      localStorage.setItem("admin_user", JSON.stringify(newUser));
+    }
   };
 
   const logout = () => {
     setToken(null);
     setUser(null);
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_user");
+    if (typeof window !== "undefined") {
+      localStorage.removeItem("admin_token");
+      localStorage.removeItem("admin_user");
+    }
     router.push("/login");
   };
 

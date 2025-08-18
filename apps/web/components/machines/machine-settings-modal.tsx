@@ -45,12 +45,12 @@ export function MachineSettingsModal({
     onError: (err) => alert(err.message),
   });
 
-  const deleteMutation = (api as any).machines.deleteMachine.useMutation({
+  const deleteMutation = api.machines.deleteMachine.useMutation({
     onSuccess: () => {
       onDeleted?.();
       onClose();
     },
-    onError: (err: Error) => alert(err.message),
+    onError: (err) => alert(err.message),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

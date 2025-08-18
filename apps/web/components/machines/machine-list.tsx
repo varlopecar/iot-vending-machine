@@ -29,6 +29,7 @@ import {
 import { api } from "../../lib/trpc/client";
 import { AddMachineModal } from "./add-machine-modal";
 import { MachineAlertBadge } from "./machine-alert-badge";
+import type { Machine, Alert } from "@/lib/types/trpc";
 
 // MachineData dérivé directement des retours tRPC
 
@@ -74,8 +75,7 @@ export function MachineList() {
   } = api.machines.getAllMachines.useQuery();
 
   // Stats agrégées (revenus, stocks)
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const { data: stats } = (api as any).machines.getAllMachineStats.useQuery();
+  const { data: stats } = api.machines.getAllMachineStats.useQuery();
 
   // Récupération des alertes par machine
   const { data: alertsSummary } =
@@ -95,7 +95,7 @@ export function MachineList() {
   };
 
   const filteredMachines =
-    machines?.filter((machine) => {
+    machines?.filter((machine: Machine) => {
       const matchesSearch =
         machine.label.toLowerCase().includes(searchTerm.toLowerCase()) ||
         machine.location.toLowerCase().includes(searchTerm.toLowerCase());
@@ -109,7 +109,7 @@ export function MachineList() {
     ((stats as MachineStat[] | undefined) || []).map((s) => [s.machine_id, s])
   );
   const incompleteMachines =
-    machines?.filter((m) => (statsById.get(m.id)?.totalSlots || 0) < 6) || [];
+    machines?.filter((m: Machine) => (statsById.get(m.id)?.totalSlots || 0) < 6) || [];
   const incompleteCount = incompleteMachines.length;
 
   if (isLoading) {
@@ -205,7 +205,7 @@ export function MachineList() {
                 configurés pour être opérationnelle.
               </p>
               <div className="flex flex-wrap gap-2">
-                {incompleteMachines.slice(0, 3).map((machine) => (
+                {incompleteMachines.slice(0, 3).map((machine: Machine) => (
                   <Link key={machine.id} href={`/machines/${machine.id}`}>
                     <Badge
                       variant="outline"
@@ -300,14 +300,14 @@ export function MachineList() {
 
       {/* Machines Grid */}
       <div className="grid gap-6 lg:grid-cols-2 xl:grid-cols-3">
-        {filteredMachines.map((machine, index) => {
+        {filteredMachines.map((machine: Machine, index: number) => {
           // Récupérer l'alerte pour cette machine
           const machineAlert = alertsSummary?.find(
-            (alert) => alert.machine_id === machine.id
+            (alert: Alert) => alert.machine_id === machine.id
           );
 
           // Le badge principal affiche toujours le statut de la machine
-          const statusInfo = statusConfig[machine.status];
+          const statusInfo = statusConfig[machine.status as keyof typeof statusConfig];
           const StatusIcon = statusInfo.icon;
           const stat = (stats as MachineStat[] | undefined)?.find(
             (s) => s.machine_id === machine.id
@@ -362,12 +362,12 @@ export function MachineList() {
                           <MachineAlertBadge
                             alertType={
                               machineAlert?.type as
-                                | "CRITICAL"
-                                | "LOW_STOCK"
-                                | "INCOMPLETE"
-                                | "MACHINE_OFFLINE"
-                                | "MAINTENANCE_REQUIRED"
-                                | null
+                              | "CRITICAL"
+                              | "LOW_STOCK"
+                              | "INCOMPLETE"
+                              | "MACHINE_OFFLINE"
+                              | "MAINTENANCE_REQUIRED"
+                              | null
                             }
                           />
                         </div>
@@ -442,13 +442,12 @@ export function MachineList() {
                         aria-label="Niveau de stock global"
                       >
                         <div
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            stockLevel > 70
-                              ? "bg-green-500"
-                              : stockLevel > 30
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                          }`}
+                          className={`h-2 rounded-full transition-all duration-300 ${stockLevel > 70
+                            ? "bg-green-500"
+                            : stockLevel > 30
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                            }`}
                           style={{ width: `${stockLevel}%` }}
                         />
                       </div>

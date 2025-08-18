@@ -13,6 +13,7 @@ import {
 } from "@/components/ui/card";
 import { api } from "@/lib/trpc/client";
 import { useAuth } from "@/contexts/auth-context";
+import type { LoginResponse } from "@/lib/types/trpc";
 
 export function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -23,7 +24,7 @@ export function AdminLogin() {
   const { login } = useAuth();
 
   const adminLoginMutation = api.auth.adminLogin.useMutation({
-    onSuccess: (data) => {
+    onSuccess: (data: LoginResponse) => {
       // Use the auth context login method
       login(data.token, data.user);
 
@@ -46,7 +47,7 @@ export function AdminLogin() {
         email,
         password,
       });
-    } catch (error) {
+    } catch {
       // Error is handled in onError callback
     }
   };

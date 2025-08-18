@@ -11,6 +11,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Monitor, MapPin } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
+import type { Machine } from "@/lib/types/trpc";
 
 const statusConfig = {
   online: {
@@ -99,7 +100,7 @@ export function MachineStatus() {
       </CardHeader>
       <CardContent>
         <div className="space-y-3">
-          {machines.slice(0, 5).map((machine) => {
+          {machines.slice(0, 5).map((machine: Machine) => {
             const status =
               statusConfig[machine.status as keyof typeof statusConfig];
 

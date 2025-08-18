@@ -13,9 +13,7 @@ import {
   RefreshCw,
   Package,
   AlertTriangle,
-  History,
   Settings,
-  Plus,
   Truck,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "../ui";
@@ -27,8 +25,9 @@ import { MachineSettingsModal } from "./machine-settings-modal";
 import { MachineAlertBadge } from "./machine-alert-badge";
 import { MachineRestockHistory } from "./machine-restock-history";
 import { api } from "../../lib/trpc/client";
+import type { Stock, Alert, MachineStatus, AlertType } from "@/lib/types/trpc";
 
-type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
+
 
 interface MachineDetailProps {
   machineId: string;
@@ -176,15 +175,15 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
 
   // Calculer les statistiques des slots
   const totalSlots = slots?.length || 0;
-  const emptySlots = slots?.filter((slot) => slot.quantity === 0).length || 0;
+  const emptySlots = slots?.filter((slot: Stock) => slot.quantity === 0).length || 0;
   const lowStockSlots =
     slots?.filter(
-      (slot) => slot.quantity > 0 && slot.quantity <= slot.low_threshold
+      (slot: Stock) => slot.quantity > 0 && slot.quantity <= slot.low_threshold
     ).length || 0;
   const fullSlots =
-    slots?.filter((slot) => slot.quantity === slot.max_capacity).length || 0;
+    slots?.filter((slot: Stock) => slot.quantity === slot.max_capacity).length || 0;
   const needsRestockSlots =
-    slots?.filter((slot) => slot.quantity < slot.max_capacity).length || 0;
+    slots?.filter((slot: Stock) => slot.quantity < slot.max_capacity).length || 0;
 
   // Calcul des slots non-configurés
   const configuredSlots = totalSlots;
@@ -237,18 +236,11 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             <div className="flex gap-1 flex-wrap">
               {/* Regrouper les alertes par type pour éviter les doublons */}
               {Array.from(
-                new Set(machineAlerts.map((alert) => alert.type))
-              ).map((alertType) => (
+                new Set(machineAlerts.map((alert: Alert) => alert.type))
+              ).map((alertType: AlertType) => (
                 <MachineAlertBadge
                   key={alertType}
-                  alertType={
-                    alertType as
-                      | "CRITICAL"
-                      | "LOW_STOCK"
-                      | "INCOMPLETE"
-                      | "MACHINE_OFFLINE"
-                      | "MAINTENANCE_REQUIRED"
-                  }
+                  alertType={alertType}
                 />
               ))}
             </div>
@@ -475,25 +467,25 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           selectedSlotId
             ? (slots || []).find((s) => s.id === selectedSlotId)
               ? {
-                  id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
-                  product_id: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.product_id,
-                  product_name: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.product_name,
-                  quantity: (slots || []).find((s) => s.id === selectedSlotId)!
-                    .quantity,
-                  max_capacity: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.max_capacity,
-                  slot_number: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.slot_number,
-                  machine_id: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.machine_id,
-                }
+                id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
+                product_id: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.product_id,
+                product_name: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.product_name,
+                quantity: (slots || []).find((s) => s.id === selectedSlotId)!
+                  .quantity,
+                max_capacity: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.max_capacity,
+                slot_number: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.slot_number,
+                machine_id: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.machine_id,
+              }
               : null
             : null
         }

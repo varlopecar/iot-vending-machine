@@ -19,6 +19,7 @@ import {
 } from "lucide-react";
 import Link from "next/link";
 import { cn } from "@/lib/utils/cn";
+import type { Alert } from "@/lib/types/trpc";
 
 const alertTypeConfig = {
   CRITICAL: {
@@ -149,7 +150,7 @@ export function AlertsWidget() {
 
         {/* Liste des alertes par machine */}
         <div className="space-y-3 max-h-80 overflow-y-auto">
-          {alertsSummary.alertsByMachine.slice(0, 5).map((alert) => {
+          {alertsSummary.alertsByMachine.slice(0, 5).map((alert: Alert) => {
             const config =
               alertTypeConfig[alert.type as keyof typeof alertTypeConfig];
             const Icon = config?.icon || AlertTriangle;

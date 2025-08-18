@@ -3,6 +3,7 @@
 import { useState, useEffect } from "react";
 import { Button, Input } from "../ui";
 import { api } from "../../lib/trpc/client";
+import type { Product } from "@/lib/types/trpc";
 
 interface AddSlotModalProps {
   isOpen: boolean;
@@ -40,11 +41,11 @@ export function AddSlotModal({
       retry: false,
     }
   ) || {
-    data: undefined,
-    refetch: () => Promise.resolve(),
-    isError: false,
-    error: undefined,
-  };
+      data: undefined,
+      refetch: () => Promise.resolve(),
+      isError: false,
+      error: undefined,
+    };
 
   // Mutation pour ajouter un slot
   const addSlotMutation = api.stocks.addSlot.useMutation({
@@ -99,7 +100,7 @@ export function AddSlotModal({
     ) {
       alert(
         nextSlotError?.message ||
-          "Aucun slot disponible. Libérez un slot avant d'ajouter."
+        "Aucun slot disponible. Libérez un slot avant d'ajouter."
       );
       return;
     }
@@ -186,7 +187,7 @@ export function AddSlotModal({
               required
             >
               <option value="">Sélectionnez un produit</option>
-              {products?.map((product) => (
+              {products?.map((product: Product) => (
                 <option key={product.id} value={product.id}>
                   {product.name} - {product.price}€
                 </option>
