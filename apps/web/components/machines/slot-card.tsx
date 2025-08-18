@@ -66,7 +66,7 @@ const stockLevelConfig = {
     borderColor: "border-blue-200 dark:border-blue-800",
     icon: Package,
     label: "En stock",
-    variant: "secondary" as const,
+    variant: "info" as const,
   },
   full: {
     color: "text-green-600",
@@ -90,7 +90,6 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
       setIsRestocking(false);
     },
     onError: (error) => {
-      
       setIsRestocking(false);
       if (
         error.message.includes("Server has closed") ||

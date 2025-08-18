@@ -8,7 +8,8 @@ export interface BadgeProps extends React.HTMLAttributes<HTMLDivElement> {
     | "destructive"
     | "outline"
     | "success"
-    | "warning";
+    | "warning"
+    | "info";
 }
 
 function Badge({ className, variant = "default", ...props }: BadgeProps) {
@@ -29,6 +30,8 @@ function Badge({ className, variant = "default", ...props }: BadgeProps) {
             variant === "success",
           "border-transparent bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300":
             variant === "warning",
+          "border-transparent bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300":
+            variant === "info",
         },
         className
       )}
