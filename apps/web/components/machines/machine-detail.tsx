@@ -94,7 +94,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
       refetchSlots();
       setRestockingAll(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Erreur lors du ravitaillement:", error);
       setRestockingAll(false);
     },
@@ -237,10 +237,10 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               {/* Regrouper les alertes par type pour éviter les doublons */}
               {Array.from(
                 new Set(machineAlerts.map((alert: Alert) => alert.type))
-              ).map((alertType: AlertType) => (
+              ).map((alertType: unknown) => (
                 <MachineAlertBadge
-                  key={alertType}
-                  alertType={alertType}
+                  key={alertType as string}
+                  alertType={alertType as any}
                 />
               ))}
             </div>
@@ -392,8 +392,8 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               {/* Slots configurés */}
               {slots &&
                 slots
-                  .sort((a, b) => a.slot_number - b.slot_number)
-                  .map((slot, index) => (
+                  .sort((a: any, b: any) => a.slot_number - b.slot_number)
+                  .map((slot: any, index: number) => (
                     <motion.div
                       key={slot.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -465,25 +465,25 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         onClose={() => setIsEditSlotModalOpen(false)}
         slot={
           selectedSlotId
-            ? (slots || []).find((s) => s.id === selectedSlotId)
+            ? (slots || []).find((s: any) => s.id === selectedSlotId)
               ? {
-                id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
+                id: (slots || []).find((s: any) => s.id === selectedSlotId)!.id,
                 product_id: (slots || []).find(
-                  (s) => s.id === selectedSlotId
+                  (s: any) => s.id === selectedSlotId
                 )!.product_id,
                 product_name: (slots || []).find(
-                  (s) => s.id === selectedSlotId
+                  (s: any) => s.id === selectedSlotId
                 )!.product_name,
-                quantity: (slots || []).find((s) => s.id === selectedSlotId)!
+                quantity: (slots || []).find((s: any) => s.id === selectedSlotId)!
                   .quantity,
                 max_capacity: (slots || []).find(
-                  (s) => s.id === selectedSlotId
+                  (s: any) => s.id === selectedSlotId
                 )!.max_capacity,
                 slot_number: (slots || []).find(
-                  (s) => s.id === selectedSlotId
+                  (s: any) => s.id === selectedSlotId
                 )!.slot_number,
                 machine_id: (slots || []).find(
-                  (s) => s.id === selectedSlotId
+                  (s: any) => s.id === selectedSlotId
                 )!.machine_id,
               }
               : null

@@ -2,8 +2,10 @@
 
 import { createTRPCReact } from "@trpc/react-query";
 import type { AppRouter } from "../../../../packages/globals/trpc/src/server/server";
+import type { CreateTRPCReact } from "@trpc/react-query";
 
-export const api = createTRPCReact<AppRouter>();
+export const api: CreateTRPCReact<AppRouter, unknown> =
+  createTRPCReact<AppRouter>();
 
 export const getUrl = () => {
   const base = (() => {

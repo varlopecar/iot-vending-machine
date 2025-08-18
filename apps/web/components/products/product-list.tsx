@@ -169,9 +169,9 @@ export function ProductList() {
   const products = rawProducts?.map(getProductMetrics) || [];
 
   // Génération dynamique des catégories
-  const categories = [
+  const categories: string[] = [
     "Toutes",
-    ...Array.from(new Set(products.map((p: ProductWithMetrics) => p.category))),
+    ...Array.from(new Set(products.map((p: ProductWithMetrics) => p.category as string))),
   ];
 
   // Filter products based on search and category

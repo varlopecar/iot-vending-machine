@@ -89,7 +89,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
       onRestockComplete?.();
       setIsRestocking(false);
     },
-    onError: (error) => {
+    onError: (error: any) => {
       console.error("Erreur lors du ravitaillement:", error);
       setIsRestocking(false);
       if (

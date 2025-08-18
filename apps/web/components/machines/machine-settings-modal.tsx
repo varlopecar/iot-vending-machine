@@ -42,7 +42,7 @@ export function MachineSettingsModal({
       onSaved?.();
       onClose();
     },
-    onError: (err) => alert(err.message),
+    onError: (err: any) => alert(err.message),
   });
 
   const deleteMutation = api.machines.deleteMachine.useMutation({
@@ -50,7 +50,7 @@ export function MachineSettingsModal({
       onDeleted?.();
       onClose();
     },
-    onError: (err) => alert(err.message),
+    onError: (err: any) => alert(err.message),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

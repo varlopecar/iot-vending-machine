@@ -27,7 +27,7 @@ export function AddMachineModal({
       setLocation("");
       setContact("");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       alert(error.message);
     },
   });

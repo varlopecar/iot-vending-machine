@@ -40,7 +40,7 @@ export function ManualRestockModal({
       onClose();
       resetForm();
     },
-    onError: (error) => {
+    onError: (error: any) => {
       const msg = error.message || "";
       if (
         msg.toLowerCase().includes("capacité maximale") ||

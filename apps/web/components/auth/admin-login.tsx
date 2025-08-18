@@ -31,7 +31,7 @@ export function AdminLogin() {
       // Redirect to dashboard
       router.push("/");
     },
-    onError: (error) => {
+    onError: (error: any) => {
       setError(error.message);
       setIsLoading(false);
     },
