@@ -2,7 +2,7 @@
   "name": "iot-vending-machine",
   "private": true,
   "scripts": {
-    "postinstall": "cd apps/backend && pnpm prisma generate --no-engine",
+    "postinstall": "echo 'Skipping postinstall for web deployment'",
     "build": "turbo run build --filter=backend",
     "build:all": "turbo run build",
     "dev": "turbo run dev",
