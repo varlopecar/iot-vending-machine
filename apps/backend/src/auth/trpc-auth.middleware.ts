@@ -1,6 +1,7 @@
 import { Injectable, UnauthorizedException } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import { PrismaService } from '../prisma/prisma.service';
+import { RequestContext } from './request-context.middleware';
 
 export interface AuthenticatedUser {
   userId: string;
@@ -16,11 +17,15 @@ export class TrpcAuthMiddleware {
 
   /**
    * Vérifie l'authentification et récupère l'utilisateur
-   * @param authorization - Header Authorization
+   * @param authorization - Header Authorization (optionnel, utilise RequestContext si non fourni)
    * @returns Utilisateur authentifié avec rôle
    * @throws UnauthorizedException si le token est invalide
    */
   async authenticateUser(authorization?: string): Promise<AuthenticatedUser> {
+    // Si pas d'authorization fourni, essayer de le récupérer depuis le contexte
+    if (!authorization) {
+      authorization = RequestContext.getAuthHeader();
+    }
     if (!authorization?.startsWith('Bearer ')) {
       throw new UnauthorizedException('Token d\'authentification requis');
     }
