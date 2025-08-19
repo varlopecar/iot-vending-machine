@@ -15,8 +15,41 @@ interface StripeProviderProps {
 }
 
 const fetchPublishableKey = async (): Promise<string> => {
-  await new Promise((r) => setTimeout(r, 100));
-  return 'pk_test_51RvIdAHfSJ4cJF2RtcO2KwkhkyQ4igfsDhLiD1aaLEcC0TPOgUoCkXiH727zgTcDabsgqoTCMSbHWeaSGRULWrT200l1OkHj5X';
+  try {
+    // Récupérer la clé depuis le backend de manière sécurisée
+    const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
+    const response = await fetch(`${API_BASE_URL}/trpc/stripe.getPublishableKey`);
+    
+    if (!response.ok) {
+      throw new Error(`Erreur HTTP ${response.status}`);
+    }
+    
+    const data = await response.json();
+    
+    if (data?.result?.data?.publishableKey) {
+      return data.result.data.publishableKey;
+    }
+    
+    // Fallback pour le développement si l'API échoue
+    const devKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (devKey) {
+      console.warn('Utilisation de la clé Stripe de développement - fallback');
+      return devKey;
+    }
+    
+    throw new Error('Aucune clé Stripe disponible');
+  } catch (error) {
+    console.error('Erreur lors de la récupération de la clé Stripe:', error);
+    
+    // Fallback pour le développement uniquement
+    const devKey = process.env.EXPO_PUBLIC_STRIPE_PUBLISHABLE_KEY;
+    if (devKey) {
+      console.warn('Utilisation de la clé Stripe de développement - fallback après erreur');
+      return devKey;
+    }
+    
+    throw new Error('Impossible de récupérer la clé publique Stripe');
+  }
 };
 
 export const StripeProvider: React.FC<StripeProviderProps> = ({ children }) => {

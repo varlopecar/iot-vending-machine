@@ -8,7 +8,7 @@ import { JwtStrategy } from './jwt.strategy';
     PassportModule.register({ defaultStrategy: 'jwt' }),
     NestJwtModule.register({
       secret: process.env.JWT_SECRET ?? 'dev-secret-change-me',
-      signOptions: { expiresIn: '7d' },
+      signOptions: { expiresIn: '30m' }, // 30 minutes selon recommandations OWASP
     }),
   ],
   providers: [JwtStrategy],

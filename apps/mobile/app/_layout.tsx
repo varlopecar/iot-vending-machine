@@ -22,11 +22,7 @@ Notifications.setNotificationHandler({
 
 export default function RootLayout() {
   return (
-    <StripeProvider
-      publishableKey="pk_test_51RvIdAHfSJ4cJF2RtcO2KwkhkyQ4igfsDhLiD1aaLEcC0TPOgUoCkXiH727zgTcDabsgqoTCMSbHWeaSGRULWrT200l1OkHj5X" // Remplacez par votre clé publique Stripe
-      merchantIdentifier="merchant.com.votreentreprise.vending" // iOS uniquement
-      urlScheme="your-app-scheme" // iOS uniquement
-    >
+    <StripeProvider>
       <GestureHandlerRootView style={{ flex: 1 }}>
         <SafeAreaProvider>
           <AuthProvider>

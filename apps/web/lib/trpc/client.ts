@@ -21,7 +21,15 @@ export const trpcClient = createTRPCClient<AppRouter>({
       url: getUrl(),
       // You can pass any HTTP headers you wish here
       async headers() {
-        const token = typeof window !== 'undefined' ? localStorage.getItem('admin_token') : null
+        // Utiliser le service d'authentification sécurisé
+        let token: string | null = null;
+        
+        if (typeof window !== 'undefined') {
+          // Import dynamique pour éviter les erreurs SSR
+          const { secureAuth } = await import('@/lib/secure-auth');
+          token = secureAuth.getValidToken();
+        }
+        
         return {
           ...(token && { authorization: `Bearer ${token}` }),
         }
