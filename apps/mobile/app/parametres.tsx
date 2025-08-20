@@ -5,21 +5,21 @@ import * as Notifications from 'expo-notifications';
 import { useTailwindTheme } from '../hooks/useTailwindTheme';
 import {
   SettingsSection,
-  SettingsItem,
-  TabBarSpacer
+  SettingsItem
+  // TabBarSpacer // Unused
 } from '../components/ui';
 
 export default function ParametresScreen() {
   const { isDark, currentTheme } = useTailwindTheme();
   const router = useRouter();
-  
+
   const [settings, setSettings] = useState({
     language: 'Français',
     pushNotifications: true,
   });
 
   // Synchroniser l'état local avec le thème global (placeholder si besoin plus tard)
-  useEffect(() => {}, [currentTheme]);
+  useEffect(() => { }, [currentTheme]);
 
   const handleOpenThemeSettings = () => {
     router.push('/theme' as any);
@@ -35,12 +35,12 @@ export default function ParametresScreen() {
 
   const handlePushNotificationsToggle = async (value: boolean) => {
     setSettings(prev => ({ ...prev, pushNotifications: value }));
-    
+
     if (value) {
       try {
         // Demander les permissions
         const { status } = await Notifications.requestPermissionsAsync();
-        
+
         if (status === 'granted') {
           // Envoyer une notification de test immédiate
           await Notifications.scheduleNotificationAsync({
@@ -51,7 +51,7 @@ export default function ParametresScreen() {
             },
             trigger: null, // Notification immédiate
           });
-          
+
           Alert.alert(
             'Notifications activées',
             'Une notification de test a été envoyée. Vos notifications push sont maintenant actives !',
@@ -66,7 +66,7 @@ export default function ParametresScreen() {
           // Remettre le toggle à false si la permission est refusée
           setSettings(prev => ({ ...prev, pushNotifications: false }));
         }
-      } catch (error) {
+      } catch {
         Alert.alert(
           'Erreur',
           'Impossible d\'activer les notifications.',
@@ -102,42 +102,42 @@ export default function ParametresScreen() {
           showsVerticalScrollIndicator={false}
           contentContainerStyle={{ paddingBottom: 20 }}
         >
-        {/* Section Général */}
-        <SettingsSection title="Général" marginTop={false}>
-          <SettingsItem
-            title="Thème de l'application"
-            subtitle="Clair, Sombre ou Système"
-            type="select"
-            value={themeLabel}
-            onPress={handleOpenThemeSettings}
-            icon="color-palette"
-            showArrow={true}
-          />
+          {/* Section Général */}
+          <SettingsSection title="Général" marginTop={false}>
+            <SettingsItem
+              title="Thème de l'application"
+              subtitle="Clair, Sombre ou Système"
+              type="select"
+              value={themeLabel}
+              onPress={handleOpenThemeSettings}
+              icon="color-palette"
+              showArrow={true}
+            />
 
-          <View className={`h-px ${isDark ? 'bg-dark-border' : 'bg-light-border'} my-2 mx-[-16px]`} />
+            <View className={`h-px ${isDark ? 'bg-dark-border' : 'bg-light-border'} my-2 mx-[-16px]`} />
 
-          <SettingsItem
-            title="Langue"
-            type="select"
-            value={settings.language}
-            onPress={handleLanguageSelect}
-            icon="language"
-            showArrow={true}
-          />
-        </SettingsSection>
+            <SettingsItem
+              title="Langue"
+              type="select"
+              value={settings.language}
+              onPress={handleLanguageSelect}
+              icon="language"
+              showArrow={true}
+            />
+          </SettingsSection>
 
-        {/* Section Notifications */}
-        <SettingsSection title="Notifications">
-          <SettingsItem
-            title="Notifications push"
-            type="toggle"
-            value={settings.pushNotifications}
-            onToggle={handlePushNotificationsToggle}
-            icon="notifications"
-            showArrow={false}
-          />
-        </SettingsSection>
-              </ScrollView>
+          {/* Section Notifications */}
+          <SettingsSection title="Notifications">
+            <SettingsItem
+              title="Notifications push"
+              type="toggle"
+              value={settings.pushNotifications}
+              onToggle={handlePushNotificationsToggle}
+              icon="notifications"
+              showArrow={false}
+            />
+          </SettingsSection>
+        </ScrollView>
       </View>
     </>
   );

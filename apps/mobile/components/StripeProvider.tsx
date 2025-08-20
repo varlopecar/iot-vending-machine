@@ -1,4 +1,5 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
+import { StripeProvider as StripeProviderBase } from '@stripe/stripe-react-native';
 // Attention: ce fichier sera scindé en .native et .web pour éviter l'import web du module natif
 
 interface StripeContextType {
@@ -18,10 +19,10 @@ interface StripeProviderProps {
 const fetchPublishableKey = async (): Promise<string> => {
 
   await new Promise(resolve => setTimeout(resolve, 500));
-  
+
   // En production, ceci viendra de votre API tRPC
   // return await trpc.stripe.getPublishableKey.query();
-  
+
   // Pour les tests, utilisez une clé de test Stripe
   return 'pk_test_51Oq...'; // Remplacez par votre vraie clé de test
 };
@@ -40,7 +41,7 @@ export const StripeProvider: React.FC<StripeProviderProps> = ({ children }) => {
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Erreur lors de la récupération de la clé Stripe';
       setError(errorMessage);
-      
+
     } finally {
       setIsLoading(false);
     }

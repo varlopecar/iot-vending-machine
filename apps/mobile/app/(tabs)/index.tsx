@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { View, Text, Alert, Animated, ScrollView, TouchableOpacity, Modal } from "react-native";
+import { View, Text, Animated, ScrollView, TouchableOpacity, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { useRouter } from "expo-router";
@@ -51,12 +51,12 @@ export default function IndexScreen() {
         setMachines(list);
         const firstOnline = list.find(m => (m.status || '').toLowerCase() === 'online') || list[0];
         setSelectedMachineId(firstOnline?.id || null);
-      } catch (e) {
-
+      } catch {
+        // Error silently handled
       }
     })();
     return () => { cancelled = true; };
-  }, []);
+  }, [setSelectedMachineId]);
 
   // Chargement des vrais produits depuis la machine sélectionnée
   useEffect(() => {
@@ -83,8 +83,8 @@ export default function IndexScreen() {
           },
         }));
         if (!cancelled) setProducts(mapped);
-      } catch (e) {
-
+      } catch {
+        // Error silently handled
       } finally {
         if (!cancelled) setIsLoading(false);
       }

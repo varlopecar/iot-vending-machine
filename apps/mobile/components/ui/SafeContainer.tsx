@@ -1,5 +1,5 @@
 import React from 'react';
-import { View, ViewProps } from 'react-native';
+import { ViewProps } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTailwindTheme } from '../../hooks/useTailwindTheme';
 
@@ -9,19 +9,19 @@ interface SafeContainerProps extends ViewProps {
   className?: string;
 }
 
-export default function SafeContainer({ 
-  children, 
+export default function SafeContainer({
+  children,
   edges = ['top', 'bottom', 'left', 'right'],
   className = '',
-  ...props 
+  ...props
 }: SafeContainerProps) {
   const { isDark } = useTailwindTheme();
-  
+
   const defaultClassName = `${isDark ? 'bg-dark-background' : 'bg-light-background'} flex-1`;
   const combinedClassName = className ? `${defaultClassName} ${className}` : defaultClassName;
 
   return (
-    <SafeAreaView 
+    <SafeAreaView
       className={combinedClassName}
       edges={edges}
       {...props}

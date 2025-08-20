@@ -77,14 +77,14 @@ export const PaymentQRView: React.FC<PaymentQRViewProps> = ({
         activeOpacity={0.8}
       >
         <Text className={`font-semibold text-base ${isDark ? 'text-dark-buttonText' : 'text-white'}`}>
-          Rafraîchir l'état
+          Rafraîchir l&apos;état
         </Text>
       </TouchableOpacity>
 
       {/* Informations rassurantes */}
       <View className={`mt-6 p-4 rounded-xl w-full ${isDark ? 'bg-dark-secondary' : 'bg-light-secondary'}`}>
         <Text className={`text-sm text-center ${isDark ? 'text-dark-buttonText' : 'text-white'}`}>
-          ✅ Pas de souci ! Vous pouvez fermer cette page et retrouver votre QR code dans l'onglet "Commandes"
+          ✅ Pas de souci ! Vous pouvez fermer cette page et retrouver votre QR code dans l&apos;onglet &quot;Commandes&quot;
         </Text>
       </View>
     </View>

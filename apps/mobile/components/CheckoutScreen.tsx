@@ -3,21 +3,15 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
   ScrollView,
 } from 'react-native';
 import {
   useStripe,
-  PaymentSheet,
-  PaymentSheetError,
 } from '@stripe/stripe-react-native';
 import { PaymentQRView } from './PaymentQRView';
 import {
-  CheckoutStatus,
   CheckoutState,
-  CheckoutCreateIntentResponse,
-  CheckoutGetStatusResponse,
   PaymentSheetConfig,
 } from '../types/stripe';
 
@@ -35,7 +29,7 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
   onError,
 }) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  
+
   const [state, setState] = useState<CheckoutState>({
     status: 'loading',
     isPolling: false,
@@ -47,11 +41,11 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
   const initializeCheckout = useCallback(async () => {
     try {
       setState(prev => ({ ...prev, status: 'loading' }));
-      
+
       // 1. Créer l'intention de paiement
       // Implémentation à venir
-    throw new Error('API de checkout non implémentée');
-      
+      throw new Error('API de checkout non implémentée');
+
       // 2. Configurer PaymentSheet
       const config: PaymentSheetConfig = {
         merchantDisplayName: 'Vending Machine',
@@ -63,7 +57,7 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
       };
 
       const { error } = await initPaymentSheet(config);
-      
+
       if (error) {
         throw new Error(`Erreur d'initialisation: ${error.message}`);
       }
@@ -89,9 +83,9 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
   const handlePayment = async () => {
     try {
       setState(prev => ({ ...prev, status: 'processing' }));
-      
+
       const { error } = await presentPaymentSheet();
-      
+
       if (error) {
         if (error.code === 'Canceled') {
           setState(prev => ({ ...prev, status: 'ready' }));
@@ -118,12 +112,12 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
   // Polling pour vérifier le statut
   const startPolling = useCallback(() => {
     setState(prev => ({ ...prev, isPolling: true }));
-    
+
     const interval = setInterval(async () => {
       try {
         // Implémentation à venir
-      throw new Error('API de statut non implémentée');
-        
+        throw new Error('API de statut non implémentée');
+
         if (status.orderStatus === 'PAID' && status.qrCodeToken) {
           // Paiement confirmé, arrêter le polling
           clearInterval(interval);
@@ -136,16 +130,16 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
           onSuccess?.();
           return;
         }
-        
+
         setState(prev => ({ ...prev, orderStatus: status }));
-        
+
       } catch (error) {
 
       }
     }, 2000); // Polling toutes les 2 secondes
 
     setPollingInterval(interval);
-    
+
     // Timeout après 60 secondes
     setTimeout(() => {
       if (interval) {
@@ -258,11 +252,10 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
         <TouchableOpacity
           onPress={handlePayment}
           disabled={state.status !== 'ready'}
-          className={`px-6 py-4 rounded-xl ${
-            state.status === 'ready' 
-              ? 'bg-blue-500' 
+          className={`px-6 py-4 rounded-xl ${state.status === 'ready'
+              ? 'bg-blue-500'
               : 'bg-gray-300'
-          }`}
+            }`}
           activeOpacity={0.8}
         >
           {state.status === 'processing' ? (
