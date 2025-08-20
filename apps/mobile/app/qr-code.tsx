@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState } from 'react';
 import { View, Text, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { useRouter, useLocalSearchParams, Stack } from 'expo-router';
 import { useTailwindTheme } from '../hooks/useTailwindTheme';
@@ -15,7 +15,7 @@ export default function QRCodeScreen() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const { getOrderById, setOrderStatus } = useOrders();
   const [order, setOrder] = useState<ReturnType<typeof getOrderById> | null>(() => getOrderById(orderId || "") || null);
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false); // Unused
 
   // Sync si ordre arrive plus tard
   React.useEffect(() => {
@@ -52,14 +52,14 @@ export default function QRCodeScreen() {
             status: (server.status as any) || 'active',
           } as const;
           setOrder(mapped);
-        } catch (e) {
-  
+        } catch {
+          // Error silently handled
         }
       } finally {
         setLoading(false);
       }
     })();
-  }, [orderId]);
+  }, [orderId, getOrderById]);
 
   const handleHelpPress = () => {
     Alert.alert(
@@ -75,8 +75,8 @@ export default function QRCodeScreen() {
       'Êtes-vous sûr de vouloir annuler cette commande ?',
       [
         { text: 'Non', style: 'cancel' },
-        { 
-          text: 'Oui', 
+        {
+          text: 'Oui',
           style: 'destructive',
           onPress: () => {
             if (!order) return;
@@ -87,7 +87,7 @@ export default function QRCodeScreen() {
                 setOrder({ ...order, status: 'cancelled' });
                 Alert.alert('Commande annulée', 'Votre commande a été annulée avec succès.');
                 router.back();
-              } catch (e) {
+              } catch {
                 Alert.alert('Erreur', "Impossible d'annuler la commande");
               }
             })();
@@ -129,7 +129,7 @@ export default function QRCodeScreen() {
       />
       <View className={`${isDark ? 'bg-dark-background' : 'bg-light-background'} flex-1`}>
         <ScrollView className="flex-1 p-4">
-  
+
           {order.qrCodeToken ? (
             <View className="items-center mb-6">
               <Text
@@ -156,7 +156,7 @@ export default function QRCodeScreen() {
             >
               Contenu de la commande
             </Text>
-            
+
             {order.items.map((item) => (
               <View
                 key={item.id}
@@ -165,14 +165,14 @@ export default function QRCodeScreen() {
                 <View className="flex-row items-center">
                   {/* Secondary color line indicator */}
                   <View className={`${isDark ? 'bg-dark-secondary' : 'bg-light-secondary'} w-1 h-8 mr-3`} />
-                  
+
                   {/* Product Info */}
                   <View className="flex-1">
                     <Text className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-lg font-semibold`}>
                       {item.name}
                     </Text>
                   </View>
-                  
+
                   {/* Quantity */}
                   <View className="flex-row items-center">
                     <Text className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-lg font-semibold`}>

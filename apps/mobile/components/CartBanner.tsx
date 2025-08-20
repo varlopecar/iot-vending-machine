@@ -1,6 +1,6 @@
 import React from "react";
 import { View, Text, TouchableOpacity, Image } from "react-native";
-import { useRouter } from "expo-router";
+// import { useRouter } from "expo-router"; // Unused
 import { useTailwindTheme } from "../hooks/useTailwindTheme";
 import { TabBarSpacer } from "./ui";
 
@@ -16,7 +16,7 @@ export default function CartBanner({
   onPress,
 }: CartBannerProps) {
   const { isDark } = useTailwindTheme();
-  const router = useRouter();
+  // const router = useRouter(); // Unused
 
   if (itemCount === 0) return null;
 

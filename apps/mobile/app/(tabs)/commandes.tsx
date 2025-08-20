@@ -22,7 +22,7 @@ export default function CommandesScreen() {
   const { getTotalItems, getTotalPrice } = useCart();
   const { user } = useAuth();
   const [localOrders, setLocalOrders] = useState<Order[]>([]);
-  const [tick, setTick] = useState(0);
+  // const [tick, setTick] = useState(0); // Unused
   const [isLoading, setIsLoading] = useState(true);
   const scrollY = useRef(new Animated.Value(0)).current;
 
@@ -49,8 +49,8 @@ export default function CommandesScreen() {
         if (!cancelled) {
           setLocalOrders(mapped);
         }
-      } catch (e) {
-
+      } catch {
+        // Error silently handled
       } finally {
         if (!cancelled) setIsLoading(false);
       }
@@ -90,8 +90,8 @@ export default function CommandesScreen() {
             }));
             setLocalOrders(mapped);
           }
-        } catch (e) {
-  
+        } catch {
+          // Error silently handled
         }
       };
       refetch();

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import {
   View,
   TouchableOpacity,
@@ -54,7 +54,7 @@ export const NativePaymentButton: React.FC<NativePaymentButtonProps> = ({
         onError(result.error || "Paiement échoué");
       }
     } catch (error) {
-      
+
       onError(error instanceof Error ? error.message : "Erreur inattendue");
     } finally {
       setIsProcessing(false);
@@ -79,7 +79,7 @@ export const NativePaymentButton: React.FC<NativePaymentButtonProps> = ({
   }
 
   const isIOS = Platform.OS === "ios";
-  const buttonColor = isIOS ? "#000000" : "#4285F4";
+  // const buttonColor = isIOS ? "#000000" : "#4285F4"; // Unused
   const buttonText = isIOS ? "Payer avec Apple Pay" : "Payer avec Google Pay";
   const isButtonDisabled = disabled || isProcessing;
 

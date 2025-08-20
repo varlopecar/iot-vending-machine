@@ -1,8 +1,9 @@
 {
   "expo": {
-    "name": "mobile",
-    "slug": "mobile",
+    "name": "IoT Vending Machine",
+    "slug": "iot-vending-machine",
     "version": "1.0.0",
+    "description": "A connected vending machine platform that enables users to reserve products via smartphone and retrieve them with QR codes.",
     "orientation": "portrait",
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
@@ -14,18 +15,23 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLName": "stripe-redirect",
-            "CFBundleURLSchemes": ["mobile"]
+            "CFBundleURLSchemes": [
+              "mobile"
+            ]
+          },
+          {
+            "CFBundleURLName": "stripe-redirect",
+            "CFBundleURLSchemes": [
+              "mobile"
+            ]
           }
-        ]
+        ],
+        "ITSAppUsesNonExemptEncryption": false
       }
     },
     "android": {
-      "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
-      },
-      "edgeToEdgeEnabled": true,
       "package": "com.vendingmachine.mobile",
+      "edgeToEdgeEnabled": true,
       "jsEngine": "jsc",
       "intentFilters": [
         {
@@ -36,29 +42,29 @@
               "scheme": "mobile"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
     "web": {
       "bundler": "metro",
-      "output": "static",
-      "favicon": "./assets/images/favicon.png"
+      "output": "static"
     },
     "plugins": [
       "expo-router",
-      [
-        "expo-splash-screen",
-        {
-          "image": "./assets/images/splash-icon.png",
-          "imageWidth": 200,
-          "resizeMode": "contain",
-          "backgroundColor": "#ffffff"
-        }
-      ]
+      "expo-splash-screen"
     ],
     "experiments": {
       "typedRoutes": true
+    },
+    "extra": {
+      "router": {},
+      "eas": {
+        "projectId": "167b24d6-c41d-47af-a449-b2f97c5e0ffd"
+      }
     }
   }
 }

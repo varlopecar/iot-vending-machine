@@ -3,12 +3,11 @@ import {
   View,
   Text,
   TouchableOpacity,
-  Alert,
   ActivityIndicator,
 } from "react-native";
 import { useStripeCheckout } from "../../hooks/useStripeCheckout";
 import { NativePaymentButton } from "./NativePaymentButton";
-import { CreatePaymentIntentParams, PaymentResult } from "../../types/stripe";
+import { PaymentResult } from "../../types/stripe";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 
 interface StripeCheckoutProps {
@@ -34,14 +33,14 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
   const [clientSecret, setClientSecret] = useState<string | null>(null);
   const [isInitializing, setIsInitializing] = useState(false);
   const {
-    processPayment,
+    // processPayment, // Unused
     createPaymentIntent,
     initializePaymentSheet,
     presentPayment,
     isLoading,
   } = useStripeCheckout();
 
-  
+
 
   const handleInitializePayment = async () => {
     try {
@@ -56,8 +55,7 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
       });
 
       setClientSecret(paymentIntent.client_secret);
-    } catch (error) {
-      
+    } catch {
       onPaymentError("Impossible de préparer le paiement");
     } finally {
       setIsInitializing(false);
@@ -84,7 +82,7 @@ export const StripeCheckout: React.FC<StripeCheckoutProps> = ({
       }
       // Si result.error est undefined, c'est une annulation utilisateur, on ne fait rien
     } catch (error) {
-      
+
       onPaymentError(
         error instanceof Error ? error.message : "Erreur inattendue"
       );

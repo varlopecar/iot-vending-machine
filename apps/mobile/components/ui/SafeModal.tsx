@@ -1,7 +1,7 @@
 import React from 'react';
 import { Modal, ModalProps, View } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { useTailwindTheme } from '../../hooks/useTailwindTheme';
+// import { useTailwindTheme } from '../../hooks/useTailwindTheme'; // Unused
 
 interface SafeModalProps extends ModalProps {
   children: React.ReactNode;
@@ -9,17 +9,17 @@ interface SafeModalProps extends ModalProps {
   overlayClassName?: string;
 }
 
-export default function SafeModal({ 
-  children, 
+export default function SafeModal({
+  children,
   className = '',
   overlayClassName = '',
-  ...props 
+  ...props
 }: SafeModalProps) {
-  const { isDark } = useTailwindTheme();
-  
+  // const { isDark } = useTailwindTheme(); // Unused
+
   const defaultOverlayClassName = 'absolute inset-0 bg-black opacity-50';
-  const combinedOverlayClassName = overlayClassName 
-    ? `${defaultOverlayClassName} ${overlayClassName}` 
+  const combinedOverlayClassName = overlayClassName
+    ? `${defaultOverlayClassName} ${overlayClassName}`
     : defaultOverlayClassName;
 
   return (

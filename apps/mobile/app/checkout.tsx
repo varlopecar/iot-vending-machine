@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, Alert, ScrollView, SafeAreaView } from "react-native";
+import { Alert, ScrollView, SafeAreaView } from "react-native";
 import { useRouter, useLocalSearchParams, Stack } from "expo-router";
 import { StripeCheckout } from "../components/stripe/StripeCheckout";
 import { PaymentResult } from "../types/stripe";
@@ -24,7 +24,7 @@ export default function CheckoutScreen() {
   });
 
   const handlePaymentSuccess = (result: PaymentResult) => {
-    
+
 
     Alert.alert(
       "Paiement réussi ! 🎉",
@@ -50,7 +50,7 @@ export default function CheckoutScreen() {
   };
 
   const handlePaymentError = (error: string) => {
-    
+
 
     Alert.alert(
       "Erreur de paiement ❌",

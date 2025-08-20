@@ -14,7 +14,7 @@ export default function PaymentSuccessScreen() {
   const router = useRouter();
   const params = useLocalSearchParams();
   const { isDark } = useTailwindTheme();
-  const { cartItems, getTotalPrice, clearCart, appliedOffers } = useCart();
+  const { cartItems, clearCart, appliedOffers } = useCart();
 
   const [orderStatus, setOrderStatus] =
     useState<CheckoutGetStatusResponse | null>(null);
@@ -136,8 +136,7 @@ export default function PaymentSuccessScreen() {
       });
       setFetchQrStep('done');
       setIsLoading(false);
-    } catch (error) {
-      
+    } catch {
       Alert.alert(
         "Erreur",
         "Impossible de mettre à jour le statut de la commande.",
@@ -218,7 +217,7 @@ export default function PaymentSuccessScreen() {
           activeOpacity={0.8}
         >
           <Text className={`font-semibold text-center text-base ${isDark ? 'text-dark-buttonText' : 'text-white'}`}>
-            Retour à l'accueil
+            Retour à l&apos;accueil
           </Text>
         </TouchableOpacity>
 
