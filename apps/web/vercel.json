@@ -1,0 +1,7 @@
+{
+  "buildCommand": "pnpm build",
+  "devCommand": "pnpm dev",
+  "installCommand": "pnpm install --filter=web...",
+  "framework": "nextjs",
+  "regions": ["cdg1"]
+}
