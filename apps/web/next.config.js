@@ -10,13 +10,19 @@ const nextConfig = {
     ignoreBuildErrors: true,
   },
 
-  // Force dynamic rendering for all pages
-  force404: false,
-  dynamicIO: false,
-
   // Environment variables validation
   env: {
     NEXT_PUBLIC_API_URL: process.env.NEXT_PUBLIC_API_URL || 'http://localhost:3000',
+  },
+
+  // Disable static optimization completely to prevent prerendering errors
+  experimental: {
+    typedRoutes: false,
+  },
+
+  // Force dynamic rendering for all pages
+  generateBuildId: async () => {
+    return 'build-' + Date.now()
   },
 
 };

@@ -1,3 +1,6 @@
+// Force dynamic rendering to prevent prerendering errors  
+export const dynamic = 'force-dynamic';
+
 export default function Custom500() {
     return (
         <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4">
