@@ -28,7 +28,7 @@ export function AdminLogin() {
   const adminLoginMutation = trpc.auth.adminLogin.useMutation({
     onSuccess: (data) => {
       // Use the auth context login method
-      login(data.token, data.user as AdminUser);
+      login(data.access_token, data.user as AdminUser);
 
       // Redirect to dashboard
       router.push("/");

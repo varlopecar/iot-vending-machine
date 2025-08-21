@@ -68,6 +68,11 @@ export function ProductCard({
               fill
               className="object-cover"
               sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+              onError={(e) => {
+                // Fallback to default image if external image fails
+                const target = e.target as HTMLImageElement;
+                target.src = "/assets/images/coca.png";
+              }}
             />
             <div className="absolute top-2 right-2">
               <Badge variant="secondary" className="text-xs">
