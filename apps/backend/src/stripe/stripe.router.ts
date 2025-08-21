@@ -74,7 +74,7 @@ export class StripeRouter {
   getPublishableKey() {
     try {
       const publishableKey = getStripePublishableKey();
-      
+
       return {
         publishableKey,
       };

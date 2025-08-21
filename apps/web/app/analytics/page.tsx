@@ -6,14 +6,14 @@ import {
   ComingSoonCard,
 } from "@/components/analytics";
 import { TrendingUp, Clock } from "lucide-react";
-import { api } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc/client";
 
 export default function AnalyticsPage() {
   const {
     data: analytics,
     isLoading,
     error,
-  } = api.analytics.getCurrentMonthAnalytics.useQuery();
+  } = trpc.analytics.getCurrentMonthAnalytics.useQuery();
 
   return (
     <main className="space-y-6" role="main" aria-labelledby="analytics-title">

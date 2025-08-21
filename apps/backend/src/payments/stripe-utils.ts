@@ -20,11 +20,8 @@ export function extractReceiptUrlFromPaymentIntent(
       }
     }
 
-
-
     return null;
   } catch (error) {
-
     return null;
   }
 }
@@ -44,7 +41,6 @@ export function extractErrorCodeFromPaymentIntent(
 
     return null;
   } catch (error) {
-
     return null;
   }
 }
@@ -64,7 +60,6 @@ export function extractErrorMessageFromPaymentIntent(
 
     return null;
   } catch (error) {
-
     return null;
   }
 }

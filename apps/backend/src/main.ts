@@ -34,7 +34,7 @@ async function bootstrap() {
     origin: (origin, callback) => {
       // Permettre les requêtes sans origin (mobile apps)
       if (!origin) return callback(null, true);
-      
+
       if (allowedOrigins.includes(origin)) {
         callback(null, true);
       } else {
@@ -43,7 +43,11 @@ async function bootstrap() {
       }
     },
     methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
-    allowedHeaders: ['Content-Type', 'Authorization', 'ngrok-skip-browser-warning'],
+    allowedHeaders: [
+      'Content-Type',
+      'Authorization',
+      'ngrok-skip-browser-warning',
+    ],
     credentials: true,
   });
 
@@ -52,7 +56,5 @@ async function bootstrap() {
   expressApp.use('/webhooks/stripe', express.raw({ type: 'application/json' }));
 
   await app.listen(env.PORT);
-
-
 }
 bootstrap();

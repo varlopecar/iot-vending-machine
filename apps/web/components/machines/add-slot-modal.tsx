@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button, Input } from "../ui";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 
 interface AddSlotModalProps {
   isOpen: boolean;
@@ -22,7 +22,7 @@ export function AddSlotModal({
 
   // Récupérer la liste des produits
   const { data: products, isLoading: productsLoading } =
-    api.products.getAllProducts.useQuery();
+    trpc.products.getAllProducts.useQuery();
 
   // Récupérer le prochain slot disponible (si l'endpoint existe)
   const {
@@ -30,7 +30,7 @@ export function AddSlotModal({
     refetch: refetchNextSlot,
     isError: isNextSlotError,
     error: nextSlotError,
-  } = api.stocks.getNextAvailableSlotNumber?.useQuery(
+  } = trpc.stocks.getNextAvailableSlotNumber?.useQuery(
     { machine_id: machineId },
     {
       enabled: isOpen,
@@ -40,14 +40,14 @@ export function AddSlotModal({
       retry: false,
     }
   ) || {
-    data: undefined,
-    refetch: () => Promise.resolve(),
-    isError: false,
-    error: undefined,
-  };
+      data: undefined,
+      refetch: () => Promise.resolve(),
+      isError: false,
+      error: undefined,
+    };
 
   // Mutation pour ajouter un slot
-  const addSlotMutation = api.stocks.addSlot.useMutation({
+  const addSlotMutation = trpc.stocks.addSlot.useMutation({
     retry: 3, // Retry automatique 3 fois en cas d'erreur de connexion
     retryDelay: 1000, // Attendre 1 seconde entre les tentatives
     onSuccess: () => {
@@ -57,7 +57,7 @@ export function AddSlotModal({
       resetForm();
     },
     onError: (error) => {
-      
+
       // Message plus informatif selon le type d'erreur
       if (
         error.message.includes("Server has closed") ||
@@ -99,7 +99,7 @@ export function AddSlotModal({
     ) {
       alert(
         nextSlotError?.message ||
-          "Aucun slot disponible. Libérez un slot avant d'ajouter."
+        "Aucun slot disponible. Libérez un slot avant d'ajouter."
       );
       return;
     }

@@ -26,7 +26,7 @@ export class StripeService {
 
       // Configuration des méthodes de paiement selon la plateforme
       // Pour les tests, on utilise uniquement automatic_payment_methods
-  
+
       const paymentMethodOptions: any = {
         automatic_payment_methods: {
           enabled: true,

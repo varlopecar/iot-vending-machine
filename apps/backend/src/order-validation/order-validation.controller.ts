@@ -111,8 +111,6 @@ export class OrderValidationController {
         created_at: order.created_at,
       };
     } catch (error) {
-
-
       if (error instanceof z.ZodError) {
         throw new BadRequestException({
           status: 'VALIDATION_ERROR',
@@ -160,8 +158,6 @@ export class OrderValidationController {
         created_at: order.created_at,
       };
     } catch (error) {
-
-
       if (error instanceof z.ZodError) {
         throw new BadRequestException({
           status: 'VALIDATION_ERROR',

@@ -5,7 +5,7 @@ import { AlertTriangle, XCircle, AlertCircle } from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 
 export interface MachineAlertBadgeProps {
-  alertType: "CRITICAL" | "LOW_STOCK" | "INCOMPLETE" | null;
+  alertType: "CRITICAL" | "LOW_STOCK" | "INCOMPLETE" | "MACHINE_OFFLINE" | "MAINTENANCE_REQUIRED" | null;
   className?: string;
 }
 
@@ -30,6 +30,20 @@ const alertConfig = {
     variant: "outline" as const,
     className:
       "bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700",
+  },
+  MACHINE_OFFLINE: {
+    label: "Machine hors ligne",
+    icon: XCircle,
+    variant: "destructive" as const,
+    className:
+      "bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-900 dark:text-gray-200 dark:border-gray-700",
+  },
+  MAINTENANCE_REQUIRED: {
+    label: "Maintenance requise",
+    icon: AlertTriangle,
+    variant: "secondary" as const,
+    className:
+      "bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900 dark:text-yellow-200 dark:border-yellow-700",
   },
 } as const;
 

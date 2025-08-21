@@ -13,9 +13,7 @@ import {
   RefreshCw,
   Package,
   AlertTriangle,
-  History,
   Settings,
-  Plus,
   Truck,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "../ui";
@@ -26,7 +24,7 @@ import { EditSlotModal } from "./edit-slot-modal";
 import { MachineSettingsModal } from "./machine-settings-modal";
 import { MachineAlertBadge } from "./machine-alert-badge";
 import { MachineRestockHistory } from "./machine-restock-history";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 
 type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
 
@@ -74,7 +72,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     isLoading: loadingMachine,
     error: machineError,
     refetch: refetchMachine,
-  } = api.machines.getMachineById.useQuery({ id: machineId });
+  } = trpc.machines.getMachineById.useQuery({ id: machineId });
 
   // Récupération des stocks de la machine
   const {
@@ -82,21 +80,21 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     isLoading: loadingSlots,
     error: slotsError,
     refetch: refetchSlots,
-  } = api.stocks.getStocksByMachine.useQuery({ machine_id: machineId });
+  } = trpc.stocks.getStocksByMachine.useQuery({ machine_id: machineId });
 
   // Récupération des alertes de la machine
-  const { data: machineAlerts } = api.alerts.getMachineAlerts.useQuery({
+  const { data: machineAlerts } = trpc.alerts.getMachineAlerts.useQuery({
     machineId,
   });
 
   // Mutation pour ravitailler une machine au maximum
-  const restockToMaxMutation = api.restocks.restockToMax.useMutation({
+  const restockToMaxMutation = trpc.restocks.restockToMax.useMutation({
     onSuccess: () => {
       refetchSlots();
       setRestockingAll(false);
     },
-    onError: (error) => {
-      
+    onError: () => {
+
       setRestockingAll(false);
     },
   });
@@ -107,7 +105,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     setRestockingAll(true);
     restockToMaxMutation.mutate({
       machine_id: machineId,
-      // On va récupérer l'admin depuis le backend
+      // On va récupérer l&apos;admin depuis le backend
       notes: `Ravitaillement complet de la machine ${machine.label}`,
     });
   };
@@ -240,15 +238,8 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                 new Set(machineAlerts.map((alert) => alert.type))
               ).map((alertType) => (
                 <MachineAlertBadge
-                  key={alertType}
-                  alertType={
-                    alertType as
-                      | "CRITICAL"
-                      | "LOW_STOCK"
-                      | "INCOMPLETE"
-                      | "MACHINE_OFFLINE"
-                      | "MAINTENANCE_REQUIRED"
-                  }
+                  key={alertType as string}
+                  alertType={alertType as "CRITICAL" | "LOW_STOCK" | "INCOMPLETE" | "MACHINE_OFFLINE" | "MAINTENANCE_REQUIRED"}
                 />
               ))}
             </div>
@@ -281,14 +272,14 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                 Configuration incomplète
               </h3>
               <p className="text-sm text-yellow-700">
-                Cette machine n'est pas entièrement configurée.
+                Cette machine n&apos;est pas entièrement configurée.
                 <strong>
                   {" "}
                   {unConfiguredSlots} slot{unConfiguredSlots > 1 ? "s" : ""}{" "}
                   restant{unConfiguredSlots > 1 ? "s" : ""}
                 </strong>{" "}
                 à configurer sur 6 total. La machine est actuellement hors
-                service jusqu'à ce que tous les slots soient configurés.
+                service jusqu&apos;à ce que tous les slots soient configurés.
               </p>
             </div>
           </div>
@@ -305,7 +296,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
               <Package className="w-5 h-5" />
-              Vue d'ensemble
+              Vue d&apos;ensemble
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -408,7 +399,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               {slots &&
                 slots
                   .sort((a, b) => a.slot_number - b.slot_number)
-                  .map((slot, index) => (
+                  .map((slot, index: number) => (
                     <motion.div
                       key={slot.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -444,7 +435,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             {totalSlots === 0 && (
               <div className="text-center py-8">
                 <p className="text-light-text dark:text-dark-textSecondary mb-4">
-                  Cliquez sur "Ajouter un produit" ci-dessus pour commencer la
+                  Cliquez sur &quot;Ajouter un produit&quot; ci-dessus pour commencer la
                   configuration.
                 </p>
               </div>
@@ -482,25 +473,25 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           selectedSlotId
             ? (slots || []).find((s) => s.id === selectedSlotId)
               ? {
-                  id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
-                  product_id: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.product_id,
-                  product_name: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.product_name,
-                  quantity: (slots || []).find((s) => s.id === selectedSlotId)!
-                    .quantity,
-                  max_capacity: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.max_capacity,
-                  slot_number: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.slot_number,
-                  machine_id: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.machine_id,
-                }
+                id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
+                product_id: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.product_id,
+                product_name: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.product_name,
+                quantity: (slots || []).find((s) => s.id === selectedSlotId)!
+                  .quantity,
+                max_capacity: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.max_capacity,
+                slot_number: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.slot_number,
+                machine_id: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.machine_id,
+              }
               : null
             : null
         }

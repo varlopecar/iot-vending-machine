@@ -27,7 +27,7 @@ export class OrdersRouter {
     const user = await this.authMiddleware.authenticateUser();
     const order = await this.ordersService.getOrderById(id);
     this.authMiddleware.requireOwnershipOrAdmin(user, order.user_id);
-    
+
     return order;
   }
 
@@ -39,7 +39,7 @@ export class OrdersRouter {
     // ✅ AUTHENTIFICATION RÉACTIVÉE
     const user = await this.authMiddleware.authenticateUser();
     this.authMiddleware.requireOwnershipOrAdmin(user, userId);
-    
+
     return this.ordersService.getOrdersByUserId(userId);
   }
 
@@ -51,7 +51,7 @@ export class OrdersRouter {
     // ✅ AUTHENTIFICATION RÉACTIVÉE - SÉCURITÉ COMPLÈTE
     const user = await this.authMiddleware.authenticateUser();
     this.authMiddleware.requireOwnershipOrAdmin(user, orderData.user_id);
-    
+
     return this.ordersService.createOrder(orderData);
   }
 
@@ -62,12 +62,16 @@ export class OrdersRouter {
     }),
     output: orderSchema,
   })
-  async updateOrder(@Input('id') id: string, @Input('data') data: UpdateOrderInput, ctx: any) {
+  async updateOrder(
+    @Input('id') id: string,
+    @Input('data') data: UpdateOrderInput,
+    ctx: any,
+  ) {
     // ✅ AUTHENTIFICATION RÉACTIVÉE
     const user = await this.authMiddleware.authenticateUser();
     const order = await this.ordersService.getOrderById(id);
     this.authMiddleware.requireOwnershipOrAdmin(user, order.user_id);
-    
+
     return this.ordersService.updateOrder(id, data);
   }
 
@@ -80,7 +84,7 @@ export class OrdersRouter {
     const user = await this.authMiddleware.authenticateUser();
     const order = await this.ordersService.getOrderById(id);
     this.authMiddleware.requireOwnershipOrAdmin(user, order.user_id);
-    
+
     return this.ordersService.cancelOrder(id);
   }
 
@@ -91,7 +95,7 @@ export class OrdersRouter {
   async validateQRCode(@Input('qr_code_token') qrCodeToken: string, ctx: any) {
     // ✅ AUTHENTIFICATION RÉACTIVÉE - QR Code validation sécurisée
     const user = await this.authMiddleware.authenticateUser();
-    
+
     return this.ordersService.validateQRCode(qrCodeToken);
   }
 
@@ -104,7 +108,7 @@ export class OrdersRouter {
     const user = await this.authMiddleware.authenticateUser();
     const order = await this.ordersService.getOrderById(id);
     this.authMiddleware.requireOwnershipOrAdmin(user, order.user_id);
-    
+
     return this.ordersService.useOrder(id);
   }
 }

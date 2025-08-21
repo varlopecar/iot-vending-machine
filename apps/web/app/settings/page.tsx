@@ -42,7 +42,7 @@ export default function SettingsPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <div>
-                <label className="text-sm font-medium">Nom d'utilisateur</label>
+                <label className="text-sm font-medium">Nom d&apos;utilisateur</label>
                 <Input
                   defaultValue="admin@vendingmachine.com"
                   className="mt-1"

@@ -1,6 +1,11 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
-import { PopularProduct, TopMachineRevenue, CurrentMonthAnalytics, DashboardStats } from './analytics.schema';
+import {
+  PopularProduct,
+  TopMachineRevenue,
+  CurrentMonthAnalytics,
+  DashboardStats,
+} from './analytics.schema';
 
 @Injectable()
 export class AnalyticsService {
@@ -12,18 +17,28 @@ export class AnalyticsService {
   async getPopularProductsCurrentMonth(): Promise<PopularProduct[]> {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const lastDayOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
 
     // Convertir en timestamps string pour compatibilité avec le schéma Prisma
     const startDate = firstDayOfMonth.toISOString();
     const endDate = lastDayOfMonth.toISOString();
 
-    const result = await this.prisma.$queryRaw<Array<{
-      product_id: string;
-      product_name: string;
-      total_sold: bigint;
-      total_revenue_cents: bigint;
-    }>>`
+    const result = await this.prisma.$queryRaw<
+      Array<{
+        product_id: string;
+        product_name: string;
+        total_sold: bigint;
+        total_revenue_cents: bigint;
+      }>
+    >`
       SELECT 
         p.id as product_id,
         p.name as product_name,
@@ -40,7 +55,7 @@ export class AnalyticsService {
       LIMIT 5
     `;
 
-    return result.map(row => ({
+    return result.map((row) => ({
       productId: row.product_id,
       productName: row.product_name,
       totalSold: Number(row.total_sold),
@@ -54,19 +69,29 @@ export class AnalyticsService {
   async getTopMachinesByRevenueCurrentMonth(): Promise<TopMachineRevenue[]> {
     const now = new Date();
     const firstDayOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
-    const lastDayOfMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
+    const lastDayOfMonth = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
 
     // Convertir en timestamps string pour compatibilité avec le schéma Prisma
     const startDate = firstDayOfMonth.toISOString();
     const endDate = lastDayOfMonth.toISOString();
 
-    const result = await this.prisma.$queryRaw<Array<{
-      machine_id: string;
-      machine_label: string;
-      location: string;
-      total_revenue_cents: bigint;
-      total_orders: bigint;
-    }>>`
+    const result = await this.prisma.$queryRaw<
+      Array<{
+        machine_id: string;
+        machine_label: string;
+        location: string;
+        total_revenue_cents: bigint;
+        total_orders: bigint;
+      }>
+    >`
       SELECT 
         m.id as machine_id,
         m.label as machine_label,
@@ -83,7 +108,7 @@ export class AnalyticsService {
       LIMIT 5
     `;
 
-    return result.map(row => ({
+    return result.map((row) => ({
       machineId: row.machine_id,
       machineLabel: row.machine_label,
       location: row.location,
@@ -116,20 +141,40 @@ export class AnalyticsService {
    */
   async getDashboardStats(): Promise<DashboardStats> {
     const now = new Date();
-    
+
     // Mois en cours
     const currentMonthStart = new Date(now.getFullYear(), now.getMonth(), 1);
-    const currentMonthEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0, 23, 59, 59, 999);
-    
+    const currentMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth() + 1,
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
     // Mois précédent pour la comparaison
-    const previousMonthStart = new Date(now.getFullYear(), now.getMonth() - 1, 1);
-    const previousMonthEnd = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59, 999);
-    
+    const previousMonthStart = new Date(
+      now.getFullYear(),
+      now.getMonth() - 1,
+      1,
+    );
+    const previousMonthEnd = new Date(
+      now.getFullYear(),
+      now.getMonth(),
+      0,
+      23,
+      59,
+      59,
+      999,
+    );
+
     // Semaine en cours
     const weekStart = new Date(now);
     weekStart.setDate(now.getDate() - now.getDay()); // Dimanche
     weekStart.setHours(0, 0, 0, 0);
-    
+
     // Semaine précédente
     const previousWeekStart = new Date(weekStart);
     previousWeekStart.setDate(weekStart.getDate() - 7);
@@ -142,7 +187,7 @@ export class AnalyticsService {
       currentWeekSales,
       previousWeekSales,
       machinesCount,
-      productsCount
+      productsCount,
     ] = await Promise.all([
       // Revenus mois en cours
       this.prisma.$queryRaw<Array<{ total_revenue: bigint }>>`
@@ -188,7 +233,7 @@ export class AnalyticsService {
           COUNT(*) as total,
           COUNT(CASE WHEN is_active = true THEN 1 END) as active
         FROM products
-      `
+      `,
     ]);
 
     const currentRevenue = Number(currentMonthRevenue[0]?.total_revenue || 0);
@@ -197,13 +242,17 @@ export class AnalyticsService {
     const previousSales = Number(previousWeekSales[0]?.total_sales || 0);
 
     // Calcul des pourcentages de croissance
-    const revenueGrowthPercent = previousRevenue > 0 
-      ? Math.round(((currentRevenue - previousRevenue) / previousRevenue) * 100)
-      : 0;
-    
-    const salesGrowthPercent = previousSales > 0
-      ? Math.round(((currentSales - previousSales) / previousSales) * 100)
-      : 0;
+    const revenueGrowthPercent =
+      previousRevenue > 0
+        ? Math.round(
+            ((currentRevenue - previousRevenue) / previousRevenue) * 100,
+          )
+        : 0;
+
+    const salesGrowthPercent =
+      previousSales > 0
+        ? Math.round(((currentSales - previousSales) / previousSales) * 100)
+        : 0;
 
     return {
       totalRevenueCents: currentRevenue,

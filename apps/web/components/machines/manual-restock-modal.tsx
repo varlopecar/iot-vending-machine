@@ -2,7 +2,7 @@
 
 import { useState, useEffect } from "react";
 import { Button, Input } from "../ui";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 
 interface ManualRestockModalProps {
   isOpen: boolean;
@@ -27,10 +27,10 @@ export function ManualRestockModal({
   const [notes, setNotes] = useState<string>("");
 
   // Utils pour invalider les queries
-  const utils = api.useUtils();
+  const utils = trpc.useUtils();
 
   // Mutation pour ravitailler manuellement
-  const manualRestockMutation = api.restocks.manualRestock.useMutation({
+  const manualRestockMutation = trpc.restocks.manualRestock.useMutation({
     retry: 3,
     retryDelay: 1000,
     onSuccess: () => {

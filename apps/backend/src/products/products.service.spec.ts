@@ -193,7 +193,7 @@ describe('ProductsService', () => {
     it('should return products with sales statistics', async () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.orderItem.aggregate.mockResolvedValue({
-        _sum: { quantity: 50 }
+        _sum: { quantity: 50 },
       });
 
       const result = await service.getAllProductsWithStats();
@@ -206,12 +206,12 @@ describe('ProductsService', () => {
         where: {
           product_id: 'product-1',
           order: {
-            status: 'COMPLETED'
-          }
+            status: 'COMPLETED',
+          },
         },
         _sum: {
-          quantity: true
-        }
+          quantity: true,
+        },
       });
       expect(result).toHaveLength(1);
       expect(result[0]).toHaveProperty('soldCount', 50);
@@ -220,7 +220,7 @@ describe('ProductsService', () => {
     it('should handle products with no sales', async () => {
       mockPrismaService.product.findMany.mockResolvedValue(mockProducts);
       mockPrismaService.orderItem.aggregate.mockResolvedValue({
-        _sum: { quantity: null }
+        _sum: { quantity: null },
       });
 
       const result = await service.getAllProductsWithStats();
@@ -277,7 +277,9 @@ describe('ProductsService', () => {
     it('should throw NotFoundException if product not found', async () => {
       mockPrismaService.product.findUnique.mockResolvedValue(null);
 
-      await expect(service.getProductById(productId)).rejects.toThrow(NotFoundException);
+      await expect(service.getProductById(productId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrismaService.product.findUnique).toHaveBeenCalledWith({
         where: { id: productId },
       });
@@ -381,9 +383,13 @@ describe('ProductsService', () => {
     });
 
     it('should throw NotFoundException if product not found', async () => {
-      mockPrismaService.product.update.mockRejectedValue(new Error('Product not found'));
+      mockPrismaService.product.update.mockRejectedValue(
+        new Error('Product not found'),
+      );
 
-      await expect(service.updateProduct('non-existent-id', updateDto)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateProduct('non-existent-id', updateDto),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -391,7 +397,10 @@ describe('ProductsService', () => {
     const productId = 'product-1';
 
     it('should soft delete product successfully', async () => {
-      mockPrismaService.product.update.mockResolvedValue({ id: productId, is_active: false });
+      mockPrismaService.product.update.mockResolvedValue({
+        id: productId,
+        is_active: false,
+      });
 
       const result = await service.deleteProduct(productId);
 
@@ -403,9 +412,13 @@ describe('ProductsService', () => {
     });
 
     it('should throw NotFoundException if product not found', async () => {
-      mockPrismaService.product.update.mockRejectedValue(new Error('Product not found'));
+      mockPrismaService.product.update.mockRejectedValue(
+        new Error('Product not found'),
+      );
 
-      await expect(service.deleteProduct('non-existent-id')).rejects.toThrow(NotFoundException);
+      await expect(service.deleteProduct('non-existent-id')).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 });

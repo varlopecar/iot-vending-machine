@@ -93,7 +93,6 @@ export class CleanupStalePaymentIntentsJob {
           },
           {
             OR: [
-          
               // Les paiements orphelins seraient détectés différemment
               {
                 order: {

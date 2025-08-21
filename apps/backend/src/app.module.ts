@@ -28,7 +28,7 @@ import { RequestContextMiddleware } from './auth/request-context.middleware';
   imports: [
     PrismaModule,
     TRPCModule.forRoot({
-      autoSchemaFile: '../../packages/globals/trpc/src/server',
+      autoSchemaFile: '../../packages/trpc/src/server',
     }),
     AuthModule,
     ProductsModule,

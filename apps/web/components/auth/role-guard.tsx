@@ -54,7 +54,7 @@ export function RoleGuard({ children, allowedRoles, fallback }: RoleGuardProps) 
           Accès non autorisé
         </h3>
         <p className="text-gray-600 mb-4">
-          Vous n'avez pas les permissions nécessaires pour accéder à cette section.
+          Vous n&apos;avez pas les permissions nécessaires pour accéder à cette section.
         </p>
         <p className="text-sm text-gray-500">
           Rôles requis : {allowedRoles.join(' ou ')}

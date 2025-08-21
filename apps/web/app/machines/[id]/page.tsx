@@ -5,7 +5,7 @@ import { MachineDetail } from "@/components/machines";
 
 export default function MachineDetailPage() {
   const params = useParams();
-  const machineId = params.id as string;
+  const machineId = params?.id as string;
 
   if (!machineId) {
     return (

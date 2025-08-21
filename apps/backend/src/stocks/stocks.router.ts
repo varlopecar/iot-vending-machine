@@ -8,7 +8,11 @@ import {
   stockSchema,
   stockWithProductSchema,
 } from './stocks.schema';
-import type { CreateStockInput, UpdateStockInput, AddSlotInput } from './stocks.schema';
+import type {
+  CreateStockInput,
+  UpdateStockInput,
+  AddSlotInput,
+} from './stocks.schema';
 
 @Router({ alias: 'stocks' })
 export class StocksRouter {

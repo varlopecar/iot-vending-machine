@@ -27,12 +27,12 @@ export class RequestContextMiddleware implements NestMiddleware {
   use(req: Request, res: Response, next: NextFunction) {
     // Nettoyer le contexte précédent
     RequestContext.clear();
-    
+
     // Stocker les headers de la requête courante
     if (req.headers.authorization) {
       RequestContext.set('authorization', req.headers.authorization);
     }
-    
+
     next();
   }
 }

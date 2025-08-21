@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { Button, Input } from "../ui";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 
 interface EditSlotModalProps {
   isOpen: boolean;
@@ -28,11 +28,11 @@ export function EditSlotModal({
   const [selectedProductId, setSelectedProductId] = useState<string>("");
   const [quantity, setQuantity] = useState<number>(0);
 
-  const utils = api.useUtils();
+  const utils = trpc.useUtils();
 
   // Charger la liste des produits
   const { data: products, isLoading: productsLoading } =
-    api.products.getAllProducts.useQuery(undefined, { enabled: isOpen });
+    trpc.products.getAllProducts.useQuery(undefined, { enabled: isOpen });
 
   // Pré-remplir quand on ouvre
   useEffect(() => {
@@ -42,7 +42,7 @@ export function EditSlotModal({
     }
   }, [isOpen, slot]);
 
-  const updateStockMutation = api.stocks.updateStock.useMutation({
+  const updateStockMutation = trpc.stocks.updateStock.useMutation({
     onSuccess: () => {
       // Invalider les stocks par machine
       utils.stocks.getStocksByMachine.invalidate({

@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { Button, Input } from "../ui";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 
 interface MachineSettingsModalProps {
   isOpen: boolean;
@@ -37,7 +37,7 @@ export function MachineSettingsModal({
     }
   }, [isOpen, initialLabel, initialLocation, initialContact]);
 
-  const updateMutation = api.machines.updateMachine.useMutation({
+  const updateMutation = trpc.machines.updateMachine.useMutation({
     onSuccess: () => {
       onSaved?.();
       onClose();
@@ -45,12 +45,12 @@ export function MachineSettingsModal({
     onError: (err) => alert(err.message),
   });
 
-  const deleteMutation = (api as any).machines.deleteMachine.useMutation({
+  const deleteMutation = trpc.machines.deleteMachine.useMutation({
     onSuccess: () => {
       onDeleted?.();
       onClose();
     },
-    onError: (err: Error) => alert(err.message),
+    onError: (err) => alert(err.message),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

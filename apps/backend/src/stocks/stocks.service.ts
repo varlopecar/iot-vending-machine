@@ -1,4 +1,8 @@
-import { Injectable, NotFoundException, BadRequestException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 import { TRPCError } from '@trpc/server';
 import {
   CreateStockInput,
@@ -91,8 +95,18 @@ export class StocksService {
                 data: {
                   machine_id: current.machine_id,
                   // utilisateur indéterminé côté API stocks → fallback: premier admin si dispo
-                  user_id: (await tx.user.findFirst({ where: { role: 'ADMIN' }, select: { id: true } }))?.id || (await tx.user.findFirst({ select: { id: true } }))!.id,
-                  notes: delta > 0 ? 'Ajustement manuel (ajout)' : 'Ajustement manuel (retrait)',
+                  user_id:
+                    (
+                      await tx.user.findFirst({
+                        where: { role: 'ADMIN' },
+                        select: { id: true },
+                      })
+                    )?.id ||
+                    (await tx.user.findFirst({ select: { id: true } }))!.id,
+                  notes:
+                    delta > 0
+                      ? 'Ajustement manuel (ajout)'
+                      : 'Ajustement manuel (retrait)',
                   created_at: new Date().toISOString(),
                 },
               });
@@ -105,19 +119,26 @@ export class StocksService {
                   quantity_added: delta,
                 },
               });
-              await tx.stock.update({ where: { id }, data: { ...updateData, quantity: newQuantity } });
+              await tx.stock.update({
+                where: { id },
+                data: { ...updateData, quantity: newQuantity },
+              });
             });
-            const updated = await this.prisma.stock.findUnique({ where: { id } });
-            
+            const updated = await this.prisma.stock.findUnique({
+              where: { id },
+            });
+
             // Déclencher la mise à jour des alertes pour la machine
             try {
               if (updated) {
-                await this.alertsService.updateMachineAlerts(updated.machine_id);
+                await this.alertsService.updateMachineAlerts(
+                  updated.machine_id,
+                );
               }
             } catch (error) {
               // Erreur silencieuse pour éviter de faire échouer la mise à jour
             }
-            
+
             return this.mapStock(updated);
           }
         }
@@ -127,18 +148,22 @@ export class StocksService {
         where: { id },
         data: updateData,
       });
-      
+
       // Déclencher la mise à jour des alertes pour la machine
       try {
         await this.alertsService.updateMachineAlerts(stock.machine_id);
       } catch (error) {
         // Erreur silencieuse pour éviter de faire échouer la mise à jour
       }
-      
+
       return this.mapStock(stock);
     } catch (err) {
       // Ne pas masquer les erreurs de validation en NotFound
-      if (err instanceof BadRequestException || err instanceof NotFoundException || err instanceof TRPCError) {
+      if (
+        err instanceof BadRequestException ||
+        err instanceof NotFoundException ||
+        err instanceof TRPCError
+      ) {
         throw err;
       }
       throw new NotFoundException('Stock not found');
@@ -159,15 +184,18 @@ export class StocksService {
         message: `La quantité (${quantity}) dépasse la capacité maximale (${current.max_capacity})`,
       });
     }
-    const updated = await this.prisma.stock.update({ where: { id }, data: { quantity } });
-    
+    const updated = await this.prisma.stock.update({
+      where: { id },
+      data: { quantity },
+    });
+
     // Déclencher la mise à jour des alertes pour la machine
     try {
       await this.alertsService.updateMachineAlerts(updated.machine_id);
     } catch (error) {
       // Erreur silencieuse pour éviter de faire échouer la mise à jour
     }
-    
+
     return this.mapStock(updated);
   }
 
@@ -220,16 +248,18 @@ export class StocksService {
       orderBy: { slot_number: 'asc' },
     });
 
-    const usedSlots = existingSlots.map(s => s.slot_number);
-    
+    const usedSlots = existingSlots.map((s) => s.slot_number);
+
     // Trouve le premier slot disponible de 1 à 6
     for (let i = 1; i <= 6; i++) {
       if (!usedSlots.includes(i)) {
         return i;
       }
     }
-    
-    throw new BadRequestException('Aucun slot disponible (maximum 6 slots par machine)');
+
+    throw new BadRequestException(
+      'Aucun slot disponible (maximum 6 slots par machine)',
+    );
   }
 
   /**
@@ -257,7 +287,9 @@ export class StocksService {
       where: { machine_id: slotData.machine_id },
     });
     if (existingSlots >= 6) {
-      throw new BadRequestException('Une machine ne peut avoir que 6 slots maximum');
+      throw new BadRequestException(
+        'Une machine ne peut avoir que 6 slots maximum',
+      );
     }
 
     // Vérifier que le numéro de slot n'est pas déjà pris
@@ -268,7 +300,9 @@ export class StocksService {
       },
     });
     if (existingSlot) {
-      throw new BadRequestException(`Le slot ${slotData.slot_number} est déjà occupé`);
+      throw new BadRequestException(
+        `Le slot ${slotData.slot_number} est déjà occupé`,
+      );
     }
 
     // Créer le nouveau slot avec les valeurs par défaut
@@ -298,9 +332,7 @@ export class StocksService {
     // Déclencher la mise à jour des alertes pour la machine après ajout de slot
     try {
       await this.alertsService.updateMachineAlerts(slotData.machine_id);
-    } catch (error) {
-
-    }
+    } catch (error) {}
 
     return this.mapStock(stock);
   }

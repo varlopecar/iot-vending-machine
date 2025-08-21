@@ -100,7 +100,7 @@ describe('OrdersService', () => {
     const mockProduct = {
       id: 'product-1',
       name: 'Test Product',
-      price: 2.50,
+      price: 2.5,
       is_active: true,
     };
 
@@ -131,11 +131,11 @@ describe('OrdersService', () => {
       };
 
       const mockTx = {
-        order: { 
+        order: {
           create: jest.fn().mockResolvedValue(mockOrder),
           update: jest.fn().mockResolvedValue(mockOrder),
         },
-        orderItem: { 
+        orderItem: {
           create: jest.fn().mockResolvedValue(mockOrderItem),
         },
         stock: {
@@ -143,17 +143,21 @@ describe('OrdersService', () => {
           update: jest.fn(),
         },
         product: { findUnique: jest.fn().mockResolvedValue(mockProduct) },
-        user: { 
-          findUnique: jest.fn().mockResolvedValue({ id: 'user-1', points: 100 }),
+        user: {
+          findUnique: jest
+            .fn()
+            .mockResolvedValue({ id: 'user-1', points: 100 }),
           update: jest.fn(),
         },
         orderAction: { create: jest.fn() },
       };
 
-      (mockPrismaService.$transaction as jest.Mock).mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
-      (mockAuthService.getUserById as jest.Mock).mockResolvedValue({ id: 'user-1' });
+      mockAuthService.getUserById.mockResolvedValue({
+        id: 'user-1',
+      });
 
       const result = await service.createOrder(createOrderDto);
 
@@ -166,7 +170,7 @@ describe('OrdersService', () => {
         machine: { findUnique: jest.fn().mockResolvedValue(null) },
       };
 
-      (mockPrismaService.$transaction as jest.Mock).mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
 
@@ -179,7 +183,7 @@ describe('OrdersService', () => {
         product: { findUnique: jest.fn().mockResolvedValue(null) },
       };
 
-      (mockPrismaService.$transaction as jest.Mock).mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
 
@@ -194,7 +198,7 @@ describe('OrdersService', () => {
         stock: { findFirst: jest.fn().mockResolvedValue(lowStock) },
       };
 
-      (mockPrismaService.$transaction as jest.Mock).mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
 
@@ -212,12 +216,16 @@ describe('OrdersService', () => {
         orderAction: { create: jest.fn() },
       };
 
-      (mockPrismaService.$transaction as jest.Mock).mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
-      (mockAuthService.getUserById as jest.Mock).mockResolvedValue({ id: 'user-1' });
+      mockAuthService.getUserById.mockResolvedValue({
+        id: 'user-1',
+      });
 
-      await expect(service.createOrder(emptyOrderDto)).rejects.toThrow(BadRequestException);
+      await expect(service.createOrder(emptyOrderDto)).rejects.toThrow(
+        BadRequestException,
+      );
     });
   });
 
@@ -227,15 +235,15 @@ describe('OrdersService', () => {
       user_id: 'user-1',
       machine_id: 'machine-1',
       status: 'PENDING',
-      total_amount: 8.00,
+      total_amount: 8.0,
       items: [
-        { id: 'item-1', product_id: 'product-1', quantity: 2, price: 2.50 },
+        { id: 'item-1', product_id: 'product-1', quantity: 2, price: 2.5 },
       ],
     };
 
     it('should return order by id', async () => {
-      (mockPrismaService.order.findUnique as jest.Mock).mockResolvedValue(mockOrder);
-      (mockPrismaService.orderItem.findMany as jest.Mock).mockResolvedValue(mockOrder.items);
+      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
+      mockPrismaService.orderItem.findMany.mockResolvedValue(mockOrder.items);
 
       const result = await service.getOrderById('order-1');
 
@@ -246,13 +254,17 @@ describe('OrdersService', () => {
     });
 
     it('should throw NotFoundException if order not found', async () => {
-      (mockPrismaService.order.findUnique as jest.Mock).mockResolvedValue(null);
+      mockPrismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.getOrderById('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.getOrderById('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should handle database errors', async () => {
-      (mockPrismaService.order.findUnique as jest.Mock).mockRejectedValue(new Error('DB Error'));
+      mockPrismaService.order.findUnique.mockRejectedValue(
+        new Error('DB Error'),
+      );
 
       await expect(service.getOrderById('order-1')).rejects.toThrow('DB Error');
     });
@@ -264,21 +276,21 @@ describe('OrdersService', () => {
         id: 'order-1',
         user_id: 'user-1',
         status: 'COMPLETED',
-        total_amount: 8.00,
+        total_amount: 8.0,
         created_at: new Date(),
       },
       {
         id: 'order-2',
         user_id: 'user-1',
         status: 'PENDING',
-        total_amount: 5.00,
+        total_amount: 5.0,
         created_at: new Date(),
       },
     ];
 
     it('should return orders by user id', async () => {
-      (mockPrismaService.order.findMany as jest.Mock).mockResolvedValue(mockOrders);
-      (mockPrismaService.orderItem.findMany as jest.Mock).mockResolvedValue([]);
+      mockPrismaService.order.findMany.mockResolvedValue(mockOrders);
+      mockPrismaService.orderItem.findMany.mockResolvedValue([]);
 
       const result = await service.getOrdersByUserId('user-1');
 
@@ -289,7 +301,7 @@ describe('OrdersService', () => {
     });
 
     it('should return empty array for user with no orders', async () => {
-      (mockPrismaService.order.findMany as jest.Mock).mockResolvedValue([]);
+      mockPrismaService.order.findMany.mockResolvedValue([]);
 
       const result = await service.getOrdersByUserId('user-no-orders');
 
@@ -297,13 +309,13 @@ describe('OrdersService', () => {
     });
 
     it('should handle database errors', async () => {
-      (mockPrismaService.order.findMany as jest.Mock).mockRejectedValue(new Error('DB Error'));
+      mockPrismaService.order.findMany.mockRejectedValue(new Error('DB Error'));
 
-      await expect(service.getOrdersByUserId('user-1')).rejects.toThrow('DB Error');
+      await expect(service.getOrdersByUserId('user-1')).rejects.toThrow(
+        'DB Error',
+      );
     });
   });
-
-
 
   describe('cancelOrder', () => {
     it('should cancel order and restore stock', async () => {
@@ -323,20 +335,24 @@ describe('OrdersService', () => {
       ];
 
       // Mock getOrderById
-      (mockPrismaService.order.findUnique as jest.Mock).mockResolvedValue(mockOrder);
-      (mockPrismaService.orderItem.findMany as jest.Mock).mockResolvedValue(mockOrderItems);
+      mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
+      mockPrismaService.orderItem.findMany.mockResolvedValue(mockOrderItems);
 
       const mockTx = {
         order: {
-          update: jest.fn().mockResolvedValue({ ...mockOrder, status: 'CANCELLED' }),
+          update: jest
+            .fn()
+            .mockResolvedValue({ ...mockOrder, status: 'CANCELLED' }),
         },
         stock: {
-          findFirst: jest.fn().mockResolvedValue({ id: 'stock-1', quantity: 5 }),
+          findFirst: jest
+            .fn()
+            .mockResolvedValue({ id: 'stock-1', quantity: 5 }),
           update: jest.fn(),
         },
       };
 
-      (mockPrismaService.$transaction as jest.Mock).mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
 
@@ -356,7 +372,7 @@ describe('OrdersService', () => {
         order: { findUnique: jest.fn().mockResolvedValue(completedOrder) },
       };
 
-      (mockPrismaService.$transaction as jest.Mock).mockImplementation(async (callback) => {
+      mockPrismaService.$transaction.mockImplementation(async (callback) => {
         return await callback(mockTx);
       });
 
@@ -391,7 +407,7 @@ describe('OrdersService', () => {
       const mockProduct = {
         id: 'product-1',
         name: 'Test Product',
-        price: 2.50,
+        price: 2.5,
       };
 
       mockPrismaService.order.findMany.mockResolvedValue(mockOrders);
@@ -476,7 +492,10 @@ describe('OrdersService', () => {
       };
 
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
-      mockPrismaService.order.update.mockResolvedValue({ ...mockOrder, status: 'EXPIRED' });
+      mockPrismaService.order.update.mockResolvedValue({
+        ...mockOrder,
+        status: 'EXPIRED',
+      });
 
       await expect(service.validateQRCode('qr_test_token')).rejects.toThrow(
         BadRequestException,
@@ -497,7 +516,7 @@ describe('OrdersService', () => {
         machine_id: 'machine-1',
         status: 'ACTIVE',
         items: [],
-        total_price: 5.00,
+        total_price: 5.0,
       };
 
       const mockUpdatedOrder = { ...mockOrder, status: 'USED' };
@@ -508,7 +527,7 @@ describe('OrdersService', () => {
         status: 'ACTIVE',
       });
       mockPrismaService.orderItem.findMany.mockResolvedValue([]);
-      mockPrismaService.product.findUnique.mockResolvedValue({ price: 2.50 });
+      mockPrismaService.product.findUnique.mockResolvedValue({ price: 2.5 });
 
       // Mock update call
       mockPrismaService.order.update.mockResolvedValue(mockUpdatedOrder);
@@ -530,7 +549,7 @@ describe('OrdersService', () => {
         id: 'order-1',
         status: 'USED',
         items: [],
-        total_price: 5.00,
+        total_price: 5.0,
       };
 
       // Mock getOrderById call
@@ -597,7 +616,7 @@ describe('OrdersService', () => {
 
       // Test edge case status mappings
       const testStatuses = ['paid', 'failed', 'refunded', 'requires_payment'];
-      
+
       for (const status of testStatuses) {
         await service.updateOrder('order-1', { status: status as any });
         expect(mockPrismaService.order.update).toHaveBeenCalledWith({
@@ -618,7 +637,7 @@ describe('OrdersService', () => {
       };
 
       const mockUser = { id: 'user-1', points: 100 };
-      const mockProduct = { id: 'product-1', name: 'Test Product', price: 2.50 };
+      const mockProduct = { id: 'product-1', name: 'Test Product', price: 2.5 };
       const mockStock = { id: 'stock-1', quantity: 10 };
 
       mockAuthService.getUserById.mockResolvedValue(mockUser);
@@ -660,7 +679,7 @@ describe('OrdersService', () => {
             update: jest.fn().mockResolvedValue({ ...mockUser, points: 50 }),
           },
         };
-        return { 
+        return {
           order: {
             id: 'order-1',
             points_spent: 50,
@@ -671,11 +690,13 @@ describe('OrdersService', () => {
             created_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
             qr_code_token: 'qr_test_token',
-          }, 
-          items: [{
-            id: 'item-1',
-            subtotal_cents: 250,
-          }]
+          },
+          items: [
+            {
+              id: 'item-1',
+              subtotal_cents: 250,
+            },
+          ],
         };
       });
 
@@ -691,17 +712,17 @@ describe('OrdersService', () => {
         user_id: 'user-1',
         machine_id: 'machine-1',
         items: [
-          { 
-            product_id: 'product-1', 
-            quantity: 1, 
+          {
+            product_id: 'product-1',
+            quantity: 1,
             slot_number: 1,
-            is_free: true 
-          }
+            is_free: true,
+          },
         ],
       };
 
       const mockUser = { id: 'user-1', points: 100 };
-      const mockProduct = { id: 'product-1', name: 'Free Product', price: 2.50 };
+      const mockProduct = { id: 'product-1', name: 'Free Product', price: 2.5 };
       const mockStock = { id: 'stock-1', quantity: 10 };
 
       mockAuthService.getUserById.mockResolvedValue(mockUser);
@@ -713,7 +734,7 @@ describe('OrdersService', () => {
             update: jest.fn().mockResolvedValue({ ...mockStock, quantity: 9 }),
           },
           order: {
-            create: jest.fn().mockResolvedValue({ 
+            create: jest.fn().mockResolvedValue({
               id: 'order-1',
               status: 'ACTIVE',
               user_id: 'user-1',
@@ -734,7 +755,7 @@ describe('OrdersService', () => {
             findUnique: jest.fn().mockResolvedValue(mockProduct),
           },
         };
-        return { 
+        return {
           order: {
             id: 'order-1',
             status: 'ACTIVE',
@@ -743,11 +764,13 @@ describe('OrdersService', () => {
             created_at: new Date().toISOString(),
             expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
             qr_code_token: 'qr_test_token',
-          }, 
-          items: [{
-            id: 'item-1',
-            subtotal_cents: 0,
-          }]
+          },
+          items: [
+            {
+              id: 'item-1',
+              subtotal_cents: 0,
+            },
+          ],
         };
       });
 
@@ -758,6 +781,4 @@ describe('OrdersService', () => {
       expect(result).toBeDefined();
     });
   });
-
-
 });

@@ -1,10 +1,9 @@
 "use client";
 
-import { api } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc/client";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
@@ -24,7 +23,7 @@ const formatGrowth = (percent: number) => {
 
 export function OverviewCards() {
   const { data: dashboardStats, isLoading } =
-    api.analytics.getDashboardStats.useQuery();
+    trpc.analytics.getDashboardStats.useQuery();
 
   const cards = [
     {
@@ -110,15 +109,14 @@ export function OverviewCards() {
                 ></div>
               ) : (
                 <p
-                  className={`text-sm mt-2 ${
-                    card.growth !== undefined
-                      ? card.growth > 0
-                        ? "text-green-700 dark:text-green-400"
-                        : card.growth < 0
-                          ? "text-red-700 dark:text-red-300"
-                          : "text-light-textSecondary dark:text-dark-textSecondary"
-                      : "text-light-textSecondary dark:text-dark-textSecondary"
-                  }`}
+                  className={`text-sm mt-2 ${card.growth !== undefined
+                    ? card.growth > 0
+                      ? "text-green-700 dark:text-green-400"
+                      : card.growth < 0
+                        ? "text-red-700 dark:text-red-300"
+                        : "text-light-textSecondary dark:text-dark-textSecondary"
+                    : "text-light-textSecondary dark:text-dark-textSecondary"
+                    }`}
                 >
                   {card.description}
                 </p>

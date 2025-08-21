@@ -27,7 +27,7 @@ export class TrpcAuthMiddleware {
       authorization = RequestContext.getAuthHeader();
     }
     if (!authorization?.startsWith('Bearer ')) {
-      throw new UnauthorizedException('Token d\'authentification requis');
+      throw new UnauthorizedException("Token d'authentification requis");
     }
 
     const token = authorization.slice(7); // Enlever 'Bearer '
@@ -35,7 +35,7 @@ export class TrpcAuthMiddleware {
     try {
       // Vérifier et décoder le JWT
       const payload = await this.jwtService.verifyAsync(token);
-      
+
       if (!payload.sub) {
         throw new UnauthorizedException('Token invalide');
       }
@@ -43,7 +43,7 @@ export class TrpcAuthMiddleware {
       // Récupérer l'utilisateur complet avec le rôle
       const user = await this.prisma.user.findUnique({
         where: { id: payload.sub },
-        select: { id: true, role: true }
+        select: { id: true, role: true },
       });
 
       if (!user) {
@@ -52,7 +52,7 @@ export class TrpcAuthMiddleware {
 
       return {
         userId: user.id,
-        role: user.role as 'CUSTOMER' | 'OPERATOR' | 'ADMIN'
+        role: user.role as 'CUSTOMER' | 'OPERATOR' | 'ADMIN',
       };
     } catch (error) {
       if (error instanceof UnauthorizedException) {
@@ -68,9 +68,14 @@ export class TrpcAuthMiddleware {
    * @param roles - Rôles autorisés
    * @throws UnauthorizedException si l'utilisateur n'a pas le bon rôle
    */
-  requireRole(user: AuthenticatedUser, roles: Array<'CUSTOMER' | 'OPERATOR' | 'ADMIN'>): void {
+  requireRole(
+    user: AuthenticatedUser,
+    roles: Array<'CUSTOMER' | 'OPERATOR' | 'ADMIN'>,
+  ): void {
     if (!roles.includes(user.role)) {
-      throw new UnauthorizedException(`Accès refusé. Rôle requis: ${roles.join(' ou ')}`);
+      throw new UnauthorizedException(
+        `Accès refusé. Rôle requis: ${roles.join(' ou ')}`,
+      );
     }
   }
 
@@ -81,7 +86,10 @@ export class TrpcAuthMiddleware {
    * @param resourceUserId - ID de l'utilisateur propriétaire de la ressource
    * @throws UnauthorizedException si l'accès n'est pas autorisé
    */
-  requireOwnershipOrAdmin(user: AuthenticatedUser, resourceUserId: string): void {
+  requireOwnershipOrAdmin(
+    user: AuthenticatedUser,
+    resourceUserId: string,
+  ): void {
     if (user.role === 'ADMIN' || user.role === 'OPERATOR') {
       // Les admins/opérateurs ont accès à toutes les ressources
       return;

@@ -120,8 +120,6 @@ export class OrderDeliveryController {
         items: order.items,
       };
     } catch (error) {
-
-
       if (error instanceof z.ZodError) {
         throw new BadRequestException({
           status: 'VALIDATION_ERROR',
@@ -178,7 +176,6 @@ export class OrderDeliveryController {
         };
       }
 
-  
       // plutôt que de supprimer complètement pour garder l'historique
       // Ici, on simule une suppression en mettant à jour le statut
 
@@ -194,8 +191,6 @@ export class OrderDeliveryController {
         previous_status: order.status,
       };
     } catch (error) {
-
-
       if (error instanceof NotFoundException) {
         return {
           status: 'DELETE_ERROR',
@@ -226,8 +221,6 @@ export class OrderDeliveryController {
         order_status: cancelledOrder.status,
       };
     } catch (error) {
-
-
       if (error instanceof NotFoundException) {
         return {
           status: 'CANCEL_ERROR',
