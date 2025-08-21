@@ -9,7 +9,7 @@ import {
   Button,
   Input,
 } from "@/components/ui";
-import { Settings, User, Bell, Shield, Database, Download } from "lucide-react";
+import { CogIcon, UserIcon, BellIcon, ShieldCheckIcon, CircleStackIcon, ArrowDownTrayIcon } from "@heroicons/react/24/outline";
 
 export default function SettingsPage() {
   return (
@@ -36,7 +36,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <User className="h-5 w-5" />
+                <UserIcon className="h-5 w-5" />
                 Profil administrateur
               </CardTitle>
             </CardHeader>
@@ -77,7 +77,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Bell className="h-5 w-5" />
+                <BellIcon className="h-5 w-5" />
                 Notifications
               </CardTitle>
             </CardHeader>
@@ -123,7 +123,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Shield className="h-5 w-5" />
+                <ShieldCheckIcon className="h-5 w-5" />
                 Sécurité
               </CardTitle>
             </CardHeader>
@@ -160,7 +160,7 @@ export default function SettingsPage() {
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
-                <Database className="h-5 w-5" />
+                <CircleStackIcon className="h-5 w-5" />
                 Gestion des données
               </CardTitle>
             </CardHeader>
@@ -179,7 +179,7 @@ export default function SettingsPage() {
                   variant="outline"
                   className="w-full flex items-center gap-2"
                 >
-                  <Download className="h-4 w-4" />
+                  <ArrowDownTrayIcon className="h-4 w-4" />
                   Exporter les données
                 </Button>
                 <Button variant="outline" className="w-full">
@@ -200,7 +200,7 @@ export default function SettingsPage() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Settings className="h-5 w-5" />
+              <CogIcon className="h-5 w-5" />
               Informations système
             </CardTitle>
           </CardHeader>

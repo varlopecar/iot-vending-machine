@@ -46,20 +46,36 @@ jobs:
       - name: Type check
         run: |
           cd apps/web
+          echo "🔍 Running TypeScript type checking..."
           pnpm check-types
+          echo "✅ Type checking passed"
 
       - name: Lint code
         run: |
           cd apps/web
+          echo "🧹 Running ESLint..."
           pnpm lint
+          echo "✅ Linting passed"
 
       - name: Build application
         run: |
           cd apps/web
+          echo "🔨 Building Next.js application..."
           pnpm build
+          echo "✅ Build completed successfully"
+
+          # Verify build output
+          if [ -d ".next" ]; then
+            echo "📁 Build output verified - .next directory exists"
+            echo "📊 Build stats:"
+            ls -la .next/
+          else
+            echo "❌ Build failed - .next directory not found"
+            exit 1
+          fi
         env:
           # Add any build-time environment variables here
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL || 'http://localhost:3000' }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL_PRODUCTION || 'http://localhost:3000' }}
 
       - name: Run tests (if any)
         run: |
@@ -105,7 +121,7 @@ jobs:
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/web
         env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL_STAGING }}
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL_PRODUCTION }}
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
@@ -139,63 +155,6 @@ jobs:
               
               This preview will be automatically updated with new commits to this PR.`
             })
-
-  deploy-staging:
-    name: Deploy to Staging
-    runs-on: ubuntu-latest
-    needs: test
-    if: github.ref == 'refs/heads/develop' && github.event_name == 'push'
-
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup pnpm
-        uses: pnpm/action-setup@v2
-        with:
-          version: 9
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: "18"
-          cache: "pnpm"
-
-      - name: Install Vercel CLI
-        run: npm install --global vercel@latest
-
-      - name: Install dependencies
-        run: pnpm install --frozen-lockfile
-
-      - name: Pull Vercel Environment Information
-        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
-        env:
-          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
-
-      - name: Build Project Artifacts
-        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
-        env:
-          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL_STAGING }}
-
-      - name: Deploy Project Artifacts to Vercel
-        id: deploy
-        run: |
-          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
-          echo "staging-url=$url" >> $GITHUB_OUTPUT
-        working-directory: apps/web
-
-      - name: Create deployment summary
-        run: |
-          echo "## 🚀 Staging Deployment Successful" >> $GITHUB_STEP_SUMMARY
-          echo "" >> $GITHUB_STEP_SUMMARY
-          echo "**Staging URL:** ${{ steps.deploy.outputs.staging-url }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
 
   deploy-production:
     name: Deploy to Production

@@ -4,11 +4,10 @@ import { api } from "@/lib/trpc/client";
 import {
   Card,
   CardContent,
-  CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Monitor, Package, Euro, TrendingUp } from "lucide-react";
+import { ComputerDesktopIcon, CubeIcon, CurrencyEuroIcon, ChartBarIcon } from "@heroicons/react/24/outline";
 
 const formatCurrency = (cents: number) => {
   return new Intl.NumberFormat("fr-FR", {
@@ -31,14 +30,14 @@ export function OverviewCards() {
       title: "Machines",
       value: dashboardStats?.totalMachines?.toString() || "0",
       description: `${dashboardStats?.onlineMachines || 0} en ligne`,
-      icon: Monitor,
+      icon: ComputerDesktopIcon,
       loading: isLoading,
     },
     {
       title: "Produits",
       value: dashboardStats?.activeProducts?.toString() || "0",
       description: `${dashboardStats?.activeProducts || 0} actifs`,
-      icon: Package,
+      icon: CubeIcon,
       loading: isLoading,
     },
     {
@@ -49,7 +48,7 @@ export function OverviewCards() {
       description: dashboardStats
         ? `${formatGrowth(dashboardStats.revenueGrowthPercent || 0)} ce mois`
         : "0% ce mois",
-      icon: Euro,
+      icon: CurrencyEuroIcon,
       loading: isLoading,
       growth: dashboardStats?.revenueGrowthPercent || 0,
     },
@@ -59,7 +58,7 @@ export function OverviewCards() {
       description: dashboardStats
         ? `${formatGrowth(dashboardStats.salesGrowthPercent || 0)} cette semaine`
         : "0% cette semaine",
-      icon: TrendingUp,
+      icon: ChartBarIcon,
       loading: isLoading,
       growth: dashboardStats?.salesGrowthPercent || 0,
     },
@@ -110,15 +109,14 @@ export function OverviewCards() {
                 ></div>
               ) : (
                 <p
-                  className={`text-sm mt-2 ${
-                    card.growth !== undefined
-                      ? card.growth > 0
-                        ? "text-green-700 dark:text-green-400"
-                        : card.growth < 0
-                          ? "text-red-700 dark:text-red-300"
-                          : "text-light-textSecondary dark:text-dark-textSecondary"
-                      : "text-light-textSecondary dark:text-dark-textSecondary"
-                  }`}
+                  className={`text-sm mt-2 ${card.growth !== undefined
+                    ? card.growth > 0
+                      ? "text-green-700 dark:text-green-400"
+                      : card.growth < 0
+                        ? "text-red-700 dark:text-red-300"
+                        : "text-light-textSecondary dark:text-dark-textSecondary"
+                    : "text-light-textSecondary dark:text-dark-textSecondary"
+                    }`}
                 >
                   {card.description}
                 </p>

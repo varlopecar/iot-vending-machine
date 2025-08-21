@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Package } from "lucide-react";
+import { XMarkIcon, ArrowUpTrayIcon, CubeIcon } from "@heroicons/react/24/outline";
 import { Button, Input, Card } from "@/components/ui";
 import { Product } from "./product-card";
 
@@ -152,8 +152,8 @@ export function AddProductModal({
       });
 
       onClose();
-    } catch (error) {
-      
+    } catch {
+      // Error handling could be added here
     } finally {
       setIsSubmitting(false);
     }
@@ -209,7 +209,7 @@ export function AddProductModal({
                 aria-label="Fermer la modal"
                 title="Fermer"
               >
-                <X className="h-4 w-4" />
+                <XMarkIcon className="h-4 w-4" />
               </Button>
             </div>
 
@@ -475,7 +475,7 @@ export function AddProductModal({
                       />
                     ) : (
                       <div className="flex items-center justify-center h-full text-light-text dark:text-dark-textSecondary">
-                        <Package className="h-6 w-6" />
+                        <CubeIcon className="h-6 w-6" />
                       </div>
                     )}
                   </div>
@@ -486,7 +486,7 @@ export function AddProductModal({
                     onClick={() => fileInputRef.current?.click()}
                     aria-label="Sélectionner une image"
                   >
-                    <Upload className="h-4 w-4 mr-2" />
+                    <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
                     Choisir une image
                   </Button>
                   <input

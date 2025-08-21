@@ -4,20 +4,18 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  ArrowLeft,
-  MapPin,
-  Wifi,
-  WifiOff,
-  Wrench,
-  XCircle,
-  RefreshCw,
-  Package,
-  AlertTriangle,
-  History,
-  Settings,
-  Plus,
-  Truck,
-} from "lucide-react";
+  ArrowLeftIcon,
+  MapPinIcon,
+  WifiIcon,
+  SignalSlashIcon,
+  WrenchScrewdriverIcon,
+  XCircleIcon,
+  ArrowPathIcon,
+  CubeIcon,
+  ExclamationTriangleIcon,
+  CogIcon,
+  TruckIcon,
+} from "@heroicons/react/24/outline";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "../ui";
 import { SlotCard } from "./slot-card";
 import { EmptySlotCard } from "./empty-slot-card";
@@ -36,25 +34,25 @@ interface MachineDetailProps {
 
 const statusConfig = {
   online: {
-    icon: Wifi,
+    icon: WifiIcon,
     label: "En ligne",
     variant: "success" as const,
     color: "text-green-500",
   },
   offline: {
-    icon: WifiOff,
+    icon: SignalSlashIcon,
     label: "Hors ligne",
     variant: "destructive" as const,
     color: "text-red-500",
   },
   maintenance: {
-    icon: Wrench,
+    icon: WrenchScrewdriverIcon,
     label: "Maintenance",
     variant: "warning" as const,
     color: "text-yellow-500",
   },
   out_of_service: {
-    icon: XCircle,
+    icon: XCircleIcon,
     label: "Hors service",
     variant: "destructive" as const,
     color: "text-red-500",
@@ -72,7 +70,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
   const {
     data: machine,
     isLoading: loadingMachine,
-    error: machineError,
+
     refetch: refetchMachine,
   } = api.machines.getMachineById.useQuery({ id: machineId });
 
@@ -80,7 +78,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
   const {
     data: slots,
     isLoading: loadingSlots,
-    error: slotsError,
+
     refetch: refetchSlots,
   } = api.stocks.getStocksByMachine.useQuery({ machine_id: machineId });
 
@@ -96,7 +94,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
       setRestockingAll(false);
     },
     onError: (error) => {
-      
+
       setRestockingAll(false);
     },
   });
@@ -126,7 +124,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <div className="flex items-center gap-4">
           <Link href="/machines">
             <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Retour aux machines
             </Button>
           </Link>
@@ -148,7 +146,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <div className="flex items-center gap-4">
           <Link href="/machines">
             <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Retour aux machines
             </Button>
           </Link>
@@ -166,7 +164,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             variant="outline"
             aria-label="Réessayer le chargement"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
+            <ArrowPathIcon className="w-4 h-4 mr-2" />
             Réessayer
           </Button>
         </div>
@@ -206,7 +204,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <div className="flex items-center gap-4">
           <Link href="/machines">
             <Button variant="ghost" size="sm">
-              <ArrowLeft className="w-4 h-4 mr-2" />
+              <ArrowLeftIcon className="w-4 h-4 mr-2" />
               Retour aux machines
             </Button>
           </Link>
@@ -215,7 +213,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               {machine.label}
             </h2>
             <div className="flex items-center gap-2 text-light-text dark:text-dark-textSecondary mt-1">
-              <MapPin className="w-4 h-4" />
+              <MapPinIcon className="w-4 h-4" />
               <span>{machine.location}</span>
             </div>
             {machine.contact && (
@@ -243,11 +241,11 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                   key={alertType}
                   alertType={
                     alertType as
-                      | "CRITICAL"
-                      | "LOW_STOCK"
-                      | "INCOMPLETE"
-                      | "MACHINE_OFFLINE"
-                      | "MAINTENANCE_REQUIRED"
+                    | "CRITICAL"
+                    | "LOW_STOCK"
+                    | "INCOMPLETE"
+                    | "MACHINE_OFFLINE"
+                    | "MAINTENANCE_REQUIRED"
                   }
                 />
               ))}
@@ -258,7 +256,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             size="sm"
             onClick={() => setIsSettingsOpen(true)}
           >
-            <Settings className="w-4 h-4 mr-2" />
+            <CogIcon className="w-4 h-4 mr-2" />
             Paramètres
           </Button>
         </div>
@@ -272,7 +270,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           transition={{ delay: 0.1 }}
         >
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertTriangle
+            <ExclamationTriangleIcon
               className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5"
               aria-hidden="true"
             />
@@ -304,7 +302,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5" />
+              <CubeIcon className="w-5 h-5" />
               Vue d'ensemble
             </CardTitle>
           </CardHeader>
@@ -356,7 +354,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Truck className="w-5 h-5" />
+              <TruckIcon className="w-5 h-5" />
               Actions rapides
             </CardTitle>
           </CardHeader>
@@ -368,9 +366,9 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                 className="flex items-center gap-2"
               >
                 {restockingAll ? (
-                  <RefreshCw className="w-4 h-4 animate-spin" />
+                  <ArrowPathIcon className="w-4 h-4 animate-spin" />
                 ) : (
-                  <Package className="w-4 h-4" />
+                  <CubeIcon className="w-4 h-4" />
                 )}
                 Ravitailler tout au maximum
                 {needsRestockSlots > 0 && (
@@ -394,7 +392,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <Package className="w-5 h-5" />
+              <CubeIcon className="w-5 h-5" />
               Slots de la machine
               {totalSlots > 0 && (
                 <Badge variant="default">{totalSlots}/6 slots</Badge>
@@ -482,25 +480,25 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           selectedSlotId
             ? (slots || []).find((s) => s.id === selectedSlotId)
               ? {
-                  id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
-                  product_id: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.product_id,
-                  product_name: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.product_name,
-                  quantity: (slots || []).find((s) => s.id === selectedSlotId)!
-                    .quantity,
-                  max_capacity: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.max_capacity,
-                  slot_number: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.slot_number,
-                  machine_id: (slots || []).find(
-                    (s) => s.id === selectedSlotId
-                  )!.machine_id,
-                }
+                id: (slots || []).find((s) => s.id === selectedSlotId)!.id,
+                product_id: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.product_id,
+                product_name: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.product_name,
+                quantity: (slots || []).find((s) => s.id === selectedSlotId)!
+                  .quantity,
+                max_capacity: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.max_capacity,
+                slot_number: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.slot_number,
+                machine_id: (slots || []).find(
+                  (s) => s.id === selectedSlotId
+                )!.machine_id,
+              }
               : null
             : null
         }

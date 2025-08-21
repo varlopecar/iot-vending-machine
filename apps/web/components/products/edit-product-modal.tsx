@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Package } from "lucide-react";
+import { XMarkIcon } from "@heroicons/react/24/outline";
 import { Button, Input, Card } from "@/components/ui";
 import { Product } from "./product-card";
 
@@ -70,7 +70,7 @@ export function EditProductModal({
 
   const modalRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
 
   // Initialize form with product data
   useEffect(() => {
@@ -173,22 +173,14 @@ export function EditProductModal({
 
       await onEditProduct(product.id, updateData);
       onClose();
-    } catch (error) {
-      
+    } catch {
+      // Error handling could be added here
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload to a server/CDN
-      // For now, we'll create a local URL
-      const imageUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: imageUrl }));
-    }
-  };
+
 
   if (!isOpen || !product) return null;
 
@@ -230,7 +222,7 @@ export function EditProductModal({
                 aria-label="Fermer la modal"
                 title="Fermer"
               >
-                <X className="h-4 w-4" />
+                <XMarkIcon className="h-4 w-4" />
               </Button>
             </div>
 

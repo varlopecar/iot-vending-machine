@@ -2,12 +2,11 @@
 
 import React, { useState } from "react";
 import { motion } from "framer-motion";
-import { Plus, RefreshCw } from "lucide-react";
+import { PlusIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
+
   Button,
 } from "@/components/ui";
 import { ProductCard, Product } from "./product-card";
@@ -231,7 +230,7 @@ export function ProductList() {
             variant="outline"
             aria-label="Réessayer le chargement des produits"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
+            <ArrowPathIcon className="w-4 h-4 mr-2" />
             Réessayer
           </Button>
         </div>
@@ -253,33 +252,33 @@ export function ProductList() {
     // Préparer les allergènes
     const allergens_list = newProductData.allergens
       ? newProductData.allergens
-          .split(",")
-          .map((a) => a.trim())
-          .filter((a) => a.length > 0)
+        .split(",")
+        .map((a) => a.trim())
+        .filter((a) => a.length > 0)
       : undefined;
 
     // Préparer les valeurs nutritionnelles
     const nutritional =
       newProductData.calories ||
-      newProductData.protein ||
-      newProductData.carbs ||
-      newProductData.fat ||
-      newProductData.serving
+        newProductData.protein ||
+        newProductData.carbs ||
+        newProductData.fat ||
+        newProductData.serving
         ? {
-            calories: newProductData.calories
-              ? parseFloat(newProductData.calories)
-              : undefined,
-            protein: newProductData.protein
-              ? parseFloat(newProductData.protein)
-              : undefined,
-            carbs: newProductData.carbs
-              ? parseFloat(newProductData.carbs)
-              : undefined,
-            fat: newProductData.fat
-              ? parseFloat(newProductData.fat)
-              : undefined,
-            serving: newProductData.serving || undefined,
-          }
+          calories: newProductData.calories
+            ? parseFloat(newProductData.calories)
+            : undefined,
+          protein: newProductData.protein
+            ? parseFloat(newProductData.protein)
+            : undefined,
+          carbs: newProductData.carbs
+            ? parseFloat(newProductData.carbs)
+            : undefined,
+          fat: newProductData.fat
+            ? parseFloat(newProductData.fat)
+            : undefined,
+          serving: newProductData.serving || undefined,
+        }
         : undefined;
 
     await createProduct.mutateAsync({
@@ -317,29 +316,29 @@ export function ProductList() {
     // Préparer les allergènes
     const allergens_list = updateData.allergens
       ? updateData.allergens
-          .split(",")
-          .map((a) => a.trim())
-          .filter((a) => a.length > 0)
+        .split(",")
+        .map((a) => a.trim())
+        .filter((a) => a.length > 0)
       : undefined;
 
     // Préparer les valeurs nutritionnelles
     const nutritional =
       updateData.calories ||
-      updateData.protein ||
-      updateData.carbs ||
-      updateData.fat ||
-      updateData.serving
+        updateData.protein ||
+        updateData.carbs ||
+        updateData.fat ||
+        updateData.serving
         ? {
-            calories: updateData.calories
-              ? parseFloat(updateData.calories)
-              : undefined,
-            protein: updateData.protein
-              ? parseFloat(updateData.protein)
-              : undefined,
-            carbs: updateData.carbs ? parseFloat(updateData.carbs) : undefined,
-            fat: updateData.fat ? parseFloat(updateData.fat) : undefined,
-            serving: updateData.serving || undefined,
-          }
+          calories: updateData.calories
+            ? parseFloat(updateData.calories)
+            : undefined,
+          protein: updateData.protein
+            ? parseFloat(updateData.protein)
+            : undefined,
+          carbs: updateData.carbs ? parseFloat(updateData.carbs) : undefined,
+          fat: updateData.fat ? parseFloat(updateData.fat) : undefined,
+          serving: updateData.serving || undefined,
+        }
         : undefined;
 
     try {
@@ -356,8 +355,8 @@ export function ProductList() {
       });
       setIsEditModalOpen(false);
       setSelectedProduct(null);
-    } catch (error) {
-      
+    } catch {
+
       alert("Erreur lors de la modification du produit. Veuillez réessayer.");
     }
   };
@@ -367,7 +366,7 @@ export function ProductList() {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
       try {
         await deleteProduct.mutateAsync({ id: productId });
-      } catch (error) {
+      } catch {
 
         alert("Erreur lors de la suppression du produit. Veuillez réessayer.");
       }
@@ -395,7 +394,7 @@ export function ProductList() {
           className="flex items-center gap-2"
           aria-label="Ajouter un nouveau produit"
         >
-          <Plus className="h-4 w-4" />
+          <PlusIcon className="h-4 w-4" />
           Ajouter un produit
         </Button>
       </motion.div>
@@ -452,7 +451,7 @@ export function ProductList() {
                     className="mt-4"
                     aria-label="Ajouter votre premier produit"
                   >
-                    <Plus className="h-4 w-4 mr-2" />
+                    <PlusIcon className="h-4 w-4 mr-2" />
                     Ajouter un produit
                   </Button>
                 )}

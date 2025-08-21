@@ -3,13 +3,10 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Package,
-  AlertTriangle,
-  CheckCircle,
-  RefreshCw,
-  Edit,
-  Wrench,
-} from "lucide-react";
+  ArrowPathIcon,
+  PencilIcon,
+  WrenchScrewdriverIcon,
+} from "@heroicons/react/24/outline";
 import { Card, CardContent, CardHeader, Button, Badge } from "../ui";
 import { api } from "../../lib/trpc/client";
 import Image from "next/image";
@@ -196,15 +193,14 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               aria-label={`Niveau de stock: ${slot.quantity} sur ${slot.max_capacity}`}
             >
               <div
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  stockLevel === "empty"
+                className={`h-2 rounded-full transition-all duration-300 ${stockLevel === "empty"
                     ? "bg-red-500"
                     : stockLevel === "low"
                       ? "bg-yellow-500"
                       : stockLevel === "full"
                         ? "bg-green-500"
                         : "bg-blue-500"
-                }`}
+                  }`}
                 style={{ width: `${fillPercentage}%` }}
               />
             </div>
@@ -231,7 +227,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               onClick={() => onEdit(slot.id)}
               aria-label={`Modifier le produit du slot ${slot.slot_number}`}
             >
-              <Edit className="w-3 h-3 mr-2" />
+              <PencilIcon className="w-3 h-3 mr-2" />
               Modifier le produit
             </Button>
             <Button
@@ -243,9 +239,9 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               aria-label={`Ravitailler le slot ${slot.slot_number} au maximum`}
             >
               {isRestocking ? (
-                <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
+                <ArrowPathIcon className="w-3 h-3 mr-2 animate-spin" />
               ) : (
-                <Wrench className="w-3 h-3 mr-2" />
+                <WrenchScrewdriverIcon className="w-3 h-3 mr-2" />
               )}
               Ravitailler au maximum
             </Button>

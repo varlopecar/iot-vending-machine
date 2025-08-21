@@ -4,19 +4,15 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  Search,
-  Plus,
-  MapPin,
-  Monitor,
-  Wifi,
-  WifiOff,
-  Wrench,
-  XCircle,
-  TrendingUp,
-  Euro,
-  RefreshCw,
-  AlertTriangle,
-} from "lucide-react";
+  MagnifyingGlassIcon,
+  PlusIcon,
+  MapPinIcon,
+  ComputerDesktopIcon,
+  ChartBarIcon,
+  CurrencyEuroIcon,
+  ArrowPathIcon,
+  ExclamationTriangleIcon,
+} from "@heroicons/react/24/outline";
 import {
   Card,
   CardContent,
@@ -158,7 +154,7 @@ export function MachineList() {
             variant="outline"
             aria-label="Réessayer le chargement des machines"
           >
-            <RefreshCw className="w-4 h-4 mr-2" />
+            <ArrowPathIcon className="w-4 h-4 mr-2" />
             Réessayer
           </Button>
         </div>
@@ -186,7 +182,7 @@ export function MachineList() {
           title="Ajouter une nouvelle machine"
           onClick={() => setIsAddMachineOpen(true)}
         >
-          <Plus className="h-4 w-4" />
+          <PlusIcon className="h-4 w-4" />
           Ajouter une machine
         </Button>
       </div>
@@ -199,7 +195,7 @@ export function MachineList() {
           transition={{ duration: 0.3 }}
         >
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-            <AlertTriangle
+            <ExclamationTriangleIcon
               className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5"
               aria-hidden="true"
             />
@@ -245,7 +241,7 @@ export function MachineList() {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search
+                <MagnifyingGlassIcon
                   className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-light-text dark:text-dark-textSecondary"
                   aria-hidden="true"
                 />
@@ -356,7 +352,7 @@ export function MachineList() {
                           {machine.label}
                         </CardTitle>
                         <div className="flex items-center gap-1 text-sm text-light-text dark:text-dark-textSecondary mb-2">
-                          <MapPin className="h-4 w-4" aria-hidden="true" />
+                          <MapPinIcon className="h-4 w-4" aria-hidden="true" />
                           <span>{machine.location}</span>
                         </div>
                         <div className="flex items-center gap-2 flex-wrap">
@@ -374,10 +370,10 @@ export function MachineList() {
                           <MachineAlertBadge
                             alertType={
                               machineAlert?.type as
-                                | "CRITICAL"
-                                | "LOW_STOCK"
-                                | "INCOMPLETE"
-                                | null
+                              | "CRITICAL"
+                              | "LOW_STOCK"
+                              | "INCOMPLETE"
+                              | null
                             }
                           />
                         </div>
@@ -391,7 +387,7 @@ export function MachineList() {
                     {/* Revenue and Orders */}
                     <div className="grid grid-cols-2 gap-4 text-sm">
                       <div className="flex items-center gap-2">
-                        <Euro
+                        <CurrencyEuroIcon
                           className="h-4 w-4 text-green-500"
                           aria-hidden="true"
                         />
@@ -408,7 +404,7 @@ export function MachineList() {
                         </div>
                       </div>
                       <div className="flex items-center gap-2">
-                        <TrendingUp
+                        <ChartBarIcon
                           className="h-4 w-4 text-blue-500"
                           aria-hidden="true"
                         />
@@ -433,13 +429,12 @@ export function MachineList() {
                           Stock global
                         </span>
                         <span
-                          className={`font-bold ${
-                            stockLevel > 70
-                              ? "text-green-800 dark:text-green-300"
-                              : stockLevel > 30
-                                ? "text-yellow-800 dark:text-yellow-300"
-                                : "text-red-800 dark:text-red-300"
-                          }`}
+                          className={`font-bold ${stockLevel > 70
+                            ? "text-green-800 dark:text-green-300"
+                            : stockLevel > 30
+                              ? "text-yellow-800 dark:text-yellow-300"
+                              : "text-red-800 dark:text-red-300"
+                            }`}
                           aria-label={`Niveau de stock: ${Math.round(stockLevel)}%`}
                         >
                           {Math.round(stockLevel)}%
@@ -454,13 +449,12 @@ export function MachineList() {
                         aria-label="Niveau de stock global"
                       >
                         <div
-                          className={`h-2 rounded-full transition-all duration-300 ${
-                            stockLevel > 70
-                              ? "bg-green-500"
-                              : stockLevel > 30
-                                ? "bg-yellow-500"
-                                : "bg-red-500"
-                          }`}
+                          className={`h-2 rounded-full transition-all duration-300 ${stockLevel > 70
+                            ? "bg-green-500"
+                            : stockLevel > 30
+                              ? "bg-yellow-500"
+                              : "bg-red-500"
+                            }`}
                           style={{ width: `${stockLevel}%` }}
                         />
                       </div>
@@ -542,7 +536,7 @@ export function MachineList() {
           role="status"
           aria-live="polite"
         >
-          <Monitor
+          <ComputerDesktopIcon
             className="h-12 w-12 text-light-text dark:text-dark-textSecondary mx-auto mb-4"
             aria-hidden="true"
           />

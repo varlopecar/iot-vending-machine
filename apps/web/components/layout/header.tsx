@@ -1,6 +1,6 @@
 "use client";
 
-import { Moon, Sun, User, Menu, LogOut } from "lucide-react";
+import { MoonIcon, SunIcon, Bars3Icon, ArrowRightOnRectangleIcon } from "@heroicons/react/24/outline";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/contexts/auth-context";
@@ -32,7 +32,7 @@ export function Header({ onSidebarToggle, isSidebarOpen }: HeaderProps) {
               aria-expanded={isSidebarOpen}
               aria-controls="sidebar-navigation"
             >
-              <Menu className="h-4 w-4" aria-hidden="true" />
+              <Bars3Icon className="h-4 w-4" aria-hidden="true" />
             </Button>
           )}
 
@@ -57,9 +57,9 @@ export function Header({ onSidebarToggle, isSidebarOpen }: HeaderProps) {
             aria-pressed={theme === "dark"}
           >
             {theme === "dark" ? (
-              <Sun className="h-4 w-4" aria-hidden="true" />
+              <SunIcon className="h-4 w-4" aria-hidden="true" />
             ) : (
-              <Moon className="h-4 w-4" aria-hidden="true" />
+              <MoonIcon className="h-4 w-4" aria-hidden="true" />
             )}
           </Button>
 
@@ -85,7 +85,7 @@ export function Header({ onSidebarToggle, isSidebarOpen }: HeaderProps) {
             className="h-9 w-9 p-0 text-red-600 hover:text-red-700 hover:bg-red-50"
             aria-label="Se déconnecter"
           >
-            <LogOut className="h-4 w-4" aria-hidden="true" />
+            <ArrowRightOnRectangleIcon className="h-4 w-4" aria-hidden="true" />
           </Button>
         </div>
       </div>

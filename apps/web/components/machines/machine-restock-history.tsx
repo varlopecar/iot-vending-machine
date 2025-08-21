@@ -3,7 +3,7 @@
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "../ui";
 import { api } from "../../lib/trpc/client";
-import { RefreshCw, History, Package } from "lucide-react";
+import { ArrowPathIcon, ClockIcon, CubeIcon } from "@heroicons/react/24/outline";
 
 interface MachineRestockHistoryProps {
   machineId: string;
@@ -27,24 +27,24 @@ export function MachineRestockHistory({
 
   const restocks = data as
     | Array<{
+      id: string;
+      machine_id: string;
+      user_id: string;
+      created_at: string;
+      notes?: string;
+      items: Array<{
         id: string;
-        machine_id: string;
-        user_id: string;
-        created_at: string;
-        notes?: string;
-        items: Array<{
-          id: string;
-          restock_id: string;
-          stock_id: string;
-          quantity_before: number;
-          quantity_after: number;
-          quantity_added: number;
-          slot_number: number;
-          product_name: string;
-          product_image_url?: string;
-          type?: RestockItemType;
-        }>;
-      }>
+        restock_id: string;
+        stock_id: string;
+        quantity_before: number;
+        quantity_after: number;
+        quantity_added: number;
+        slot_number: number;
+        product_name: string;
+        product_image_url?: string;
+        type?: RestockItemType;
+      }>;
+    }>
     | undefined;
 
   // Applique le filtre de type au niveau des items, puis enlève les restocks vides
@@ -57,7 +57,7 @@ export function MachineRestockHistory({
           filterType === "all"
             ? true
             : (it.type ?? (it.quantity_added >= 0 ? "addition" : "removal")) ===
-              filterType
+            filterType
         ),
       }))
       .filter((r) => r.items.length > 0);
@@ -102,7 +102,6 @@ export function MachineRestockHistory({
     let dataToExport = restocks;
     if (!dataToExport) {
       const result = await refetch();
-      // @ts-expect-error react-query returns data on result
       dataToExport = (result?.data || []) as typeof restocks;
     }
     if (!dataToExport || dataToExport.length === 0) {
@@ -176,7 +175,7 @@ export function MachineRestockHistory({
     <Card id="restock-history">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <History className="w-5 h-5" />
+          <ClockIcon className="w-5 h-5" />
           Historique des ravitaillements
         </CardTitle>
       </CardHeader>
@@ -184,7 +183,7 @@ export function MachineRestockHistory({
         {showInitialButton && (
           <div className="flex items-center justify-center py-4">
             <Button variant="ghost" onClick={handleShow}>
-              <History className="w-4 h-4 mr-2" /> Afficher l'historique
+              <ClockIcon className="w-4 h-4 mr-2" /> Afficher l'historique
             </Button>
           </div>
         )}
@@ -229,7 +228,7 @@ export function MachineRestockHistory({
                 onClick={exportCsv}
                 disabled={Boolean(isFetching)}
               >
-                <History className="w-4 h-4 mr-2" /> Exporter tout l'historique
+                <ClockIcon className="w-4 h-4 mr-2" /> Exporter tout l'historique
                 (CSV)
               </Button>
               <Button
@@ -242,12 +241,12 @@ export function MachineRestockHistory({
               >
                 {isFetching ? (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />{" "}
+                    <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />{" "}
                     Actualisation...
                   </>
                 ) : (
                   <>
-                    <RefreshCw className="w-4 h-4 mr-2" /> Actualiser
+                    <ArrowPathIcon className="w-4 h-4 mr-2" /> Actualiser
                   </>
                 )}
               </Button>
@@ -259,7 +258,7 @@ export function MachineRestockHistory({
           <div className="text-center py-8">
             <div className="text-red-600 mb-3">Erreur: {error.message}</div>
             <Button variant="secondary" onClick={handleShow}>
-              <RefreshCw className="w-4 h-4 mr-2" /> Réessayer
+              <ArrowPathIcon className="w-4 h-4 mr-2" /> Réessayer
             </Button>
           </div>
         )}
@@ -317,7 +316,7 @@ export function MachineRestockHistory({
                               className="flex items-center gap-3 bg-muted/40 rounded-md p-2"
                             >
                               <div className="w-8 h-8 flex items-center justify-center rounded bg-white border">
-                                <Package className="w-4 h-4" />
+                                <CubeIcon className="w-4 h-4" />
                               </div>
                               <div className="flex-1">
                                 <div className="text-sm font-medium">

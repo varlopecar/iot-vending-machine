@@ -2,12 +2,12 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { Edit, Trash2, Package, CatIcon, Tag } from "lucide-react";
+import { PencilIcon, TrashIcon, TagIcon } from "@heroicons/react/24/outline";
 import {
   Card,
   CardContent,
   CardHeader,
-  CardTitle,
+
   Button,
   Badge,
 } from "@/components/ui";
@@ -62,7 +62,7 @@ export function ProductCard({
               </h3>
               <div className="flex items-center gap-2 mb-2">
                 <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
-                  <Tag className="h-4 w-4 mr-1" />
+                  <TagIcon className="h-4 w-4 mr-1" />
                   {product.category}
                 </Badge>
               </div>
@@ -76,7 +76,7 @@ export function ProductCard({
                 aria-label={`Modifier le produit ${product.name}`}
                 title="Modifier le produit"
               >
-                <Edit className="h-4 w-4" />
+                <PencilIcon className="h-4 w-4" />
               </Button>
               <Button
                 variant="ghost"
@@ -86,7 +86,7 @@ export function ProductCard({
                 aria-label={`Supprimer le produit ${product.name}`}
                 title="Supprimer le produit"
               >
-                <Trash2 className="h-4 w-4" />
+                <TrashIcon className="h-4 w-4" />
               </Button>
             </div>
           </div>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { Plus } from "lucide-react";
+import { PlusIcon } from "@heroicons/react/24/outline";
 import { Card, CardContent } from "../ui";
 
 interface EmptySlotCardProps {
@@ -31,7 +31,7 @@ export function EmptySlotCard({ onAddSlot }: EmptySlotCardProps) {
       >
         <CardContent className="p-6 flex flex-col items-center justify-center text-center">
           <div className="w-16 h-16 rounded-full bg-light-secondary/20 dark:bg-dark-secondary/20 flex items-center justify-center mb-4 group-hover:bg-light-secondary/90 dark:group-hover:bg-dark-secondary/90 transition-colors backdrop-blur-sm">
-            <Plus className="w-8 h-8 text-light-text dark:text-dark-text" />
+            <PlusIcon className="w-8 h-8 text-light-text dark:text-dark-text" />
           </div>
 
           <h3 className="font-medium text-light-text dark:text-dark-text group-hover:text-light-secondary/90 dark:group-hover:text-dark-secondary/90 transition-colors">

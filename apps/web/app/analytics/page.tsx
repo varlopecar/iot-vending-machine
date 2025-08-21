@@ -5,7 +5,7 @@ import {
   TopMachines,
   ComingSoonCard,
 } from "@/components/analytics";
-import { TrendingUp, Clock } from "lucide-react";
+import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { api } from "@/lib/trpc/client";
 
 export default function AnalyticsPage() {
@@ -46,14 +46,14 @@ export default function AnalyticsPage() {
         <ComingSoonCard
           title="Évolution des ventes"
           description="Tendances et graphiques d'évolution sur les derniers mois"
-          icon={TrendingUp}
+          icon={ChartBarIcon}
           iconColor="text-purple-600 dark:text-purple-400"
         />
 
         <ComingSoonCard
           title="Horaires de pointe"
           description="Analyse des pics de fréquentation par heure et jour"
-          icon={Clock}
+          icon={ClockIcon}
           iconColor="text-orange-600 dark:text-orange-400"
         />
       </div>

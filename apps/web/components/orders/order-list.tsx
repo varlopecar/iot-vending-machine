@@ -3,42 +3,98 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Search,
-  Filter,
-  Download,
-  Eye,
-  ShoppingCart,
-  User,
-  MapPin,
-  Clock,
-  Euro,
-  QrCode,
-  CheckCircle,
-  XCircle,
-  AlertCircle,
-} from "lucide-react";
+  MagnifyingGlassIcon,
+  ArrowDownTrayIcon,
+  EyeIcon,
+  ShoppingCartIcon,
+  UserIcon,
+  MapPinIcon,
+  ClockIcon,
+  CurrencyEuroIcon,
+  QrCodeIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+} from "@heroicons/react/24/outline";
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Button,
   Input,
   Badge,
 } from "@/components/ui";
 
+// Types for order data
+interface OrderItem {
+  name: string;
+  price: number;
+  quantity: number;
+}
 
+interface Order {
+  id: string;
+  customerName: string;
+  customerEmail: string;
+  items: OrderItem[];
+  total: number;
+  machine: string;
+  location: string;
+  status: "pending" | "completed" | "expired" | "cancelled";
+  paymentMethod: "card" | "cash" | "mobile";
+  qrCode: string | null;
+  orderDate: string;
+  pickupDate: string | null;
+  expiresAt: string | null;
+}
+
+// Mock data for development
+const mockOrders: Order[] = [
+  {
+    id: "ORD-003",
+    customerName: "Sophie Dubois",
     customerEmail: "sophie.dubois@email.com",
     items: [{ name: "Chips Nature 45g", price: 1.8, quantity: 1 }],
     total: 1.8,
     machine: "Machine Campus A",
     location: "Bâtiment Sciences",
-    status: "cancelled" as const,
+    status: "cancelled",
     paymentMethod: "card",
     qrCode: "QR789123456",
     orderDate: "2024-01-15T13:15:00Z",
     pickupDate: null,
     expiresAt: null,
+  },
+  {
+    id: "ORD-001",
+    customerName: "Jean Martin",
+    customerEmail: "jean.martin@email.com",
+    items: [
+      { name: "Coca-Cola 33cl", price: 2.5, quantity: 1 },
+      { name: "Sandwich Jambon", price: 4.2, quantity: 1 }
+    ],
+    total: 6.7,
+    machine: "Machine Campus B",
+    location: "Hall Principal",
+    status: "completed",
+    paymentMethod: "card",
+    qrCode: "QR123456789",
+    orderDate: "2024-01-15T10:30:00Z",
+    pickupDate: "2024-01-15T10:45:00Z",
+    expiresAt: null,
+  },
+  {
+    id: "ORD-002",
+    customerName: "Marie Durant",
+    customerEmail: "marie.durant@email.com",
+    items: [{ name: "Eau Evian 50cl", price: 1.5, quantity: 2 }],
+    total: 3.0,
+    machine: "Machine Cafétéria",
+    location: "Restaurant Universitaire",
+    status: "pending",
+    paymentMethod: "mobile",
+    qrCode: "QR987654321",
+    orderDate: "2024-01-15T12:00:00Z",
+    pickupDate: null,
+    expiresAt: "2024-01-15T14:00:00Z",
   },
 ];
 
@@ -79,7 +135,7 @@ const paymentMethods = {
 export function OrderList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [orders] = useState([]);
+  const [orders] = useState<Order[]>(mockOrders);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -134,7 +190,7 @@ export function OrderList() {
           </p>
         </div>
         <Button variant="outline" className="flex items-center gap-2">
-          <Download className="h-4 w-4" />
+          <ArrowDownTrayIcon className="h-4 w-4" />
           Exporter
         </Button>
       </div>
@@ -148,7 +204,7 @@ export function OrderList() {
                 <p className="text-sm text-muted-foreground">Total commandes</p>
                 <p className="text-2xl font-bold">{totalOrders}</p>
               </div>
-              <ShoppingCart className="h-8 w-8 text-muted-foreground" />
+              <ShoppingCartIcon className="h-8 w-8 text-muted-foreground" />
             </div>
           </CardContent>
         </Card>
@@ -161,7 +217,7 @@ export function OrderList() {
                   {pendingOrders}
                 </p>
               </div>
-              <AlertCircle className="h-8 w-8 text-yellow-500" />
+              <ExclamationCircleIcon className="h-8 w-8 text-yellow-500" />
             </div>
           </CardContent>
         </Card>
@@ -174,7 +230,7 @@ export function OrderList() {
                   {completedOrders}
                 </p>
               </div>
-              <CheckCircle className="h-8 w-8 text-green-500" />
+              <CheckCircleIcon className="h-8 w-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
@@ -187,7 +243,7 @@ export function OrderList() {
                   {totalRevenue.toFixed(2)}€
                 </p>
               </div>
-              <Euro className="h-8 w-8 text-green-500" />
+              <CurrencyEuroIcon className="h-8 w-8 text-green-500" />
             </div>
           </CardContent>
         </Card>
@@ -199,7 +255,7 @@ export function OrderList() {
           <div className="flex flex-col lg:flex-row gap-4">
             <div className="flex-1">
               <div className="relative">
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
                 <Input
                   placeholder="Rechercher par ID, nom ou email..."
                   value={searchTerm}
@@ -273,7 +329,7 @@ export function OrderList() {
                           </Badge>
                         </div>
                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-1">
-                          <User className="h-4 w-4" />
+                          <UserIcon className="h-4 w-4" />
                           <span>{order.customerName}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -299,7 +355,7 @@ export function OrderList() {
                       {/* Machine */}
                       <div>
                         <div className="flex items-center gap-1 text-sm font-medium mb-1">
-                          <MapPin className="h-4 w-4" />
+                          <MapPinIcon className="h-4 w-4" />
                           <span>{order.machine}</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -310,7 +366,7 @@ export function OrderList() {
                       {/* Timing */}
                       <div>
                         <div className="flex items-center gap-1 text-sm font-medium mb-1">
-                          <Clock className="h-4 w-4" />
+                          <ClockIcon className="h-4 w-4" />
                           <span>Commande</span>
                         </div>
                         <div className="text-xs text-muted-foreground">
@@ -323,14 +379,13 @@ export function OrderList() {
                         )}
                         {timeRemaining && order.status === "pending" && (
                           <div
-                            className={`text-xs mt-1 ${
-                              timeRemaining === "Expirée"
-                                ? "text-red-600"
-                                : timeRemaining.includes("min") &&
-                                    !timeRemaining.includes("h")
-                                  ? "text-orange-600"
-                                  : "text-yellow-600"
-                            }`}
+                            className={`text-xs mt-1 ${timeRemaining === "Expirée"
+                              ? "text-red-600"
+                              : timeRemaining.includes("min") &&
+                                !timeRemaining.includes("h")
+                                ? "text-orange-600"
+                                : "text-yellow-600"
+                              }`}
                           >
                             Expire dans: {timeRemaining}
                           </div>
@@ -345,13 +400,13 @@ export function OrderList() {
                         <div className="text-xs text-muted-foreground mb-2">
                           {
                             paymentMethods[
-                              order.paymentMethod as keyof typeof paymentMethods
+                            order.paymentMethod as keyof typeof paymentMethods
                             ]
                           }
                         </div>
                         {order.qrCode && (
                           <div className="flex items-center gap-1 text-xs text-muted-foreground">
-                            <QrCode className="h-3 w-3" />
+                            <QrCodeIcon className="h-3 w-3" />
                             <span>{order.qrCode}</span>
                           </div>
                         )}
@@ -365,7 +420,7 @@ export function OrderList() {
                         size="sm"
                         className="h-8 w-8 p-0"
                       >
-                        <Eye className="h-4 w-4" />
+                        <EyeIcon className="h-4 w-4" />
                       </Button>
                     </div>
                   </div>
@@ -382,7 +437,7 @@ export function OrderList() {
           animate={{ opacity: 1 }}
           className="text-center py-12"
         >
-          <ShoppingCart className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+          <ShoppingCartIcon className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
           <h3 className="text-lg font-medium mb-2">Aucune commande trouvée</h3>
           <p className="text-muted-foreground">
             Aucune commande ne correspond à vos critères de recherche.

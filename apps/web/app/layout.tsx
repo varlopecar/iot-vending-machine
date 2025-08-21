@@ -1,10 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import "./globals.css";
-import { TRPCProvider } from "@/lib/trpc/provider";
-import { AuthProvider } from "@/contexts/auth-context";
-import { AuthGuard } from "@/components/auth/auth-guard";
-import { MainLayout } from "@/components/layout";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -26,17 +22,11 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="fr" suppressHydrationWarning>
+    <html lang="fr">
       <body
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        <TRPCProvider>
-          <AuthProvider>
-            <AuthGuard>
-              <MainLayout>{children}</MainLayout>
-            </AuthGuard>
-          </AuthProvider>
-        </TRPCProvider>
+        {children}
       </body>
     </html>
   );

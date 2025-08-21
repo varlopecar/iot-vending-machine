@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { TrendingUp, Package } from "lucide-react";
+import { ChartBarIcon, CubeIcon } from "@heroicons/react/24/outline";
 import { PopularProduct } from "@/lib/types";
 
 interface PopularProductsProps {
@@ -22,7 +22,7 @@ export function PopularProducts({ products, isLoading }: PopularProductsProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-light-text dark:text-dark-text">
-            <TrendingUp
+            <ChartBarIcon
               className="h-5 w-5 text-blue-600 dark:text-blue-400"
               aria-hidden="true"
             />
@@ -63,7 +63,7 @@ export function PopularProducts({ products, isLoading }: PopularProductsProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-light-text dark:text-dark-text">
-            <TrendingUp
+            <ChartBarIcon
               className="h-5 w-5 text-blue-600 dark:text-blue-400"
               aria-hidden="true"
             />
@@ -76,7 +76,7 @@ export function PopularProducts({ products, isLoading }: PopularProductsProps) {
             role="status"
             aria-label="Aucun produit populaire"
           >
-            <Package
+            <CubeIcon
               className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3"
               aria-hidden="true"
             />
@@ -94,7 +94,7 @@ export function PopularProducts({ products, isLoading }: PopularProductsProps) {
           id="popular-products-title"
           className="flex items-center gap-2 text-light-text dark:text-dark-text"
         >
-          <TrendingUp
+          <ChartBarIcon
             className="h-5 w-5 text-blue-600 dark:text-blue-400"
             aria-hidden="true"
           />

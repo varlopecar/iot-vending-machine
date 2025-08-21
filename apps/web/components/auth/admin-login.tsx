@@ -46,7 +46,7 @@ export function AdminLogin() {
         email,
         password,
       });
-    } catch (error) {
+    } catch {
       // Error is handled in onError callback
     }
   };

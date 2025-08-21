@@ -5,16 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  LayoutDashboard,
-  Package,
-  Monitor,
-  Boxes,
-  ShoppingCart,
-  BarChart3,
-  Settings,
-  Menu,
-  X,
-} from "lucide-react";
+  SquaresPlusIcon,
+  CubeIcon,
+  ComputerDesktopIcon,
+  ChartBarIcon,
+  Bars3Icon,
+  XMarkIcon,
+} from "@heroicons/react/24/outline";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui";
 
@@ -22,12 +19,12 @@ const navigation = [
   {
     name: "Tableau de bord",
     href: "/",
-    icon: LayoutDashboard,
+    icon: SquaresPlusIcon,
   },
   {
     name: "Produits",
     href: "/products",
-    icon: Package,
+    icon: CubeIcon,
   },
   {
     name: "Machines",
@@ -37,7 +34,7 @@ const navigation = [
   {
     name: "Statistiques",
     href: "/analytics",
-    icon: BarChart3,
+    icon: ChartBarIcon,
   },
 ];
 
@@ -78,9 +75,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         aria-controls="sidebar-navigation"
       >
         {isOpen ? (
-          <X className="h-5 w-5" aria-hidden="true" />
+          <XMarkIcon className="h-5 w-5" aria-hidden="true" />
         ) : (
-          <Menu className="h-5 w-5" aria-hidden="true" />
+          <Bars3Icon className="h-5 w-5" aria-hidden="true" />
         )}
       </Button>
 
@@ -126,8 +123,8 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
                 "flex items-center",
                 isOpen ? "space-x-2" : "",
                 !isOpen &&
-                  !isMobile &&
-                  "cursor-pointer hover:opacity-80 transition-opacity"
+                !isMobile &&
+                "cursor-pointer hover:opacity-80 transition-opacity"
               )}
               onClick={!isOpen && !isMobile ? onToggle : undefined}
               role={!isOpen && !isMobile ? "button" : undefined}
@@ -135,11 +132,11 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               onKeyDown={
                 !isOpen && !isMobile
                   ? (e) => {
-                      if (e.key === "Enter" || e.key === " ") {
-                        e.preventDefault();
-                        onToggle();
-                      }
+                    if (e.key === "Enter" || e.key === " ") {
+                      e.preventDefault();
+                      onToggle();
                     }
+                  }
                   : undefined
               }
               aria-label={
@@ -149,7 +146,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               }
             >
               <div className="h-8 w-8 rounded-lg bg-light-secondary/20 dark:bg-dark-secondary/20 flex items-center justify-center">
-                <Monitor
+                <ComputerDesktopIcon
                   className="h-5 w-5 text-light-secondary dark:text-dark-secondary"
                   aria-hidden="true"
                 />
