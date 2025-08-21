@@ -7,8 +7,21 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { OrdersService } from '../orders/orders.service';
 import { z } from 'zod';
+import {
+  QRCodeDataDto,
+  QRTokenDto,
+  OrderValidationResponseDto,
+  OrderStatusResponseDto,
+} from '../dto/order-validation.dto';
 
 // Schema pour la validation des données QR code
 const qrCodeDataSchema = z.object({
@@ -28,11 +41,23 @@ const qrTokenSchema = z.object({
 type QRCodeData = z.infer<typeof qrCodeDataSchema>;
 type QRTokenData = z.infer<typeof qrTokenSchema>;
 
+@ApiTags('order-validation')
 @Controller('api/order-validation')
 export class OrderValidationController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post('validate-qr')
+  @ApiOperation({
+    summary: 'Validate QR code',
+    description: 'Validate a QR code for order pickup',
+  })
+  @ApiBody({ type: QRCodeDataDto })
+  @ApiResponse({
+    status: 200,
+    description: 'QR code validation result',
+    type: OrderValidationResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid QR code data' })
   async validateQRCode(@Body() body: QRCodeData) {
     try {
       // Validation des données d'entrée
@@ -138,6 +163,17 @@ export class OrderValidationController {
   }
 
   @Post('validate-token')
+  @ApiOperation({
+    summary: 'Validate QR token',
+    description: 'Validate a QR token for order pickup',
+  })
+  @ApiBody({ type: QRTokenDto })
+  @ApiResponse({
+    status: 200,
+    description: 'QR token validation result',
+    type: OrderValidationResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid QR token' })
   async validateQRToken(@Body() body: QRTokenData) {
     try {
       // Validation des données d'entrée
@@ -191,6 +227,23 @@ export class OrderValidationController {
   }
 
   @Get('order/:orderId')
+  @ApiOperation({
+    summary: 'Get order status',
+    description: 'Get the current status of an order',
+  })
+  @ApiParam({ 
+    name: 'orderId', 
+    description: 'Order ID to check',
+    example: 'order_123456789',
+    type: 'string',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Order status retrieved successfully',
+    type: OrderStatusResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid order ID' })
   async getOrderStatus(@Param('orderId') orderId: string) {
     try {
       const order = await this.ordersService.getOrderById(orderId);

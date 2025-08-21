@@ -3,10 +3,12 @@ import { config } from 'dotenv';
 config();
 
 import { NestFactory } from '@nestjs/core';
+import { ValidationPipe } from '@nestjs/common';
 import { AppModule } from './app.module';
 import { validateEnv } from './config/env.schema';
 import { ExpressAdapter } from '@nestjs/platform-express';
 import express from 'express';
+import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   // Valider les variables d'environnement au démarrage
@@ -18,6 +20,38 @@ async function bootstrap() {
     AppModule,
     new ExpressAdapter(expressApp),
   );
+
+  // Configuration Swagger
+  const config = new DocumentBuilder()
+    .setTitle('IoT Vending Machine API')
+    .setDescription(
+      'REST API for IoT Vending Machine platform - Order management, payments, and machine operations',
+    )
+    .setVersion('1.0')
+    .addTag('health', 'Health check endpoints')
+    .addTag('order-delivery', 'Order delivery and pickup management')
+    .addTag('order-validation', 'QR code validation and order status')
+    .addTag('card-payment', 'Credit card payment processing')
+    .addTag('webhooks', 'Stripe webhook handling')
+    .addTag('metrics', 'Payment metrics and monitoring')
+    .addBearerAuth()
+    .build();
+
+  // Enable validation pipe for automatic validation
+  app.useGlobalPipes(
+    new ValidationPipe({
+      transform: true,
+      whitelist: true,
+      forbidNonWhitelisted: true,
+    }),
+  );
+
+  const document = SwaggerModule.createDocument(app, config);
+  SwaggerModule.setup('api-docs', app, document, {
+    swaggerOptions: {
+      persistAuthorization: true,
+    },
+  });
 
   // Configuration CORS restrictive selon recommandations OWASP
   const allowedOrigins = [
@@ -56,5 +90,10 @@ async function bootstrap() {
   expressApp.use('/webhooks/stripe', express.raw({ type: 'application/json' }));
 
   await app.listen(env.PORT);
+
+  console.log(`🚀 Application is running on: http://localhost:${env.PORT}`);
+  console.log(
+    `📚 Swagger documentation available at: http://localhost:${env.PORT}/api-docs`,
+  );
 }
 bootstrap();

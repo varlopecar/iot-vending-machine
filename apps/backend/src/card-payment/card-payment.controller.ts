@@ -6,9 +6,17 @@ import {
   HttpStatus,
   HttpException,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiBody } from '@nestjs/swagger';
 import { StripeService } from '../stripe/stripe.service';
 import { getStripeClient } from '../stripe/stripeClient';
 import { z } from 'zod';
+import {
+  CardPaymentDto,
+  PaymentSuccessResponseDto,
+  PaymentRequiresActionResponseDto,
+  PaymentDeclinedResponseDto,
+  ValidationErrorResponseDto,
+} from '../dto/card-payment.dto';
 
 // Schema de validation pour les données de carte bancaire
 const cardPaymentSchema = z.object({
@@ -30,6 +38,7 @@ const cardPaymentSchema = z.object({
 
 type CardPaymentInput = z.infer<typeof cardPaymentSchema>;
 
+@ApiTags('card-payment')
 @Controller('api/card-payment')
 export class CardPaymentController {
   private readonly stripe = getStripeClient();
@@ -37,6 +46,31 @@ export class CardPaymentController {
   constructor(private readonly stripeService: StripeService) {}
 
   @Post('process')
+  @ApiOperation({
+    summary: 'Process card payment',
+    description: 'Process a credit card payment using Stripe',
+  })
+  @ApiBody({ type: CardPaymentDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment processed successfully',
+    type: PaymentSuccessResponseDto,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment requires additional action (3D Secure)',
+    type: PaymentRequiresActionResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Payment declined or validation error',
+    type: PaymentDeclinedResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Validation error',
+    type: ValidationErrorResponseDto,
+  })
   async processCardPayment(@Body() body: CardPaymentInput) {
     try {
       // Validation des données d'entrée
@@ -139,6 +173,15 @@ export class CardPaymentController {
   }
 
   @Post('test')
+  @ApiOperation({
+    summary: 'Test payment',
+    description: 'Process a test payment using Stripe test card data',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Test payment processed successfully',
+    type: PaymentSuccessResponseDto,
+  })
   async testPayment() {
     // Route de test avec des données de carte de test Stripe
     const testCardData = {

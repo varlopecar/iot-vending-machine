@@ -1,0 +1,154 @@
+{
+  "health": {
+    "description": "Health check endpoints don't require any input data"
+  },
+  "order-delivery": {
+    "confirm-delivery": {
+      "description": "Confirm order delivery",
+      "endpoint": "POST /api/order-delivery/confirm",
+      "sample-request": {
+        "order_id": "order_123456789",
+        "machine_id": "machine_123456789",
+        "timestamp": "2024-01-15T10:30:00.000Z",
+        "items_delivered": [
+          {
+            "product_id": "prod_123456789",
+            "slot_number": 1,
+            "quantity": 2
+          },
+          {
+            "product_id": "prod_987654321",
+            "slot_number": 3,
+            "quantity": 1
+          }
+        ]
+      }
+    },
+    "delete-order": {
+      "description": "Delete delivered order",
+      "endpoint": "DELETE /api/order-delivery/order/{orderId}",
+      "sample-path-params": {
+        "orderId": "order_123456789"
+      }
+    },
+    "cancel-order": {
+      "description": "Cancel active order",
+      "endpoint": "POST /api/order-delivery/cancel/{orderId}",
+      "sample-path-params": {
+        "orderId": "order_123456789"
+      }
+    }
+  },
+  "order-validation": {
+    "validate-qr": {
+      "description": "Validate QR code for pickup",
+      "endpoint": "POST /api/order-validation/validate-qr",
+      "sample-request": {
+        "orderID": "order_123456789",
+        "machineID": "machine_123456789",
+        "userID": "user_123456789",
+        "timestamp": "2024-01-15T10:30:00.000Z",
+        "signature": "abc123def456"
+      }
+    },
+    "validate-token": {
+      "description": "Validate QR token",
+      "endpoint": "POST /api/order-validation/validate-token",
+      "sample-request": {
+        "qr_code_token": "qr_token_123456789"
+      }
+    },
+    "get-order-status": {
+      "description": "Get order status",
+      "endpoint": "GET /api/order-validation/order/{orderId}",
+      "sample-path-params": {
+        "orderId": "order_123456789"
+      }
+    }
+  },
+  "card-payment": {
+    "process-payment": {
+      "description": "Process credit card payment",
+      "endpoint": "POST /api/card-payment/process",
+      "sample-request": {
+        "number": "4242424242424242",
+        "exp_month": 12,
+        "exp_year": 2025,
+        "cvc": "123",
+        "country": "FR",
+        "amount": 2000,
+        "currency": "eur",
+        "metadata": {
+          "order_id": "order_123456789",
+          "user_id": "user_123456789",
+          "machine_id": "machine_123456789"
+        }
+      }
+    },
+    "test-payment": {
+      "description": "Process test payment",
+      "endpoint": "POST /api/card-payment/test",
+      "note": "Uses Stripe test card data automatically"
+    }
+  },
+  "webhooks": {
+    "stripe-webhook": {
+      "description": "Handle Stripe webhook events",
+      "endpoint": "POST /webhooks/stripe",
+      "headers": {
+        "stripe-signature": "t=1234567890,v1=abc123def456",
+        "Content-Type": "application/json"
+      },
+      "note": "Requires raw body and stripe-signature header for verification"
+    }
+  },
+  "metrics": {
+    "summary": {
+      "description": "Get payment metrics summary",
+      "endpoint": "GET /metrics/payments"
+    },
+    "detailed": {
+      "description": "Get detailed payment metrics",
+      "endpoint": "GET /metrics/payments/detailed"
+    },
+    "daily": {
+      "description": "Get daily payment metrics",
+      "endpoint": "GET /metrics/payments/daily"
+    },
+    "prometheus": {
+      "description": "Get Prometheus format metrics",
+      "endpoint": "GET /metrics/payments/prometheus"
+    },
+    "health": {
+      "description": "Get metrics health status",
+      "endpoint": "GET /metrics/payments/health"
+    }
+  },
+  "test-cards": {
+    "success": {
+      "number": "4242424242424242",
+      "exp_month": 12,
+      "exp_year": 2025,
+      "cvc": "123"
+    },
+    "decline": {
+      "number": "4000000000000002",
+      "exp_month": 12,
+      "exp_year": 2025,
+      "cvc": "123"
+    },
+    "requires_authentication": {
+      "number": "4000002500003155",
+      "exp_month": 12,
+      "exp_year": 2025,
+      "cvc": "123"
+    }
+  },
+  "curl-examples": {
+    "health-check": "curl -X GET http://localhost:3000/health",
+    "confirm-delivery": "curl -X POST http://localhost:3000/api/order-delivery/confirm -H 'Content-Type: application/json' -d '{\"order_id\": \"order_123456789\"}'",
+    "validate-qr": "curl -X POST http://localhost:3000/api/order-validation/validate-qr -H 'Content-Type: application/json' -d '{\"orderID\": \"order_123456789\"}'",
+    "process-payment": "curl -X POST http://localhost:3000/api/card-payment/process -H 'Content-Type: application/json' -d '{\"number\": \"4242424242424242\", \"exp_month\": 12, \"exp_year\": 2025, \"cvc\": \"123\", \"country\": \"FR\", \"amount\": 2000, \"currency\": \"eur\"}'",
+    "get-metrics": "curl -X GET http://localhost:3000/metrics/payments"
+  }
+}
