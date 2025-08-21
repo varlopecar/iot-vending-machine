@@ -4,8 +4,6 @@ import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, RefreshCw } from "lucide-react";
 import {
-  Card,
-  CardContent,
   Button,
 } from "@/components/ui";
 import { ProductCard } from "./product-card";
@@ -15,7 +13,7 @@ import { EditProductModal } from "./edit-product-modal";
 import { trpc } from "@/lib/trpc/client";
 
 // Fonction pour générer des catégories uniques à partir des produits
-const generateCategories = (products: any[]) => {
+const generateCategories = (products: Array<{ category?: string }>) => {
   const categories = new Set<string>();
   products?.forEach((product) => {
     if (product.category) {
@@ -28,7 +26,21 @@ const generateCategories = (products: any[]) => {
 export function ProductList() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<{
+    id: string;
+    name: string;
+    category: "Boissons" | "Snacks" | "Confiseries" | "Sandwichs" | "Autres";
+    price: number;
+    purchase_price: number;
+    allergens_list?: string[];
+    nutritional?: {
+      calories?: number;
+      protein?: number;
+      carbs?: number;
+      fat?: number;
+      serving?: string;
+    };
+  } | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: products, isLoading, refetch } = trpc.products.getAllProductsWithStats.useQuery();
@@ -55,8 +67,22 @@ export function ProductList() {
     }
   };
 
-  const handleEdit = (product: any) => {
-    setEditingProduct(product);
+  const handleEdit = (product: {
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+    purchase_price: number;
+    image_url?: string;
+    soldCount: number;
+  }) => {
+    setEditingProduct({
+      id: product.id,
+      name: product.name,
+      category: product.category as "Boissons" | "Snacks" | "Confiseries" | "Sandwichs" | "Autres",
+      price: product.price,
+      purchase_price: product.purchase_price,
+    });
   };
 
   const handleAddProduct = () => {
@@ -139,15 +165,17 @@ export function ProductList() {
         }}
       />
 
-      <EditProductModal
-        isOpen={!!editingProduct}
-        onClose={() => setEditingProduct(null)}
-        product={editingProduct}
-        onSuccess={() => {
-          setEditingProduct(null);
-          utils.products.getAllProductsWithStats.invalidate();
-        }}
-      />
+      {editingProduct && (
+        <EditProductModal
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          product={editingProduct}
+          onSuccess={() => {
+            setEditingProduct(null);
+            utils.products.getAllProductsWithStats.invalidate();
+          }}
+        />
+      )}
     </div>
   );
 }

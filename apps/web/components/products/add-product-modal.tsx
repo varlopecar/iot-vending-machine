@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Package } from "lucide-react";
-import { Button, Input, Card } from "@/components/ui";
+import { X, Package } from "lucide-react";
+import { Button, Input } from "@/components/ui";
 import { trpc } from "@/lib/trpc/client";
 
 interface AddProductModalProps {

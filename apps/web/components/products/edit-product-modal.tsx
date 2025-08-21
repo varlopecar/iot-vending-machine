@@ -9,7 +9,21 @@ import { trpc } from "@/lib/trpc/client";
 interface EditProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  product: any;
+  product: {
+    id: string;
+    name: string;
+    category: (typeof categories)[number];
+    price: number;
+    purchase_price: number;
+    allergens_list?: string[];
+    nutritional?: {
+      calories?: number;
+      protein?: number;
+      carbs?: number;
+      fat?: number;
+      serving?: string;
+    };
+  };
   onSuccess: () => void;
 }
 
@@ -21,9 +35,20 @@ export function EditProductModal({
   product,
   onSuccess,
 }: EditProductModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    category: (typeof categories)[number];
+    price: string;
+    purchase_price: string;
+    allergens: string;
+    calories: string;
+    protein: string;
+    carbs: string;
+    fat: string;
+    serving: string;
+  }>({
     name: "",
-    category: categories[0] || "Boissons",
+    category: categories[0],
     price: "",
     purchase_price: "",
     allergens: "",

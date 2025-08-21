@@ -210,7 +210,7 @@ export function MachineList() {
                         {machineAlerts.slice(0, 3).map((alert) => (
                           <MachineAlertBadge
                             key={alert.id}
-                            alertType={alert.type as any}
+                            alertType={alert.type as "CRITICAL" | "LOW_STOCK" | "INCOMPLETE" | "MACHINE_OFFLINE" | "MAINTENANCE_REQUIRED" | null}
                           />
                         ))}
                         {machineAlerts.length > 3 && (

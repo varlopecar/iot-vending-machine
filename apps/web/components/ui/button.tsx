@@ -45,10 +45,10 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       const { children: _, ...restProps } = props;
 
       return React.cloneElement(child, {
-        className: cn(baseClasses, (child.props as any)?.className),
+        className: cn(baseClasses, (child.props as React.HTMLAttributes<HTMLElement>)?.className),
         ref,
         ...restProps,
-      } as any);
+      } as React.HTMLAttributes<HTMLElement>);
     }
 
     return <button className={baseClasses} ref={ref} {...props} />;
