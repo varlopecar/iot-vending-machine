@@ -1,6 +1,6 @@
-import { useState } from 'react';
-import { useStripe } from '@stripe/stripe-react-native';
-import { Platform, Alert } from 'react-native';
+import { useState } from "react";
+import { useStripe } from "@stripe/stripe-react-native";
+import { Platform, Alert } from "react-native";
 
 interface CreatePaymentIntentParams {
   amount: number;
@@ -25,12 +25,12 @@ export const useStripeCheckout = () => {
       setIsLoading(true);
 
       // Utilisateur de test en dur pour le développement
-      const TEST_USER_ID = 'test-user-123';
-      
+      const TEST_USER_ID = "test-user-123";
+
       // Format simple pour l'endpoint tRPC Stripe (sans authentification)
       const requestBody = {
         amount: params.amount,
-        currency: params.currency || 'eur',
+        currency: params.currency || "eur",
         metadata: {
           order_id: params.orderId,
           user_id: TEST_USER_ID, // Utilise l'ID de test
@@ -41,16 +41,14 @@ export const useStripeCheckout = () => {
       };
 
       // URL ngrok déployée
-const NGROK_URL = 'https://ab13e2c66694.ngrok-free.app';
+      const NGROK_URL = "https://ab13e2c66694.ngrok-free.app";
       const endpoint = `${NGROK_URL}/trpc/stripe.createPaymentIntent`;
-      
-      
 
       const response = await fetch(endpoint, {
-        method: 'POST',
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
-          'ngrok-skip-browser-warning': 'true', // Évite la page d'avertissement ngrok
+          "Content-Type": "application/json",
+          "ngrok-skip-browser-warning": "true", // Évite la page d'avertissement ngrok
         },
         body: JSON.stringify(requestBody),
       });
@@ -62,49 +60,47 @@ const NGROK_URL = 'https://ab13e2c66694.ngrok-free.app';
       }
 
       const data = await response.json();
-      
-      
+
       // Format de réponse tRPC : {"result": {"data": ...}}
       if (data.result?.data) {
         return data.result.data;
       } else {
-
-        throw new Error('Format de réponse invalide du serveur');
+        throw new Error("Format de réponse invalide du serveur");
       }
     } catch (error) {
-      
       throw error;
     } finally {
       setIsLoading(false);
     }
   };
 
-  const initializePaymentSheet = async (clientSecret: string, customerId?: string) => {
+  const initializePaymentSheet = async (
+    clientSecret: string,
+    customerId?: string
+  ) => {
     try {
       const { error } = await initPaymentSheet({
         paymentIntentClientSecret: clientSecret,
         customerId,
-        returnURL: 'mobile://stripe-redirect',
+        returnURL: "mobile://stripe-redirect",
         merchantDisplayName: "Distributeur Automatique",
         applePay: {
-          merchantCountryCode: 'FR',
+          merchantCountryCode: "FR",
         },
         googlePay: {
-          merchantCountryCode: 'FR',
+          merchantCountryCode: "FR",
           testEnv: __DEV__, // Mode test en développement
         },
-        style: 'automatic',
+        style: "automatic",
         appearance: {
           colors: {
-            primary: '#007AFF',
-            background: '#FFFFFF',
-            componentBackground: '#F8F9FA',
-            componentBorder: '#E1E5E9',
-            componentDivider: '#E1E5E9',
-            text: '#1D1D1F',
-            textSecondary: '#86868B',
-            componentText: '#1D1D1F',
-            placeholderText: '#86868B',
+            primary: "#007AFF",
+            background: "#FFFFFF",
+            componentBackground: "#F8F9FA",
+            componentBorder: "#E1E5E9",
+            componentDivider: "#E1E5E9",
+            componentText: "#1D1D1F",
+            placeholderText: "#86868B",
           },
           shapes: {
             borderRadius: 8,
@@ -113,13 +109,11 @@ const NGROK_URL = 'https://ab13e2c66694.ngrok-free.app';
       });
 
       if (error) {
-
         throw new Error(`Erreur initialisation: ${error.message}`);
       }
 
       return true;
     } catch (error) {
-      
       throw error;
     }
   };
@@ -127,94 +121,96 @@ const NGROK_URL = 'https://ab13e2c66694.ngrok-free.app';
   const presentPayment = async (): Promise<PaymentResult> => {
     try {
       const { error } = await presentPaymentSheet();
-      
+
       if (error) {
         // Gestion spécifique des erreurs utilisateur
-        if (error.code === 'Canceled') {
+        if (error.code === "Canceled") {
           return {
             success: false,
-            error: undefined // Pas d'erreur pour les annulations utilisateur
+            error: undefined, // Pas d'erreur pour les annulations utilisateur
           };
         }
-        
 
-        
         return {
           success: false,
-          error: error.message || 'Erreur lors du paiement'
+          error: error.message || "Erreur lors du paiement",
         };
       }
 
       return { success: true };
     } catch (error) {
-      
       return {
         success: false,
-        error: 'Erreur inattendue lors du paiement'
+        error: "Erreur inattendue lors du paiement",
       };
     }
   };
 
-  const processPayment = async (params: CreatePaymentIntentParams): Promise<PaymentResult> => {
+  const processPayment = async (
+    params: CreatePaymentIntentParams
+  ): Promise<PaymentResult> => {
     try {
       setIsLoading(true);
 
       // 1. Créer l'intention de paiement
       const paymentIntent = await createPaymentIntent(params);
-      
+
       // 2. Initialiser le Payment Sheet
       await initializePaymentSheet(
         paymentIntent.client_secret,
         paymentIntent.customer_id
       );
-      
+
       // 3. Présenter le Payment Sheet
       const result = await presentPayment();
-      
+
       if (result.success) {
         return {
           success: true,
-          paymentIntentId: paymentIntent.id
+          paymentIntentId: paymentIntent.id,
         };
       }
-      
+
       return result;
     } catch (error) {
-      
       return {
         success: false,
-        error: error instanceof Error ? error.message : 'Erreur inconnue'
+        error: error instanceof Error ? error.message : "Erreur inconnue",
       };
     } finally {
       setIsLoading(false);
     }
   };
 
-  const showPaymentResult = (result: PaymentResult, onSuccess?: () => void, onError?: () => void) => {
+  const showPaymentResult = (
+    result: PaymentResult,
+    onSuccess?: () => void,
+    onError?: () => void
+  ) => {
     if (result.success) {
       Alert.alert(
-        'Paiement réussi !',
-        'Votre commande a été confirmée. Vous allez recevoir votre QR code.',
+        "Paiement réussi !",
+        "Votre commande a été confirmée. Vous allez recevoir votre QR code.",
         [
           {
-            text: 'OK',
-            onPress: onSuccess
-          }
+            text: "OK",
+            onPress: onSuccess,
+          },
         ]
       );
     } else {
       Alert.alert(
-        'Erreur de paiement',
-        result.error || 'Une erreur est survenue lors du paiement.',
+        "Erreur de paiement",
+        result.error || "Une erreur est survenue lors du paiement.",
         [
           {
-            text: 'Réessayer',
-            onPress: onError
+            text: "Réessayer",
+            onPress: onError,
           },
           {
-            text: 'Annuler',
-            style: 'cancel'
-          }
+            text: "Annuler",
+            style: "cancel",
+          },
         ]
       );
     }
@@ -226,6 +222,6 @@ const NGROK_URL = 'https://ab13e2c66694.ngrok-free.app';
     initializePaymentSheet,
     presentPayment,
     showPaymentResult,
-    isLoading
+    isLoading,
   };
 };
