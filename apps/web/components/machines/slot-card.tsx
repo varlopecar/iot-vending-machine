@@ -3,12 +3,15 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  ArrowPathIcon,
-  PencilIcon,
-  WrenchScrewdriverIcon,
-} from "@heroicons/react/24/outline";
+  Package,
+  AlertTriangle,
+  CheckCircle,
+  RefreshCw,
+  Edit,
+  Wrench,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, Button, Badge } from "../ui";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 import Image from "next/image";
 
 type StockLevel = "empty" | "low" | "normal" | "full";
@@ -79,7 +82,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
   const [isRestocking, setIsRestocking] = useState(false);
 
   // Mutation pour ravitailler au maximum
-  const restockSlotMutation = api.restocks.restockSlotToMax.useMutation({
+  const restockSlotMutation = trpc.restocks.restockSlotToMax.useMutation({
     retry: 3,
     retryDelay: 1000,
     onSuccess: () => {
@@ -194,12 +197,12 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
             >
               <div
                 className={`h-2 rounded-full transition-all duration-300 ${stockLevel === "empty"
-                    ? "bg-red-500"
-                    : stockLevel === "low"
-                      ? "bg-yellow-500"
-                      : stockLevel === "full"
-                        ? "bg-green-500"
-                        : "bg-blue-500"
+                  ? "bg-red-500"
+                  : stockLevel === "low"
+                    ? "bg-yellow-500"
+                    : stockLevel === "full"
+                      ? "bg-green-500"
+                      : "bg-blue-500"
                   }`}
                 style={{ width: `${fillPercentage}%` }}
               />
@@ -227,7 +230,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               onClick={() => onEdit(slot.id)}
               aria-label={`Modifier le produit du slot ${slot.slot_number}`}
             >
-              <PencilIcon className="w-3 h-3 mr-2" />
+              <Edit className="w-3 h-3 mr-2" />
               Modifier le produit
             </Button>
             <Button
@@ -239,9 +242,9 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               aria-label={`Ravitailler le slot ${slot.slot_number} au maximum`}
             >
               {isRestocking ? (
-                <ArrowPathIcon className="w-3 h-3 mr-2 animate-spin" />
+                <RefreshCw className="w-3 h-3 mr-2 animate-spin" />
               ) : (
-                <WrenchScrewdriverIcon className="w-3 h-3 mr-2" />
+                <Wrench className="w-3 h-3 mr-2" />
               )}
               Ravitailler au maximum
             </Button>

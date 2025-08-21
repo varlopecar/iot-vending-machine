@@ -22,12 +22,13 @@ import { RestocksModule } from './restocks/restocks.module';
 import { AlertsModule } from './alerts/alerts.module';
 import { AnalyticsModule } from './analytics/analytics.module';
 import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middleware';
+import { RequestContextMiddleware } from './auth/request-context.middleware';
 
 @Module({
   imports: [
     PrismaModule,
     TRPCModule.forRoot({
-      autoSchemaFile: '../../packages/globals/trpc/src/server',
+      autoSchemaFile: '../../packages/trpc/src/server',
     }),
     AuthModule,
     ProductsModule,
@@ -55,6 +56,10 @@ import { PaymentMonitoringMiddleware } from './payments/payment-monitoring.middl
 })
 export class AppModule implements NestModule {
   configure(consumer: MiddlewareConsumer) {
-    consumer.apply(PaymentMonitoringMiddleware).forRoutes('*');
+    consumer
+      .apply(RequestContextMiddleware) // En premier pour capturer les headers
+      .forRoutes('*')
+      .apply(PaymentMonitoringMiddleware)
+      .forRoutes('*');
   }
 }

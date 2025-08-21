@@ -46,16 +46,18 @@ export class AlertsRouter {
   })
   async getAlertsSummary() {
     const alerts = await this.alertsService.getActiveAlerts();
-    const alertsByMachine = await this.alertsService.getAlertsSummaryByMachine();
-    
+    const alertsByMachine =
+      await this.alertsService.getAlertsSummaryByMachine();
+
     const summary = {
       totalAlerts: alerts.filter((a: any) => a.type !== 'INCOMPLETE').length,
       criticalAlerts: alerts.filter((a: any) => a.type === 'CRITICAL').length,
       lowStockAlerts: alerts.filter((a: any) => a.type === 'LOW_STOCK').length,
-      incompleteAlerts: alerts.filter((a: any) => a.type === 'INCOMPLETE').length,
+      incompleteAlerts: alerts.filter((a: any) => a.type === 'INCOMPLETE')
+        .length,
       alertsByMachine,
     };
-    
+
     return summary;
   }
 
@@ -98,8 +100,8 @@ export class AlertsRouter {
   }
 
   @Mutation({
-    output: z.object({ 
-      success: z.boolean(), 
+    output: z.object({
+      success: z.boolean(),
       message: z.string(),
       machinesProcessed: z.number(),
     }),
@@ -109,9 +111,9 @@ export class AlertsRouter {
       const machines = await this.alertsService['prisma'].machine.findMany({
         select: { id: true },
       });
-      
+
       await this.alertsService.recalculateAllMachineAlerts();
-      
+
       return {
         success: true,
         message: 'Toutes les alertes ont été recalculées',
@@ -127,8 +129,8 @@ export class AlertsRouter {
   }
 
   @Mutation({
-    output: z.object({ 
-      success: z.boolean(), 
+    output: z.object({
+      success: z.boolean(),
       message: z.string(),
       cleaned: z.number(),
       machinesProcessed: z.number(),
@@ -137,7 +139,7 @@ export class AlertsRouter {
   async cleanupDuplicateAlerts() {
     try {
       const result = await this.alertsService.cleanupDuplicateAlerts();
-      
+
       return {
         success: true,
         message: `${result.cleaned} alertes dupliquées nettoyées`,

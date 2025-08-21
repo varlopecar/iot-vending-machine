@@ -22,9 +22,10 @@ export class ProductsService {
         ingredients: '',
         ingredients_list: [], // Liste vide par défaut
         allergens: productData.allergens_list?.join(', ') ?? '',
-        nutritional_value: productData.nutritional?.calories && productData.nutritional?.serving ? 
-          `${productData.nutritional.calories} kcal pour ${productData.nutritional.serving}` : 
-          '',
+        nutritional_value:
+          productData.nutritional?.calories && productData.nutritional?.serving
+            ? `${productData.nutritional.calories} kcal pour ${productData.nutritional.serving}`
+            : '',
         image_url: '/assets/images/coca.png', // Image par défaut locale
         // Optionnels
         allergens_list: productData.allergens_list ?? [],
@@ -42,7 +43,9 @@ export class ProductsService {
     return products.map(this.mapProduct);
   }
 
-  async getAllProductsWithStats(): Promise<Array<Product & { soldCount: number }>> {
+  async getAllProductsWithStats(): Promise<
+    Array<Product & { soldCount: number }>
+  > {
     const products = await this.prisma.product.findMany({
       where: { is_active: true },
       orderBy: { name: 'asc' },
@@ -55,19 +58,19 @@ export class ProductsService {
           where: {
             product_id: product.id,
             order: {
-              status: 'COMPLETED' // Seulement les commandes complétées
-            }
+              status: 'COMPLETED', // Seulement les commandes complétées
+            },
           },
           _sum: {
-            quantity: true
-          }
+            quantity: true,
+          },
         });
 
         return {
           ...this.mapProduct(product),
-          soldCount: soldCount._sum.quantity || 0
+          soldCount: soldCount._sum.quantity || 0,
         };
-      })
+      }),
     );
 
     return productStats;
@@ -88,14 +91,15 @@ export class ProductsService {
     try {
       // Préparer les données comme dans createProduct
       const dataToUpdate: any = { ...updateData };
-      
+
       // Générer nutritional_value si nutritional est fourni
       if (updateData.nutritional) {
-        dataToUpdate.nutritional_value = updateData.nutritional.calories && updateData.nutritional.serving ? 
-          `${updateData.nutritional.calories} kcal pour ${updateData.nutritional.serving}` : 
-          '';
+        dataToUpdate.nutritional_value =
+          updateData.nutritional.calories && updateData.nutritional.serving
+            ? `${updateData.nutritional.calories} kcal pour ${updateData.nutritional.serving}`
+            : '';
       }
-      
+
       // Générer allergens si allergens_list est fourni
       if (updateData.allergens_list) {
         dataToUpdate.allergens = updateData.allergens_list.join(', ');

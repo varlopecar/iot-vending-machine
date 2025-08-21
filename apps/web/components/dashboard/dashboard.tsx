@@ -20,14 +20,14 @@ export function Dashboard() {
           Dashboard
         </h2>
         <p className="text-base text-light-textSecondary dark:text-dark-textSecondary mt-2">
-          Vue d'ensemble de votre plateforme de distributeurs automatiques
+          Vue d&apos;ensemble de votre plateforme de distributeurs automatiques
         </p>
       </header>
 
       {/* Overview Cards */}
       <section aria-labelledby="overview-title">
         <h3 id="overview-title" className="sr-only">
-          Vue d'ensemble des métriques
+          Vue d&apos;ensemble des métriques
         </h3>
         <OverviewCards />
       </section>

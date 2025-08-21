@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc/client";
 import {
   Card,
   CardContent,
@@ -40,7 +40,7 @@ const statusConfig = {
 } as const;
 
 export function MachineStatus() {
-  const { data: machines, isLoading } = api.machines.getAllMachines.useQuery();
+  const { data: machines, isLoading } = trpc.machines.getAllMachines.useQuery();
 
   if (isLoading) {
     return (
@@ -50,7 +50,7 @@ export function MachineStatus() {
             État des machines
           </CardTitle>
           <CardDescription className="text-light-textSecondary dark:text-dark-textSecondary">
-            Vue d'ensemble du statut de vos machines
+            Vue d&apos;ensemble du statut de vos machines
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -85,7 +85,7 @@ export function MachineStatus() {
             État des machines
           </CardTitle>
           <CardDescription className="text-light-textSecondary dark:text-dark-textSecondary">
-            Vue d'ensemble du statut de vos machines
+            Vue d&apos;ensemble du statut de vos machines
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -108,7 +108,7 @@ export function MachineStatus() {
           État des machines
         </CardTitle>
         <CardDescription className="text-light-textSecondary dark:text-dark-textSecondary">
-          Vue d'ensemble du statut de vos machines
+          Vue d&apos;ensemble du statut de vos machines
         </CardDescription>
       </CardHeader>
       <CardContent>

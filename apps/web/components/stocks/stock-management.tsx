@@ -3,312 +3,358 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  CubeIcon,
-  ExclamationTriangleIcon,
-  ChartBarIcon,
-  MagnifyingGlassIcon,
-  PlusIcon,
-  ArrowPathIcon,
-} from "@heroicons/react/24/outline";
+    Search,
+    Download,
+    Package,
+    AlertTriangle,
+    TrendingDown,
+    TrendingUp,
+    RefreshCw,
+    Plus,
+    Eye,
+} from "lucide-react";
 import {
-  Card,
-  CardContent,
-  CardHeader,
-  CardTitle,
-  Button,
-  Input,
-  Badge,
+    Card,
+    CardContent,
+    Button,
+    Input,
+    Badge,
 } from "@/components/ui";
 
-// Mock data for development
-const mockStockData = [
-  {
-    id: "1",
-    machineId: "MACH-001",
-    machineName: "Machine Campus A",
-    location: "Bâtiment Sciences",
-    totalSlots: 30,
-    filledSlots: 18,
-    emptySlots: 12,
-    lowStockSlots: 4,
-    lastRestocked: "2024-01-15T10:30:00Z",
-    status: "active" as const,
-  },
-  {
-    id: "2",
-    machineId: "MACH-002",
-    machineName: "Machine Cafétéria",
-    location: "Restaurant Universitaire",
-    totalSlots: 24,
-    filledSlots: 20,
-    emptySlots: 2,
-    lowStockSlots: 2,
-    lastRestocked: "2024-01-14T14:15:00Z",
-    status: "active" as const,
-  },
-  {
-    id: "3",
-    machineId: "MACH-003",
-    machineName: "Machine Bibliothèque",
-    location: "Hall d'accueil",
-    totalSlots: 20,
-    filledSlots: 8,
-    emptySlots: 8,
-    lowStockSlots: 4,
-    lastRestocked: "2024-01-13T09:00:00Z",
-    status: "maintenance" as const,
-  },
+// Mock data for demonstration
+const mockStocks = [
+    {
+        id: "stock-001",
+        machine_id: "machine-001",
+        product_id: "product-001",
+        quantity: 5,
+        slot_number: 1,
+        max_capacity: 20,
+        low_threshold: 5,
+        product_name: "Chips Nature 45g",
+        product_price: 1.8,
+        product_image_url: "/assets/images/chips.png",
+        machine_name: "Machine Campus A",
+        machine_location: "Bâtiment Sciences",
+    },
+    {
+        id: "stock-002",
+        machine_id: "machine-001",
+        product_id: "product-002",
+        quantity: 0,
+        slot_number: 2,
+        max_capacity: 15,
+        low_threshold: 3,
+        product_name: "Coca-Cola 33cl",
+        product_price: 2.5,
+        product_image_url: "/assets/images/coca.png",
+        machine_name: "Machine Campus A",
+        machine_location: "Bâtiment Sciences",
+    },
+    {
+        id: "stock-003",
+        machine_id: "machine-002",
+        product_id: "product-003",
+        quantity: 2,
+        slot_number: 1,
+        max_capacity: 25,
+        low_threshold: 5,
+        product_name: "Eau minérale 50cl",
+        product_price: 1.2,
+        product_image_url: "/assets/images/eau.png",
+        machine_name: "Machine Cafétéria",
+        machine_location: "RDC Bâtiment Principal",
+    },
 ];
 
-const statusConfig = {
-  active: {
-    label: "Actif",
-    variant: "success" as const,
-    color: "text-green-600",
-  },
-  maintenance: {
-    label: "Maintenance",
-    variant: "warning" as const,
-    color: "text-yellow-600",
-  },
-  inactive: {
-    label: "Inactif",
-    variant: "destructive" as const,
-    color: "text-red-600",
-  },
+const getStockStatus = (quantity: number, lowThreshold: number, maxCapacity: number) => {
+    if (quantity === 0) {
+        return {
+            status: "out_of_stock",
+            label: "Rupture",
+            variant: "destructive" as const,
+            color: "text-red-600",
+            bgColor: "bg-red-50",
+        };
+    } else if (quantity <= lowThreshold) {
+        return {
+            status: "low_stock",
+            label: "Stock faible",
+            variant: "warning" as const,
+            color: "text-orange-600",
+            bgColor: "bg-orange-50",
+        };
+    } else if (quantity >= maxCapacity * 0.8) {
+        return {
+            status: "high_stock",
+            label: "Stock élevé",
+            variant: "success" as const,
+            color: "text-green-600",
+            bgColor: "bg-green-50",
+        };
+    } else {
+        return {
+            status: "normal",
+            label: "Normal",
+            variant: "secondary" as const,
+            color: "text-gray-600",
+            bgColor: "bg-gray-50",
+        };
+    }
 };
 
 export function StockManagement() {
-  const [searchTerm, setSearchTerm] = useState("");
-  const [selectedFilter, setSelectedFilter] = useState("all");
+    const [searchTerm, setSearchTerm] = useState("");
+    const [statusFilter, setStatusFilter] = useState("all");
+    const [stocks] = useState(mockStocks);
 
-  const filteredMachines = mockStockData.filter((machine) => {
-    const matchesSearch =
-      machine.machineName.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      machine.location.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      machine.machineId.toLowerCase().includes(searchTerm.toLowerCase());
+    const filteredStocks = stocks.filter((stock) => {
+        const stockStatus = getStockStatus(stock.quantity, stock.low_threshold, stock.max_capacity);
+        const matchesSearch =
+            stock.product_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            stock.machine_name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+            stock.machine_location.toLowerCase().includes(searchTerm.toLowerCase());
+        const matchesStatus =
+            statusFilter === "all" || stockStatus.status === statusFilter;
+        return matchesSearch && matchesStatus;
+    });
 
-    const matchesFilter =
-      selectedFilter === "all" ||
-      (selectedFilter === "low-stock" && machine.lowStockSlots > 0) ||
-      (selectedFilter === "empty" && machine.emptySlots > 0) ||
-      (selectedFilter === "maintenance" && machine.status === "maintenance");
+    const totalSlots = stocks.length;
+    const outOfStockSlots = stocks.filter((s) => s.quantity === 0).length;
+    const lowStockSlots = stocks.filter((s) => s.quantity > 0 && s.quantity <= s.low_threshold).length;
+    const totalProducts = stocks.reduce((sum, s) => sum + s.quantity, 0);
 
-    return matchesSearch && matchesFilter;
-  });
-
-  const totalMachines = mockStockData.length;
-  const activeMachines = mockStockData.filter(m => m.status === "active").length;
-  const totalLowStock = mockStockData.reduce((sum, m) => sum + m.lowStockSlots, 0);
-  const totalEmpty = mockStockData.reduce((sum, m) => sum + m.emptySlots, 0);
-
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h1 className="text-3xl font-bold text-gray-900">
-            Gestion des Stocks
-          </h1>
-          <p className="text-gray-600 mt-1">
-            Surveillez et gérez l'inventaire de vos machines
-          </p>
-        </div>
-        <div className="flex gap-3">
-          <Button variant="outline" size="sm">
-            <ArrowPathIcon className="w-4 h-4 mr-2" />
-            Actualiser
-          </Button>
-          <Button size="sm">
-            <PlusIcon className="w-4 h-4 mr-2" />
-            Réapprovisionner
-          </Button>
-        </div>
-      </div>
-
-      {/* Stats Cards */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Total Machines
-                </p>
-                <p className="text-2xl font-bold text-gray-900">
-                  {totalMachines}
-                </p>
-              </div>
-              <CubeIcon className="w-8 h-8 text-blue-600" />
+    return (
+        <div className="space-y-6">
+            {/* Header */}
+            <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+                <div>
+                    <h1 className="text-3xl font-bold tracking-tight">Gestion des Stocks</h1>
+                    <p className="text-muted-foreground">
+                        Consultez et gérez les stocks de toutes les machines
+                    </p>
+                </div>
+                <div className="flex gap-2">
+                    <Button variant="outline" className="flex items-center gap-2">
+                        <RefreshCw className="h-4 w-4" />
+                        Actualiser
+                    </Button>
+                    <Button variant="outline" className="flex items-center gap-2">
+                        <Download className="h-4 w-4" />
+                        Exporter
+                    </Button>
+                </div>
             </div>
-          </CardContent>
-        </Card>
 
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Machines Actives
-                </p>
-                <p className="text-2xl font-bold text-green-600">
-                  {activeMachines}
-                </p>
-              </div>
-              <ChartBarIcon className="w-8 h-8 text-green-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Stock Faible
-                </p>
-                <p className="text-2xl font-bold text-yellow-600">
-                  {totalLowStock}
-                </p>
-              </div>
-              <ExclamationTriangleIcon className="w-8 h-8 text-yellow-600" />
-            </div>
-          </CardContent>
-        </Card>
-
-        <Card>
-          <CardContent className="p-6">
-            <div className="flex items-center justify-between">
-              <div>
-                <p className="text-sm font-medium text-gray-600">
-                  Emplacements Vides
-                </p>
-                <p className="text-2xl font-bold text-red-600">
-                  {totalEmpty}
-                </p>
-              </div>
-              <CubeIcon className="w-8 h-8 text-red-600" />
-            </div>
-          </CardContent>
-        </Card>
-      </div>
-
-      {/* Filters and Search */}
-      <Card>
-        <CardHeader>
-          <CardTitle>Machines et Inventaire</CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="flex flex-col sm:flex-row gap-4 mb-6">
-            <div className="relative flex-1">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-              <Input
-                placeholder="Rechercher par nom, lieu ou ID..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
-              />
-            </div>
-            <div className="flex gap-2">
-              <Button
-                variant={selectedFilter === "all" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setSelectedFilter("all")}
-              >
-                Tous
-              </Button>
-              <Button
-                variant={selectedFilter === "low-stock" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setSelectedFilter("low-stock")}
-              >
-                <ExclamationTriangleIcon className="w-4 h-4 mr-1" />
-                Stock Faible
-              </Button>
-              <Button
-                variant={selectedFilter === "empty" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setSelectedFilter("empty")}
-              >
-                Vides
-              </Button>
-              <Button
-                variant={selectedFilter === "maintenance" ? "primary" : "outline"}
-                size="sm"
-                onClick={() => setSelectedFilter("maintenance")}
-              >
-                Maintenance
-              </Button>
-            </div>
-          </div>
-
-          {/* Machine List */}
-          <div className="space-y-4">
-            {filteredMachines.map((machine, index) => (
-              <motion.div
-                key={machine.id}
-                initial={{ opacity: 0, y: 20 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ delay: index * 0.1 }}
-              >
+            {/* Stats Overview */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-4">
                 <Card>
-                  <CardContent className="p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-3 mb-2">
-                          <h3 className="text-lg font-semibold text-gray-900">
-                            {machine.machineName}
-                          </h3>
-                          <Badge variant={statusConfig[machine.status].variant}>
-                            {statusConfig[machine.status].label}
-                          </Badge>
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Total emplacements</p>
+                                <p className="text-2xl font-bold">{totalSlots}</p>
+                            </div>
+                            <Package className="h-8 w-8 text-muted-foreground" />
                         </div>
-                        <p className="text-sm text-gray-600 mb-2">
-                          {machine.location} • {machine.machineId}
-                        </p>
-                        <div className="flex items-center gap-6 text-sm">
-                          <div className="flex items-center gap-1">
-                            <CubeIcon className="w-4 h-4 text-green-600" />
-                            <span>{machine.filledSlots} remplis</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <ExclamationTriangleIcon className="w-4 h-4 text-yellow-600" />
-                            <span>{machine.lowStockSlots} stock faible</span>
-                          </div>
-                          <div className="flex items-center gap-1">
-                            <CubeIcon className="w-4 h-4 text-red-600" />
-                            <span>{machine.emptySlots} vides</span>
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-3">
-                        <div className="text-right text-sm">
-                          <p className="text-gray-600">Dernier réapprovisionnement</p>
-                          <p className="font-medium">
-                            {new Date(machine.lastRestocked).toLocaleDateString('fr-FR')}
-                          </p>
-                        </div>
-                        <Button variant="outline" size="sm">
-                          Gérer
-                        </Button>
-                      </div>
-                    </div>
-                  </CardContent>
+                    </CardContent>
                 </Card>
-              </motion.div>
-            ))}
-          </div>
-
-          {filteredMachines.length === 0 && (
-            <div className="text-center py-12">
-              <CubeIcon className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-              <p className="text-gray-600">
-                Aucune machine trouvée pour les critères sélectionnés.
-              </p>
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">En rupture</p>
+                                <p className="text-2xl font-bold text-red-600">
+                                    {outOfStockSlots}
+                                </p>
+                            </div>
+                            <AlertTriangle className="h-8 w-8 text-red-500" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Stock faible</p>
+                                <p className="text-2xl font-bold text-orange-600">
+                                    {lowStockSlots}
+                                </p>
+                            </div>
+                            <TrendingDown className="h-8 w-8 text-orange-500" />
+                        </div>
+                    </CardContent>
+                </Card>
+                <Card>
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-sm text-muted-foreground">Total produits</p>
+                                <p className="text-2xl font-bold text-green-600">
+                                    {totalProducts}
+                                </p>
+                            </div>
+                            <TrendingUp className="h-8 w-8 text-green-500" />
+                        </div>
+                    </CardContent>
+                </Card>
             </div>
-          )}
-        </CardContent>
-      </Card>
-    </div>
-  );
+
+            {/* Filters */}
+            <Card>
+                <CardContent className="p-6">
+                    <div className="flex flex-col lg:flex-row gap-4">
+                        <div className="flex-1">
+                            <div className="relative">
+                                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                                <Input
+                                    placeholder="Rechercher par produit, machine ou emplacement..."
+                                    value={searchTerm}
+                                    onChange={(e) => setSearchTerm(e.target.value)}
+                                    className="pl-10"
+                                />
+                            </div>
+                        </div>
+                        <div className="flex gap-2 flex-wrap">
+                            <Button
+                                variant={statusFilter === "all" ? "primary" : "outline"}
+                                size="sm"
+                                onClick={() => setStatusFilter("all")}
+                            >
+                                Tous
+                            </Button>
+                            <Button
+                                variant={statusFilter === "out_of_stock" ? "primary" : "outline"}
+                                size="sm"
+                                onClick={() => setStatusFilter("out_of_stock")}
+                            >
+                                Rupture
+                            </Button>
+                            <Button
+                                variant={statusFilter === "low_stock" ? "primary" : "outline"}
+                                size="sm"
+                                onClick={() => setStatusFilter("low_stock")}
+                            >
+                                Stock faible
+                            </Button>
+                            <Button
+                                variant={statusFilter === "normal" ? "primary" : "outline"}
+                                size="sm"
+                                onClick={() => setStatusFilter("normal")}
+                            >
+                                Normal
+                            </Button>
+                        </div>
+                    </div>
+                </CardContent>
+            </Card>
+
+            {/* Stock List */}
+            <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
+                {filteredStocks.map((stock, index) => {
+                    const stockStatus = getStockStatus(stock.quantity, stock.low_threshold, stock.max_capacity);
+                    const fillPercentage = (stock.quantity / stock.max_capacity) * 100;
+
+                    return (
+                        <motion.div
+                            key={stock.id}
+                            initial={{ opacity: 0, y: 20 }}
+                            animate={{ opacity: 1, y: 0 }}
+                            transition={{ delay: index * 0.05 }}
+                        >
+                            <Card className="hover:shadow-md transition-all duration-200">
+                                <CardContent className="p-6">
+                                    <div className="space-y-4">
+                                        {/* Product Header */}
+                                        <div className="flex items-start justify-between">
+                                            <div className="flex items-center gap-3">
+                                                <div className="w-12 h-12 bg-gray-100 rounded-lg flex items-center justify-center">
+                                                    <Package className="h-6 w-6 text-gray-500" />
+                                                </div>
+                                                <div>
+                                                    <h3 className="font-semibold text-sm">{stock.product_name}</h3>
+                                                    <p className="text-xs text-muted-foreground">
+                                                        Slot {stock.slot_number} • {stock.product_price}€
+                                                    </p>
+                                                </div>
+                                            </div>
+                                            <Badge variant={stockStatus.variant} className="text-xs">
+                                                {stockStatus.label}
+                                            </Badge>
+                                        </div>
+
+                                        {/* Machine Info */}
+                                        <div className="text-sm">
+                                            <p className="font-medium">{stock.machine_name}</p>
+                                            <p className="text-muted-foreground text-xs">{stock.machine_location}</p>
+                                        </div>
+
+                                        {/* Stock Level */}
+                                        <div className="space-y-2">
+                                            <div className="flex justify-between text-sm">
+                                                <span>Stock actuel</span>
+                                                <span className="font-medium">
+                                                    {stock.quantity} / {stock.max_capacity}
+                                                </span>
+                                            </div>
+                                            <div className="w-full bg-gray-200 rounded-full h-2">
+                                                <div
+                                                    className={`h-2 rounded-full transition-all duration-300 ${stock.quantity === 0
+                                                        ? "bg-red-500"
+                                                        : stock.quantity <= stock.low_threshold
+                                                            ? "bg-orange-500"
+                                                            : "bg-green-500"
+                                                        }`}
+                                                    style={{ width: `${Math.max(fillPercentage, 2)}%` }}
+                                                />
+                                            </div>
+                                            {stock.quantity <= stock.low_threshold && stock.quantity > 0 && (
+                                                <p className="text-xs text-orange-600">
+                                                    Seuil d&apos;alerte: {stock.low_threshold} unités
+                                                </p>
+                                            )}
+                                        </div>
+
+                                        {/* Actions */}
+                                        <div className="flex gap-2 pt-2">
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1 h-8 text-xs"
+                                            >
+                                                <Eye className="h-3 w-3 mr-1" />
+                                                Voir
+                                            </Button>
+                                            <Button
+                                                variant="outline"
+                                                size="sm"
+                                                className="flex-1 h-8 text-xs"
+                                            >
+                                                <Plus className="h-3 w-3 mr-1" />
+                                                Restockage
+                                            </Button>
+                                        </div>
+                                    </div>
+                                </CardContent>
+                            </Card>
+                        </motion.div>
+                    );
+                })}
+            </div>
+
+            {filteredStocks.length === 0 && (
+                <motion.div
+                    initial={{ opacity: 0 }}
+                    animate={{ opacity: 1 }}
+                    className="text-center py-12"
+                >
+                    <Package className="h-12 w-12 text-muted-foreground mx-auto mb-4" />
+                    <h3 className="text-lg font-medium mb-2">Aucun stock trouvé</h3>
+                    <p className="text-muted-foreground">
+                        Aucun stock ne correspond à vos critères de recherche.
+                    </p>
+                </motion.div>
+            )}
+        </div>
+    );
 }

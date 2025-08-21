@@ -2,33 +2,28 @@
 
 import React from "react";
 import { motion } from "framer-motion";
-import { PencilIcon, TrashIcon, TagIcon } from "@heroicons/react/24/outline";
+import { Edit, Trash2 } from "lucide-react";
 import {
   Card,
   CardContent,
   CardHeader,
-
   Button,
   Badge,
 } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils/format";
 import Image from "next/image";
 
-export interface Product {
-  id: string;
-  name: string;
-  category: string;
-  price: number;
-  cost: number;
-  margin: number;
-  stock: number;
-  sold: number;
-  image?: string;
-}
-
 interface ProductCardProps {
-  product: Product;
-  onEdit: (product: Product) => void;
+  product: {
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+    purchase_price: number;
+    image_url?: string;
+    soldCount: number;
+  };
+  onEdit: (product: any) => void;
   onDelete: (productId: string) => void;
   index: number;
 }
@@ -39,100 +34,90 @@ export function ProductCard({
   onDelete,
   index,
 }: ProductCardProps) {
+  const handleEdit = () => {
+    onEdit(product);
+  };
+
+  const handleDelete = () => {
+    onDelete(product.id);
+  };
+
+  const margin = product.price - product.purchase_price;
+  const marginPercentage = ((margin / product.price) * 100).toFixed(1);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
       transition={{ delay: index * 0.1 }}
     >
-      <Card
-        className="hover:shadow-lg transition-all duration-200"
-        role="article"
-        aria-labelledby={`product-name-${product.id}`}
-      >
-        <CardHeader className="pb-4">
-          <div className="flex items-start justify-between">
-            <div className="flex-1">
-              <h3
-                id={`product-name-${product.id}`}
-                className="text-lg mb-1 line-clamp-1 cursor-help font-semibold"
-                title={product.name}
-              >
-                {product.name}
-              </h3>
-              <div className="flex items-center gap-2 mb-2">
-                <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
-                  <TagIcon className="h-4 w-4 mr-1" />
-                  {product.category}
-                </Badge>
-              </div>
-            </div>
-            <div className="flex gap-1 ml-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={() => onEdit(product)}
-                aria-label={`Modifier le produit ${product.name}`}
-                title="Modifier le produit"
-              >
-                <PencilIcon className="h-4 w-4" />
-              </Button>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0 text-red-500 hover:text-red-600 hover:bg-red-50 dark:hover:bg-red-950"
-                onClick={() => onDelete(product.id)}
-                aria-label={`Supprimer le produit ${product.name}`}
-                title="Supprimer le produit"
-              >
-                <TrashIcon className="h-4 w-4" />
-              </Button>
+      <Card className="overflow-hidden hover:shadow-lg transition-shadow duration-300">
+        <CardHeader className="p-0">
+          <div className="relative h-48 bg-gray-100">
+            <Image
+              src={product.image_url || "/assets/images/coca.png"}
+              alt={product.name}
+              fill
+              className="object-cover"
+              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+            />
+            <div className="absolute top-2 right-2">
+              <Badge variant="secondary" className="text-xs">
+                {product.category}
+              </Badge>
             </div>
           </div>
         </CardHeader>
-
-        <CardContent className="space-y-4">
-          {/* Image du produit */}
-          <div className="relative h-32 w-full bg-light-tertiary dark:bg-dark-border rounded-lg overflow-hidden">
-            <Image
-              src="/assets/images/coca.png"
-              alt={`Photo du produit ${product.name}`}
-              width={200}
-              height={128}
-              className="object-contain w-full h-full"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              priority={false}
-            />
-          </div>
-
-          {/* Informations de prix */}
-          <div className="grid grid-cols-2 gap-4">
+        <CardContent className="p-4">
+          <div className="space-y-3">
             <div>
-              <div className="text-light-text dark:text-dark-textSecondary text-sm">
-                Prix de vente
-              </div>
-              <div className="font-semibold text-lg text-light-text dark:text-dark-text">
-                {formatCurrency(product.price)}
-              </div>
+              <h3 className="font-semibold text-lg text-gray-900 truncate">
+                {product.name}
+              </h3>
+              <p className="text-sm text-gray-600">
+                Vendu: {product.soldCount} fois
+              </p>
             </div>
-            <div>
-              <div className="text-light-text dark:text-dark-textSecondary text-sm">
-                Marge
-              </div>
-              <div className="font-semibold text-lg text-green-800 dark:text-green-400">
-                {formatCurrency(product.margin)}
-              </div>
-            </div>
-          </div>
 
-          {/* Statistiques */}
-          <div className="text-left">
-            <div className="text-light-text dark:text-dark-textSecondary text-sm">
-              Vendus
+            <div className="space-y-2">
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Prix de vente:</span>
+                <span className="font-semibold text-green-600">
+                  {formatCurrency(product.price)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Prix d&apos;achat:</span>
+                <span className="text-gray-700">
+                  {formatCurrency(product.purchase_price)}
+                </span>
+              </div>
+              <div className="flex justify-between items-center">
+                <span className="text-sm text-gray-600">Marge:</span>
+                <span className="font-medium text-blue-600">
+                  {formatCurrency(margin)} ({marginPercentage}%)
+                </span>
+              </div>
             </div>
-            <div className="font-medium text-lg text-light-text dark:text-dark-text">
-              {product.sold} unités
+
+            <div className="flex gap-2 pt-2">
+              <Button
+                onClick={handleEdit}
+                variant="outline"
+                size="sm"
+                className="flex-1 flex items-center gap-2"
+              >
+                <Edit className="h-4 w-4" />
+                Modifier
+              </Button>
+              <Button
+                onClick={handleDelete}
+                variant="outline"
+                size="sm"
+                className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300"
+              >
+                <Trash2 className="h-4 w-4" />
+              </Button>
             </div>
           </div>
         </CardContent>

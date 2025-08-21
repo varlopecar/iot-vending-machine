@@ -2,38 +2,28 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { XMarkIcon, ArrowUpTrayIcon, CubeIcon } from "@heroicons/react/24/outline";
+import { X, Upload, Package } from "lucide-react";
 import { Button, Input, Card } from "@/components/ui";
-import { Product } from "./product-card";
+import { trpc } from "@/lib/trpc/client";
 
 interface AddProductModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onAddProduct: (
-    product: Omit<Product, "id" | "sold"> & {
-      allergens?: string;
-      calories?: string;
-      protein?: string;
-      carbs?: string;
-      fat?: string;
-      serving?: string;
-    }
-  ) => void;
+  onSuccess: () => void;
 }
 
-const categories = ["Boissons", "Snacks", "Confiseries", "Sandwichs", "Autres"];
+const categories = ["Boissons", "Snacks", "Confiseries", "Sandwichs", "Autres"] as const;
 
 export function AddProductModal({
   isOpen,
   onClose,
-  onAddProduct,
+  onSuccess,
 }: AddProductModalProps) {
   const [formData, setFormData] = useState({
     name: "",
-    category: categories[0],
+    category: categories[0] || "Boissons",
     price: "",
-    cost: "",
-    image: "",
+    purchase_price: "",
     allergens: "",
     calories: "",
     protein: "",
@@ -47,7 +37,14 @@ export function AddProductModal({
 
   const modalRef = useRef<HTMLDivElement>(null);
   const firstInputRef = useRef<HTMLInputElement>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const createProductMutation = trpc.products.createProduct.useMutation({
+    onSuccess: () => {
+      onSuccess();
+      onClose();
+      resetForm();
+    },
+  });
 
   // Focus management
   useEffect(() => {
@@ -88,21 +85,35 @@ export function AddProductModal({
       newErrors.price = "Le prix de vente doit être un nombre positif";
     }
 
-    const cost = parseFloat(formData.cost);
-    if (!formData.cost || isNaN(cost) || cost <= 0) {
-      newErrors.cost = "Le prix d'achat doit être un nombre positif";
+    const purchasePrice = parseFloat(formData.purchase_price);
+    if (!formData.purchase_price || isNaN(purchasePrice) || purchasePrice <= 0) {
+      newErrors.purchase_price = "Le prix d&apos;achat doit être un nombre positif";
     }
 
-    // Image est optionnelle, on utilise une image par défaut
-
-    // Check if cost is greater than price
-    if (!newErrors.price && !newErrors.cost && cost >= price) {
-      newErrors.cost =
-        "Le prix d&apos;achat doit être inférieur au prix de vente";
+    // Check if purchase price is greater than price
+    if (!newErrors.price && !newErrors.purchase_price && purchasePrice >= price) {
+      newErrors.purchase_price = "Le prix d&apos;achat doit être inférieur au prix de vente";
     }
 
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
+  };
+
+  const resetForm = () => {
+    setFormData({
+      name: "",
+      category: categories[0] || "Boissons",
+      price: "",
+      purchase_price: "",
+      allergens: "",
+      calories: "",
+      protein: "",
+      carbs: "",
+      fat: "",
+      serving: "",
+    });
+    setErrors({});
+    setIsSubmitting(false);
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -115,427 +126,304 @@ export function AddProductModal({
     setIsSubmitting(true);
 
     try {
-      const price = parseFloat(formData.price);
-      const cost = parseFloat(formData.cost);
+      // Préparer les allergènes
+      const allergens_list = formData.allergens
+        ? formData.allergens
+          .split(",")
+          .map((a) => a.trim())
+          .filter((a) => a.length > 0)
+        : undefined;
 
-      const newProduct = {
-        name: formData.name.trim(),
-        category: formData.category || "",
-        price,
-        cost,
-        margin: price - cost,
-        stock: 0, // Stock initial à 0
-        image: formData.image || "/assets/images/coca.png", // Image par défaut
-        allergens: formData.allergens,
-        calories: formData.calories,
-        protein: formData.protein,
-        carbs: formData.carbs,
-        fat: formData.fat,
-        serving: formData.serving,
-      };
+      // Préparer les valeurs nutritionnelles
+      const nutritional =
+        formData.calories ||
+          formData.protein ||
+          formData.carbs ||
+          formData.fat ||
+          formData.serving
+          ? {
+            calories: formData.calories ? parseFloat(formData.calories) : undefined,
+            protein: formData.protein ? parseFloat(formData.protein) : undefined,
+            carbs: formData.carbs ? parseFloat(formData.carbs) : undefined,
+            fat: formData.fat ? parseFloat(formData.fat) : undefined,
+            serving: formData.serving || "",
+          }
+          : undefined;
 
-      await onAddProduct(newProduct);
-
-      // Reset form
-      setFormData({
-        name: "",
-        category: categories[0],
-        price: "",
-        cost: "",
-        image: "",
-        allergens: "",
-        calories: "",
-        protein: "",
-        carbs: "",
-        fat: "",
-        serving: "",
+      await createProductMutation.mutateAsync({
+        name: formData.name,
+        category: formData.category,
+        price: parseFloat(formData.price),
+        purchase_price: parseFloat(formData.purchase_price),
+        allergens_list,
+        nutritional,
       });
-
-      onClose();
-    } catch {
-      // Error handling could be added here
+    } catch (error) {
+      console.error("Erreur lors de la création du produit:", error);
+      setErrors({ submit: "Erreur lors de la création du produit. Veuillez réessayer." });
     } finally {
       setIsSubmitting(false);
     }
   };
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload to a server/CDN
-      // For now, we'll create a local URL
-      const imageUrl = URL.createObjectURL(file);
-      setFormData((prev) => ({ ...prev, image: imageUrl }));
+  const handleClose = () => {
+    if (!isSubmitting) {
+      resetForm();
+      onClose();
     }
   };
 
-  if (!isOpen) return null;
-
   return (
     <AnimatePresence>
-      <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-        {/* Backdrop */}
-        <motion.div
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          exit={{ opacity: 0 }}
-          className="absolute inset-0 bg-black/50 backdrop-blur-sm"
-          onClick={onClose}
-          aria-hidden="true"
-        />
-
-        {/* Modal */}
-        <motion.div
-          ref={modalRef}
-          initial={{ opacity: 0, scale: 0.95 }}
-          animate={{ opacity: 1, scale: 1 }}
-          exit={{ opacity: 0, scale: 0.95 }}
-          className="relative w-full max-w-md"
-          role="dialog"
-          aria-modal="true"
-          aria-labelledby="modal-title"
-        >
-          <Card className="p-6">
-            {/* Header */}
-            <div className="flex items-center justify-between mb-6">
-              <h2 id="modal-title" className="text-xl font-semibold">
-                Ajouter un produit
-              </h2>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="h-8 w-8 p-0"
-                onClick={onClose}
-                aria-label="Fermer la modal"
-                title="Fermer"
-              >
-                <XMarkIcon className="h-4 w-4" />
-              </Button>
+      {isOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black bg-opacity-50">
+          <motion.div
+            ref={modalRef}
+            initial={{ opacity: 0, scale: 0.95 }}
+            animate={{ opacity: 1, scale: 1 }}
+            exit={{ opacity: 0, scale: 0.95 }}
+            transition={{ duration: 0.2 }}
+            className="w-full max-w-2xl max-h-[90vh] overflow-y-auto bg-white rounded-lg shadow-xl"
+          >
+            <div className="sticky top-0 z-10 bg-white border-b border-gray-200 px-6 py-4">
+              <div className="flex items-center justify-between">
+                <h2 className="text-xl font-semibold text-gray-900">
+                  Ajouter un nouveau produit
+                </h2>
+                <Button
+                  onClick={handleClose}
+                  variant="ghost"
+                  size="sm"
+                  className="h-8 w-8 p-0"
+                  disabled={isSubmitting}
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
             </div>
 
-            {/* Form */}
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {/* Nom du produit */}
-              <div>
-                <label
-                  htmlFor="product-name"
-                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
-                >
-                  Nom du produit *
-                </label>
-                <Input
-                  ref={firstInputRef}
-                  id="product-name"
-                  type="text"
-                  value={formData.name}
-                  onChange={(e) => handleInputChange("name", e.target.value)}
-                  aria-invalid={!!errors.name}
-                  aria-describedby={errors.name ? "name-error" : undefined}
-                  placeholder="Ex: Coca-Cola 33cl"
-                  className="placeholder-gray"
-                />
-                {errors.name && (
-                  <p
-                    id="name-error"
-                    className="text-sm text-red-600 mt-1"
-                    role="alert"
-                  >
-                    {errors.name}
-                  </p>
-                )}
-              </div>
+            <form onSubmit={handleSubmit} className="p-6 space-y-6">
+              {/* Informations de base */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900 flex items-center gap-2">
+                  <Package className="h-5 w-5" />
+                  Informations de base
+                </h3>
 
-              {/* Catégorie */}
-              <div>
-                <label
-                  htmlFor="product-category"
-                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
-                >
-                  Catégorie *
-                </label>
-                <select
-                  id="product-category"
-                  value={formData.category}
-                  onChange={(e) =>
-                    handleInputChange("category", e.target.value)
-                  }
-                  className="w-full h-10 px-3 py-2 text-sm border border-light-border dark:border-dark-border rounded-xl bg-light-background dark:bg-dark-background focus:outline-none focus:ring-2 focus:ring-light-secondary dark:focus:ring-dark-secondary"
-                >
-                  {categories.map((category) => (
-                    <option key={category} value={category}>
-                      {category}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              {/* Prix */}
-              <div className="grid grid-cols-2 gap-4">
-                <div>
-                  <label
-                    htmlFor="product-price"
-                    className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
-                  >
-                    Prix de vente (€) *
-                  </label>
-                  <Input
-                    id="product-price"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.price}
-                    onChange={(e) => handleInputChange("price", e.target.value)}
-                    aria-invalid={!!errors.price}
-                    aria-describedby={errors.price ? "price-error" : undefined}
-                    placeholder="2.50"
-                    className="placeholder-gray"
-                  />
-                  {errors.price && (
-                    <p
-                      id="price-error"
-                      className="text-sm text-red-600 mt-1"
-                      role="alert"
-                    >
-                      {errors.price}
-                    </p>
-                  )}
-                </div>
-
-                <div>
-                  <label
-                    htmlFor="product-cost"
-                    className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
-                  >
-                    Prix d'achat (€) *
-                  </label>
-                  <Input
-                    id="product-cost"
-                    type="number"
-                    step="0.01"
-                    min="0"
-                    value={formData.cost}
-                    onChange={(e) => handleInputChange("cost", e.target.value)}
-                    aria-invalid={!!errors.cost}
-                    aria-describedby={errors.cost ? "cost-error" : undefined}
-                    placeholder="1.20"
-                    className="placeholder-gray"
-                  />
-                  {errors.cost && (
-                    <p
-                      id="cost-error"
-                      className="text-sm text-red-600 mt-1"
-                      role="alert"
-                    >
-                      {errors.cost}
-                    </p>
-                  )}
-                </div>
-              </div>
-
-              {/* Allergènes (optionnel) */}
-              <div>
-                <label
-                  htmlFor="product-allergens"
-                  className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text"
-                >
-                  Allergènes (optionnel)
-                </label>
-                <Input
-                  id="product-allergens"
-                  type="text"
-                  value={formData.allergens}
-                  onChange={(e) =>
-                    handleInputChange("allergens", e.target.value)
-                  }
-                  placeholder="Ex: Gluten, Arachides, Lait (séparés par des virgules)"
-                  className="placeholder-gray"
-                />
-                <p className="text-xs text-light-text dark:text-dark-textSecondary mt-1">
-                  Séparez les allergènes par des virgules
-                </p>
-              </div>
-
-              {/* Valeurs nutritionnelles (optionnel) */}
-              <div>
-                <label className="block text-sm font-medium mb-2 text-light-text dark:text-dark-text">
-                  Valeurs nutritionnelles (optionnel)
-                </label>
-                <div className="grid grid-cols-2 gap-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label
-                      htmlFor="product-calories"
-                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
-                    >
-                      Calories (kcal)
+                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                      Nom du produit *
                     </label>
                     <Input
-                      id="product-calories"
+                      ref={firstInputRef}
+                      id="name"
+                      type="text"
+                      value={formData.name}
+                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      placeholder="Ex: Coca-Cola 330ml"
+                      className={errors.name ? "border-red-500" : ""}
+                      disabled={isSubmitting}
+                    />
+                    {errors.name && (
+                      <p className="mt-1 text-sm text-red-600">{errors.name}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                      Catégorie *
+                    </label>
+                    <select
+                      id="category"
+                      value={formData.category}
+                      onChange={(e) => handleInputChange("category", e.target.value)}
+                      className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
+                      disabled={isSubmitting}
+                    >
+                      {categories.map((category) => (
+                        <option key={category} value={category}>
+                          {category}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div>
+                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                      Prix de vente (€) *
+                    </label>
+                    <Input
+                      id="price"
                       type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.price}
+                      onChange={(e) => handleInputChange("price", e.target.value)}
+                      placeholder="0.00"
+                      className={errors.price ? "border-red-500" : ""}
+                      disabled={isSubmitting}
+                    />
+                    {errors.price && (
+                      <p className="mt-1 text-sm text-red-600">{errors.price}</p>
+                    )}
+                  </div>
+
+                  <div>
+                    <label htmlFor="purchase_price" className="block text-sm font-medium text-gray-700 mb-1">
+                      Prix d&apos;achat (€) *
+                    </label>
+                    <Input
+                      id="purchase_price"
+                      type="number"
+                      step="0.01"
+                      min="0"
+                      value={formData.purchase_price}
+                      onChange={(e) => handleInputChange("purchase_price", e.target.value)}
+                      placeholder="0.00"
+                      className={errors.purchase_price ? "border-red-500" : ""}
+                      disabled={isSubmitting}
+                    />
+                    {errors.purchase_price && (
+                      <p className="mt-1 text-sm text-red-600">{errors.purchase_price}</p>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Allergènes */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Allergènes</h3>
+                <div>
+                  <label htmlFor="allergens" className="block text-sm font-medium text-gray-700 mb-1">
+                    Allergènes (séparés par des virgules)
+                  </label>
+                  <Input
+                    id="allergens"
+                    type="text"
+                    value={formData.allergens}
+                    onChange={(e) => handleInputChange("allergens", e.target.value)}
+                    placeholder="Ex: Gluten, Lactose, Fruits à coque"
+                    disabled={isSubmitting}
+                  />
+                </div>
+              </div>
+
+              {/* Valeurs nutritionnelles */}
+              <div className="space-y-4">
+                <h3 className="text-lg font-medium text-gray-900">Valeurs nutritionnelles (optionnel)</h3>
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                  <div>
+                    <label htmlFor="calories" className="block text-sm font-medium text-gray-700 mb-1">
+                      Calories
+                    </label>
+                    <Input
+                      id="calories"
+                      type="number"
+                      step="0.1"
                       min="0"
                       value={formData.calories}
-                      onChange={(e) =>
-                        handleInputChange("calories", e.target.value)
-                      }
-                      placeholder="150"
-                      className="placeholder-gray"
+                      onChange={(e) => handleInputChange("calories", e.target.value)}
+                      placeholder="kcal"
+                      disabled={isSubmitting}
                     />
                   </div>
+
                   <div>
-                    <label
-                      htmlFor="product-protein"
-                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
-                    >
+                    <label htmlFor="protein" className="block text-sm font-medium text-gray-700 mb-1">
                       Protéines (g)
                     </label>
                     <Input
-                      id="product-protein"
+                      id="protein"
                       type="number"
                       step="0.1"
                       min="0"
                       value={formData.protein}
-                      onChange={(e) =>
-                        handleInputChange("protein", e.target.value)
-                      }
-                      placeholder="2.5"
-                      className="placeholder-gray"
+                      onChange={(e) => handleInputChange("protein", e.target.value)}
+                      placeholder="g"
+                      disabled={isSubmitting}
                     />
                   </div>
+
                   <div>
-                    <label
-                      htmlFor="product-carbs"
-                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
-                    >
+                    <label htmlFor="carbs" className="block text-sm font-medium text-gray-700 mb-1">
                       Glucides (g)
                     </label>
                     <Input
-                      id="product-carbs"
+                      id="carbs"
                       type="number"
                       step="0.1"
                       min="0"
                       value={formData.carbs}
-                      onChange={(e) =>
-                        handleInputChange("carbs", e.target.value)
-                      }
-                      placeholder="35"
-                      className="placeholder-gray"
+                      onChange={(e) => handleInputChange("carbs", e.target.value)}
+                      placeholder="g"
+                      disabled={isSubmitting}
                     />
                   </div>
+
                   <div>
-                    <label
-                      htmlFor="product-fat"
-                      className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
-                    >
+                    <label htmlFor="fat" className="block text-sm font-medium text-gray-700 mb-1">
                       Lipides (g)
                     </label>
                     <Input
-                      id="product-fat"
+                      id="fat"
                       type="number"
                       step="0.1"
                       min="0"
                       value={formData.fat}
                       onChange={(e) => handleInputChange("fat", e.target.value)}
-                      placeholder="0.2"
-                      className="placeholder-gray"
+                      placeholder="g"
+                      disabled={isSubmitting}
                     />
                   </div>
                 </div>
-                <div className="mt-3">
-                  <label
-                    htmlFor="product-serving"
-                    className="block text-xs text-light-text dark:text-dark-textSecondary mb-1"
-                  >
-                    Portion de référence
+
+                <div>
+                  <label htmlFor="serving" className="block text-sm font-medium text-gray-700 mb-1">
+                    Portion
                   </label>
                   <Input
-                    id="product-serving"
+                    id="serving"
                     type="text"
                     value={formData.serving}
-                    onChange={(e) =>
-                      handleInputChange("serving", e.target.value)
-                    }
-                    placeholder="Ex: 100g, 33cl, 1 pièce"
-                    className="placeholder-gray"
+                    onChange={(e) => handleInputChange("serving", e.target.value)}
+                    placeholder="Ex: 100g, 330ml"
+                    disabled={isSubmitting}
                   />
                 </div>
               </div>
 
-              {/* Image */}
-              <div>
-                <label className="block text-sm font-medium mb-1 text-light-text dark:text-dark-text">
-                  Image du produit *
-                </label>
-                <div className="flex items-center gap-4">
-                  <div className="relative h-16 w-16 bg-light-tertiary dark:bg-dark-tertiary rounded-lg overflow-hidden">
-                    {formData.image ? (
-                      // eslint-disable-next-line @next/next/no-img-element
-                      <img
-                        src={formData.image}
-                        alt="Aperçu du produit"
-                        className="h-full w-full object-cover"
-                      />
-                    ) : (
-                      <div className="flex items-center justify-center h-full text-light-text dark:text-dark-textSecondary">
-                        <CubeIcon className="h-6 w-6" />
-                      </div>
-                    )}
-                  </div>
-                  <Button
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => fileInputRef.current?.click()}
-                    aria-label="Sélectionner une image"
-                  >
-                    <ArrowUpTrayIcon className="h-4 w-4 mr-2" />
-                    Choisir une image
-                  </Button>
-                  <input
-                    ref={fileInputRef}
-                    type="file"
-                    accept="image/*"
-                    onChange={handleImageUpload}
-                    className="hidden"
-                    aria-label="Fichier image"
-                  />
+              {/* Error message */}
+              {errors.submit && (
+                <div className="p-3 bg-red-50 border border-red-200 rounded-md">
+                  <p className="text-sm text-red-600">{errors.submit}</p>
                 </div>
-                {errors.image && (
-                  <p className="text-sm text-red-600 mt-1" role="alert">
-                    {errors.image}
-                  </p>
-                )}
-              </div>
+              )}
 
               {/* Actions */}
-              <div className="flex gap-3 pt-4">
+              <div className="flex justify-end gap-3 pt-4 border-t border-gray-200">
                 <Button
                   type="button"
                   variant="outline"
-                  className="flex-1"
-                  onClick={onClose}
+                  onClick={handleClose}
                   disabled={isSubmitting}
                 >
                   Annuler
                 </Button>
                 <Button
                   type="submit"
-                  className="flex-1"
                   disabled={isSubmitting}
-                  aria-describedby="submit-help"
+                  className="min-w-[120px]"
                 >
-                  {isSubmitting ? "Ajout..." : "Ajouter le produit"}
+                  {isSubmitting ? "Création..." : "Créer le produit"}
                 </Button>
               </div>
-
-              <p
-                id="submit-help"
-                className="text-xs text-light-text dark:text-dark-textSecondary"
-              >
-                * Champs obligatoires
-              </p>
             </form>
-          </Card>
-        </motion.div>
-      </div>
+          </motion.div>
+        </div>
+      )}
     </AnimatePresence>
   );
 }

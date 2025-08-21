@@ -34,7 +34,9 @@ export class AlertsService {
   /**
    * Calcule le statut d'alerte d'une machine en fonction de ses stocks
    */
-  async calculateMachineAlertStatus(machineId: string): Promise<MachineAlertStatus> {
+  async calculateMachineAlertStatus(
+    machineId: string,
+  ): Promise<MachineAlertStatus> {
     // Récupérer tous les stocks de la machine
     const stocks = await this.prisma.stock.findMany({
       where: { machine_id: machineId },
@@ -44,9 +46,9 @@ export class AlertsService {
 
     const maxSlots = 6; // Nombre maximum de slots par machine
     const configuredSlots = stocks.length;
-    const emptySlots = stocks.filter(stock => stock.quantity === 0).length;
-    const lowStockSlots = stocks.filter(stock => 
-      stock.quantity > 0 && stock.quantity <= stock.low_threshold
+    const emptySlots = stocks.filter((stock) => stock.quantity === 0).length;
+    const lowStockSlots = stocks.filter(
+      (stock) => stock.quantity > 0 && stock.quantity <= stock.low_threshold,
     ).length;
     const slotsAtThreshold = emptySlots + lowStockSlots;
 
@@ -60,12 +62,14 @@ export class AlertsService {
       alertLevel = AlertLevel.CRITICAL;
     }
     // 2. LOW si slots ≤ seuil_critique ≥ 50% des slots configurés
-    else if (configuredSlots > 0 && slotsAtThreshold >= Math.ceil(configuredSlots * 0.5)) {
+    else if (
+      configuredSlots > 0 &&
+      slotsAtThreshold >= Math.ceil(configuredSlots * 0.5)
+    ) {
       alertType = AlertType.LOW_STOCK;
       alertLevel = AlertLevel.WARNING;
     }
     // 3. INCOMPLETE indépendant (slots non configurés)
-
 
     return {
       machineId,
@@ -86,7 +90,7 @@ export class AlertsService {
     const stocks = await this.prisma.stock.findMany({
       where: { machine_id: machineId },
     });
-    
+
     const maxSlots = 6;
     return stocks.length < maxSlots;
   }
@@ -145,12 +149,22 @@ export class AlertsService {
         }
 
         // Gérer l'alerte unique pour cette machine
-        await this.handleSingleMachineAlert(tx, machineId, alertType, alertLevel, message, metadata);
+        await this.handleSingleMachineAlert(
+          tx,
+          machineId,
+          alertType,
+          alertLevel,
+          message,
+          metadata,
+        );
       });
 
       this.logger.log(`Alertes mises à jour pour la machine ${machineId}`);
     } catch (error) {
-      this.logger.error(`Erreur lors de la mise à jour des alertes pour la machine ${machineId}:`, error);
+      this.logger.error(
+        `Erreur lors de la mise à jour des alertes pour la machine ${machineId}:`,
+        error,
+      );
       throw error;
     }
   }
@@ -159,12 +173,12 @@ export class AlertsService {
    * Gère une seule alerte active par machine
    */
   private async handleSingleMachineAlert(
-    tx: any, 
-    machineId: string, 
-    alertType: AlertType | null, 
-    alertLevel: AlertLevel | null, 
-    message: string, 
-    metadata: any
+    tx: any,
+    machineId: string,
+    alertType: AlertType | null,
+    alertLevel: AlertLevel | null,
+    message: string,
+    metadata: any,
   ) {
     // Récupérer l'alerte active existante pour cette machine
     const existingAlert = await tx.alert.findFirst({
@@ -186,7 +200,9 @@ export class AlertsService {
             resolved_at: new Date().toISOString(),
           },
         });
-        this.logger.log(`Alerte résolue pour la machine ${machineId}: ${existingAlert.type}`);
+        this.logger.log(
+          `Alerte résolue pour la machine ${machineId}: ${existingAlert.type}`,
+        );
       }
       return;
     }
@@ -203,9 +219,13 @@ export class AlertsService {
             resolved_at: new Date().toISOString(),
           },
         });
-        this.logger.log(`Alerte mise à jour pour la machine ${machineId}: ${existingAlert.type} → ${alertType}`);
+        this.logger.log(
+          `Alerte mise à jour pour la machine ${machineId}: ${existingAlert.type} → ${alertType}`,
+        );
       } else {
-        this.logger.log(`Nouvelle alerte créée pour la machine ${machineId}: ${alertType}`);
+        this.logger.log(
+          `Nouvelle alerte créée pour la machine ${machineId}: ${alertType}`,
+        );
       }
 
       // Créer la nouvelle alerte
@@ -231,7 +251,9 @@ export class AlertsService {
           metadata,
         },
       });
-      this.logger.log(`Message d'alerte mis à jour pour la machine ${machineId}: ${alertType}`);
+      this.logger.log(
+        `Message d'alerte mis à jour pour la machine ${machineId}: ${alertType}`,
+      );
     }
   }
 
@@ -277,10 +299,7 @@ export class AlertsService {
           },
         },
       },
-      orderBy: [
-        { level: 'desc' },
-        { created_at: 'desc' },
-      ],
+      orderBy: [{ level: 'desc' }, { created_at: 'desc' }],
     });
   }
 
@@ -289,19 +308,22 @@ export class AlertsService {
    */
   async getAlertsSummaryByMachine() {
     const alerts = await this.getActiveAlerts();
-    
+
     // Grouper les alertes par machine et prendre la plus prioritaire
     const alertsByMachine = new Map();
-    
+
     for (const alert of alerts) {
       const machineId = alert.machine_id;
       const existing = alertsByMachine.get(machineId);
-      
-      if (!existing || this.getAlertPriority(alert.type) > this.getAlertPriority(existing.type)) {
+
+      if (
+        !existing ||
+        this.getAlertPriority(alert.type) > this.getAlertPriority(existing.type)
+      ) {
         alertsByMachine.set(machineId, alert);
       }
     }
-    
+
     return Array.from(alertsByMachine.values());
   }
 
@@ -354,7 +376,10 @@ export class AlertsService {
    * Nettoie toutes les alertes dupliquées dans la base de données
    * Garde seulement l'alerte la plus récente pour chaque machine
    */
-  async cleanupDuplicateAlerts(): Promise<{ cleaned: number; machinesProcessed: number }> {
+  async cleanupDuplicateAlerts(): Promise<{
+    cleaned: number;
+    machinesProcessed: number;
+  }> {
     const machines = await this.prisma.machine.findMany({
       select: { id: true },
     });
@@ -373,10 +398,10 @@ export class AlertsService {
       if (activeAlerts.length > 1) {
         // Garder seulement la plus récente, résoudre les autres
         const alertsToResolve = activeAlerts.slice(1); // Toutes sauf la première (plus récente)
-        
+
         await this.prisma.alert.updateMany({
           where: {
-            id: { in: alertsToResolve.map(a => a.id) },
+            id: { in: alertsToResolve.map((a) => a.id) },
           },
           data: {
             is_active: false,
@@ -386,12 +411,16 @@ export class AlertsService {
         });
 
         totalCleaned += alertsToResolve.length;
-        this.logger.log(`Machine ${machine.id}: ${alertsToResolve.length} alerte(s) dupliquée(s) nettoyée(s)`);
+        this.logger.log(
+          `Machine ${machine.id}: ${alertsToResolve.length} alerte(s) dupliquée(s) nettoyée(s)`,
+        );
       }
     }
 
-    this.logger.log(`Nettoyage terminé: ${totalCleaned} alertes dupliquées résolues pour ${machines.length} machines`);
-    
+    this.logger.log(
+      `Nettoyage terminé: ${totalCleaned} alertes dupliquées résolues pour ${machines.length} machines`,
+    );
+
     return {
       cleaned: totalCleaned,
       machinesProcessed: machines.length,

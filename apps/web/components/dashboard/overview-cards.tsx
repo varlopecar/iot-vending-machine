@@ -1,13 +1,13 @@
 "use client";
 
-import { api } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc/client";
 import {
   Card,
   CardContent,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { ComputerDesktopIcon, CubeIcon, CurrencyEuroIcon, ChartBarIcon } from "@heroicons/react/24/outline";
+import { Monitor, Package, Euro, TrendingUp } from "lucide-react";
 
 const formatCurrency = (cents: number) => {
   return new Intl.NumberFormat("fr-FR", {
@@ -23,21 +23,21 @@ const formatGrowth = (percent: number) => {
 
 export function OverviewCards() {
   const { data: dashboardStats, isLoading } =
-    api.analytics.getDashboardStats.useQuery();
+    trpc.analytics.getDashboardStats.useQuery();
 
   const cards = [
     {
       title: "Machines",
       value: dashboardStats?.totalMachines?.toString() || "0",
       description: `${dashboardStats?.onlineMachines || 0} en ligne`,
-      icon: ComputerDesktopIcon,
+      icon: Monitor,
       loading: isLoading,
     },
     {
       title: "Produits",
       value: dashboardStats?.activeProducts?.toString() || "0",
       description: `${dashboardStats?.activeProducts || 0} actifs`,
-      icon: CubeIcon,
+      icon: Package,
       loading: isLoading,
     },
     {
@@ -48,7 +48,7 @@ export function OverviewCards() {
       description: dashboardStats
         ? `${formatGrowth(dashboardStats.revenueGrowthPercent || 0)} ce mois`
         : "0% ce mois",
-      icon: CurrencyEuroIcon,
+      icon: Euro,
       loading: isLoading,
       growth: dashboardStats?.revenueGrowthPercent || 0,
     },
@@ -58,7 +58,7 @@ export function OverviewCards() {
       description: dashboardStats
         ? `${formatGrowth(dashboardStats.salesGrowthPercent || 0)} cette semaine`
         : "0% cette semaine",
-      icon: ChartBarIcon,
+      icon: TrendingUp,
       loading: isLoading,
       growth: dashboardStats?.salesGrowthPercent || 0,
     },

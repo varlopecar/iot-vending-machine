@@ -1,11 +1,20 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserInput, LoginInput, AdminLoginInput, UpdateUserInput } from './auth.schema';
+import {
+  CreateUserInput,
+  LoginInput,
+  AdminLoginInput,
+  UpdateUserInput,
+} from './auth.schema';
 
 // Mock bcrypt
 jest.mock('bcrypt');
@@ -96,7 +105,9 @@ describe('AuthService', () => {
     it('should throw ConflictException if user already exists', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      await expect(service.register(registerDto)).rejects.toThrow(ConflictException);
+      await expect(service.register(registerDto)).rejects.toThrow(
+        ConflictException,
+      );
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: registerDto.email },
       });
@@ -130,7 +141,10 @@ describe('AuthService', () => {
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: loginDto.email },
       });
-      expect(mockBcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
+      expect(mockBcrypt.compare).toHaveBeenCalledWith(
+        loginDto.password,
+        mockUser.password,
+      );
       expect(mockJwtService.signAsync).toHaveBeenCalledWith({
         sub: mockUser.id,
       });
@@ -143,7 +157,9 @@ describe('AuthService', () => {
     it('should throw UnauthorizedException for invalid email', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: loginDto.email },
       });
@@ -153,8 +169,13 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockBcrypt.compare.mockResolvedValue(false as never);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      expect(mockBcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(mockBcrypt.compare).toHaveBeenCalledWith(
+        loginDto.password,
+        mockUser.password,
+      );
     });
   });
 
@@ -196,7 +217,9 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(customerUser);
       mockBcrypt.compare.mockResolvedValue(true as never);
 
-      await expect(service.adminLogin(adminLoginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.adminLogin(adminLoginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -227,7 +250,9 @@ describe('AuthService', () => {
     it('should throw NotFoundException if user not found', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.getUserById(userId)).rejects.toThrow(NotFoundException);
+      await expect(service.getUserById(userId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       });
@@ -261,7 +286,9 @@ describe('AuthService', () => {
     it('should throw NotFoundException if user not found', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.getUserByBarcode(barcode)).rejects.toThrow(NotFoundException);
+      await expect(service.getUserByBarcode(barcode)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 

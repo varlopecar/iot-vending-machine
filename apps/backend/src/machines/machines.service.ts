@@ -28,16 +28,21 @@ export class MachinesService {
         last_update: new Date().toISOString(),
       },
     });
-    
+
     // Générer automatiquement les alertes pour la nouvelle machine
     try {
       await this.alertsService.updateMachineAlerts(created.id);
-      this.logger.log(`Alertes générées pour la nouvelle machine ${created.id}`);
+      this.logger.log(
+        `Alertes générées pour la nouvelle machine ${created.id}`,
+      );
     } catch (error) {
-      this.logger.error(`Erreur lors de la génération des alertes pour la machine ${created.id}:`, error);
+      this.logger.error(
+        `Erreur lors de la génération des alertes pour la machine ${created.id}:`,
+        error,
+      );
       // Ne pas faire échouer la création de la machine si la génération d'alertes échoue
     }
-    
+
     return this.mapMachine(created);
   }
 
@@ -72,7 +77,9 @@ export class MachinesService {
           // on récupérera via filter côté code si nécessaire.
         },
       }),
-      this.prisma.stock.count({ where: { machine_id: machineId, quantity: 0 } }),
+      this.prisma.stock.count({
+        where: { machine_id: machineId, quantity: 0 },
+      }),
     ]);
 
     // Revenus: total et 30 derniers jours (commandes payées)
@@ -107,17 +114,27 @@ export class MachinesService {
       where: { machine_id: machineId },
       select: { quantity: true, low_threshold: true, max_capacity: true },
     });
-    
+
     const lowStockCountReal = stockDetails.filter(
       (s) => s.quantity > 0 && s.quantity <= s.low_threshold,
     ).length;
 
     // Calcul des statistiques de stock globales
-    const currentStockQuantity = stockDetails.reduce((sum, s) => sum + s.quantity, 0);
-    const maxCapacityTotal = stockDetails.reduce((sum, s) => sum + s.max_capacity, 0);
-    const stockPercentage = maxCapacityTotal > 0 
-      ? Math.min(100, Math.round((currentStockQuantity / maxCapacityTotal) * 100)) // Limite à 100%
-      : 0;
+    const currentStockQuantity = stockDetails.reduce(
+      (sum, s) => sum + s.quantity,
+      0,
+    );
+    const maxCapacityTotal = stockDetails.reduce(
+      (sum, s) => sum + s.max_capacity,
+      0,
+    );
+    const stockPercentage =
+      maxCapacityTotal > 0
+        ? Math.min(
+            100,
+            Math.round((currentStockQuantity / maxCapacityTotal) * 100),
+          ) // Limite à 100%
+        : 0;
 
     return {
       machine_id: machineId,
@@ -137,7 +154,9 @@ export class MachinesService {
    * Statistiques agrégées pour toutes les machines
    */
   async getAllMachineStats() {
-    const machines = await this.prisma.machine.findMany({ select: { id: true } });
+    const machines = await this.prisma.machine.findMany({
+      select: { id: true },
+    });
     const stats = await Promise.all(
       machines.map((m) => this.getMachineStats(m.id)),
     );

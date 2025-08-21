@@ -1,1 +1,1 @@
-export { StockManagement } from './stock-management';
+export { StockManagement } from "./stock-management";

@@ -1,7 +1,7 @@
 "use client";
 
 import React from "react";
-import { MagnifyingGlassIcon, FunnelIcon } from "@heroicons/react/24/outline";
+import { Search, Filter } from "lucide-react";
 import { Button, Input } from "@/components/ui";
 
 interface ProductFiltersProps {
@@ -26,7 +26,7 @@ export function ProductFilters({
         <label htmlFor="product-search" className="sr-only">
           Rechercher un produit
         </label>
-        <MagnifyingGlassIcon
+        <Search
           className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-light-text dark:text-dark-textSecondary"
           aria-hidden="true"
         />
@@ -48,7 +48,7 @@ export function ProductFilters({
         aria-labelledby="category-filter-label"
       >
         <div className="flex items-center gap-2 w-full sm:w-auto">
-          <FunnelIcon
+          <Filter
             className="h-4 w-4 text-light-text dark:text-dark-textSecondary"
             aria-hidden="true"
           />

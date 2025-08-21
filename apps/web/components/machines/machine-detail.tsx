@@ -4,18 +4,18 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
 import {
-  ArrowLeftIcon,
-  MapPinIcon,
-  WifiIcon,
-  SignalSlashIcon,
-  WrenchScrewdriverIcon,
-  XCircleIcon,
-  ArrowPathIcon,
-  CubeIcon,
-  ExclamationTriangleIcon,
-  CogIcon,
-  TruckIcon,
-} from "@heroicons/react/24/outline";
+  ArrowLeft,
+  MapPin,
+  Wifi,
+  WifiOff,
+  Wrench,
+  XCircle,
+  RefreshCw,
+  Package,
+  AlertTriangle,
+  Settings,
+  Truck,
+} from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle, Button, Badge } from "../ui";
 import { SlotCard } from "./slot-card";
 import { EmptySlotCard } from "./empty-slot-card";
@@ -24,7 +24,7 @@ import { EditSlotModal } from "./edit-slot-modal";
 import { MachineSettingsModal } from "./machine-settings-modal";
 import { MachineAlertBadge } from "./machine-alert-badge";
 import { MachineRestockHistory } from "./machine-restock-history";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 
 type MachineStatus = "online" | "offline" | "maintenance" | "out_of_service";
 
@@ -34,25 +34,25 @@ interface MachineDetailProps {
 
 const statusConfig = {
   online: {
-    icon: WifiIcon,
+    icon: Wifi,
     label: "En ligne",
     variant: "success" as const,
     color: "text-green-500",
   },
   offline: {
-    icon: SignalSlashIcon,
+    icon: WifiOff,
     label: "Hors ligne",
     variant: "destructive" as const,
     color: "text-red-500",
   },
   maintenance: {
-    icon: WrenchScrewdriverIcon,
+    icon: Wrench,
     label: "Maintenance",
     variant: "warning" as const,
     color: "text-yellow-500",
   },
   out_of_service: {
-    icon: XCircleIcon,
+    icon: XCircle,
     label: "Hors service",
     variant: "destructive" as const,
     color: "text-red-500",
@@ -70,30 +70,30 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
   const {
     data: machine,
     isLoading: loadingMachine,
-
+    error: machineError,
     refetch: refetchMachine,
-  } = api.machines.getMachineById.useQuery({ id: machineId });
+  } = trpc.machines.getMachineById.useQuery({ id: machineId });
 
   // Récupération des stocks de la machine
   const {
     data: slots,
     isLoading: loadingSlots,
-
+    error: slotsError,
     refetch: refetchSlots,
-  } = api.stocks.getStocksByMachine.useQuery({ machine_id: machineId });
+  } = trpc.stocks.getStocksByMachine.useQuery({ machine_id: machineId });
 
   // Récupération des alertes de la machine
-  const { data: machineAlerts } = api.alerts.getMachineAlerts.useQuery({
+  const { data: machineAlerts } = trpc.alerts.getMachineAlerts.useQuery({
     machineId,
   });
 
   // Mutation pour ravitailler une machine au maximum
-  const restockToMaxMutation = api.restocks.restockToMax.useMutation({
+  const restockToMaxMutation = trpc.restocks.restockToMax.useMutation({
     onSuccess: () => {
       refetchSlots();
       setRestockingAll(false);
     },
-    onError: (error) => {
+    onError: () => {
 
       setRestockingAll(false);
     },
@@ -105,7 +105,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
     setRestockingAll(true);
     restockToMaxMutation.mutate({
       machine_id: machineId,
-      // On va récupérer l'admin depuis le backend
+      // On va récupérer l&apos;admin depuis le backend
       notes: `Ravitaillement complet de la machine ${machine.label}`,
     });
   };
@@ -124,7 +124,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <div className="flex items-center gap-4">
           <Link href="/machines">
             <Button variant="ghost" size="sm">
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Retour aux machines
             </Button>
           </Link>
@@ -146,7 +146,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <div className="flex items-center gap-4">
           <Link href="/machines">
             <Button variant="ghost" size="sm">
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Retour aux machines
             </Button>
           </Link>
@@ -164,7 +164,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             variant="outline"
             aria-label="Réessayer le chargement"
           >
-            <ArrowPathIcon className="w-4 h-4 mr-2" />
+            <RefreshCw className="w-4 h-4 mr-2" />
             Réessayer
           </Button>
         </div>
@@ -204,7 +204,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <div className="flex items-center gap-4">
           <Link href="/machines">
             <Button variant="ghost" size="sm">
-              <ArrowLeftIcon className="w-4 h-4 mr-2" />
+              <ArrowLeft className="w-4 h-4 mr-2" />
               Retour aux machines
             </Button>
           </Link>
@@ -213,7 +213,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               {machine.label}
             </h2>
             <div className="flex items-center gap-2 text-light-text dark:text-dark-textSecondary mt-1">
-              <MapPinIcon className="w-4 h-4" />
+              <MapPin className="w-4 h-4" />
               <span>{machine.location}</span>
             </div>
             {machine.contact && (
@@ -238,15 +238,8 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                 new Set(machineAlerts.map((alert) => alert.type))
               ).map((alertType) => (
                 <MachineAlertBadge
-                  key={alertType}
-                  alertType={
-                    alertType as
-                    | "CRITICAL"
-                    | "LOW_STOCK"
-                    | "INCOMPLETE"
-                    | "MACHINE_OFFLINE"
-                    | "MAINTENANCE_REQUIRED"
-                  }
+                  key={alertType as string}
+                  alertType={alertType as "CRITICAL" | "LOW_STOCK" | "INCOMPLETE" | "MACHINE_OFFLINE" | "MAINTENANCE_REQUIRED"}
                 />
               ))}
             </div>
@@ -256,7 +249,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             size="sm"
             onClick={() => setIsSettingsOpen(true)}
           >
-            <CogIcon className="w-4 h-4 mr-2" />
+            <Settings className="w-4 h-4 mr-2" />
             Paramètres
           </Button>
         </div>
@@ -270,7 +263,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
           transition={{ delay: 0.1 }}
         >
           <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 flex items-start gap-3">
-            <ExclamationTriangleIcon
+            <AlertTriangle
               className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5"
               aria-hidden="true"
             />
@@ -279,14 +272,14 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                 Configuration incomplète
               </h3>
               <p className="text-sm text-yellow-700">
-                Cette machine n'est pas entièrement configurée.
+                Cette machine n&apos;est pas entièrement configurée.
                 <strong>
                   {" "}
                   {unConfiguredSlots} slot{unConfiguredSlots > 1 ? "s" : ""}{" "}
                   restant{unConfiguredSlots > 1 ? "s" : ""}
                 </strong>{" "}
                 à configurer sur 6 total. La machine est actuellement hors
-                service jusqu'à ce que tous les slots soient configurés.
+                service jusqu&apos;à ce que tous les slots soient configurés.
               </p>
             </div>
           </div>
@@ -302,8 +295,8 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CubeIcon className="w-5 h-5" />
-              Vue d'ensemble
+              <Package className="w-5 h-5" />
+              Vue d&apos;ensemble
             </CardTitle>
           </CardHeader>
           <CardContent>
@@ -354,7 +347,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <TruckIcon className="w-5 h-5" />
+              <Truck className="w-5 h-5" />
               Actions rapides
             </CardTitle>
           </CardHeader>
@@ -366,9 +359,9 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                 className="flex items-center gap-2"
               >
                 {restockingAll ? (
-                  <ArrowPathIcon className="w-4 h-4 animate-spin" />
+                  <RefreshCw className="w-4 h-4 animate-spin" />
                 ) : (
-                  <CubeIcon className="w-4 h-4" />
+                  <Package className="w-4 h-4" />
                 )}
                 Ravitailler tout au maximum
                 {needsRestockSlots > 0 && (
@@ -392,7 +385,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center gap-2">
-              <CubeIcon className="w-5 h-5" />
+              <Package className="w-5 h-5" />
               Slots de la machine
               {totalSlots > 0 && (
                 <Badge variant="default">{totalSlots}/6 slots</Badge>
@@ -406,7 +399,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               {slots &&
                 slots
                   .sort((a, b) => a.slot_number - b.slot_number)
-                  .map((slot, index) => (
+                  .map((slot, index: number) => (
                     <motion.div
                       key={slot.id}
                       initial={{ opacity: 0, y: 20 }}
@@ -442,7 +435,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
             {totalSlots === 0 && (
               <div className="text-center py-8">
                 <p className="text-light-text dark:text-dark-textSecondary mb-4">
-                  Cliquez sur "Ajouter un produit" ci-dessus pour commencer la
+                  Cliquez sur &quot;Ajouter un produit&quot; ci-dessus pour commencer la
                   configuration.
                 </p>
               </div>

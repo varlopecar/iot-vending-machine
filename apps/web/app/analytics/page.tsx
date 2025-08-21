@@ -5,15 +5,15 @@ import {
   TopMachines,
   ComingSoonCard,
 } from "@/components/analytics";
-import { ChartBarIcon, ClockIcon } from "@heroicons/react/24/outline";
-import { api } from "@/lib/trpc/client";
+import { TrendingUp, Clock } from "lucide-react";
+import { trpc } from "@/lib/trpc/client";
 
 export default function AnalyticsPage() {
   const {
     data: analytics,
     isLoading,
     error,
-  } = api.analytics.getCurrentMonthAnalytics.useQuery();
+  } = trpc.analytics.getCurrentMonthAnalytics.useQuery();
 
   return (
     <main className="space-y-6" role="main" aria-labelledby="analytics-title">
@@ -46,14 +46,14 @@ export default function AnalyticsPage() {
         <ComingSoonCard
           title="Évolution des ventes"
           description="Tendances et graphiques d'évolution sur les derniers mois"
-          icon={ChartBarIcon}
+          icon={TrendingUp}
           iconColor="text-purple-600 dark:text-purple-400"
         />
 
         <ComingSoonCard
           title="Horaires de pointe"
           description="Analyse des pics de fréquentation par heure et jour"
-          icon={ClockIcon}
+          icon={Clock}
           iconColor="text-orange-600 dark:text-orange-400"
         />
       </div>

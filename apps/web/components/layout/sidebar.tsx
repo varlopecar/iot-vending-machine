@@ -5,13 +5,13 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
-  SquaresPlusIcon,
-  CubeIcon,
-  ComputerDesktopIcon,
-  ChartBarIcon,
-  Bars3Icon,
-  XMarkIcon,
-} from "@heroicons/react/24/outline";
+  LayoutDashboard,
+  Package,
+  Monitor,
+  BarChart3,
+  Menu,
+  X,
+} from "lucide-react";
 import { cn } from "@/lib/utils/cn";
 import { Button } from "@/components/ui";
 
@@ -19,12 +19,12 @@ const navigation = [
   {
     name: "Tableau de bord",
     href: "/",
-    icon: SquaresPlusIcon,
+    icon: LayoutDashboard,
   },
   {
     name: "Produits",
     href: "/products",
-    icon: CubeIcon,
+    icon: Package,
   },
   {
     name: "Machines",
@@ -34,7 +34,7 @@ const navigation = [
   {
     name: "Statistiques",
     href: "/analytics",
-    icon: ChartBarIcon,
+    icon: BarChart3,
   },
 ];
 
@@ -75,9 +75,9 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
         aria-controls="sidebar-navigation"
       >
         {isOpen ? (
-          <XMarkIcon className="h-5 w-5" aria-hidden="true" />
+          <X className="h-5 w-5" aria-hidden="true" />
         ) : (
-          <Bars3Icon className="h-5 w-5" aria-hidden="true" />
+          <Menu className="h-5 w-5" aria-hidden="true" />
         )}
       </Button>
 
@@ -146,7 +146,7 @@ export function Sidebar({ isOpen, onToggle }: SidebarProps) {
               }
             >
               <div className="h-8 w-8 rounded-lg bg-light-secondary/20 dark:bg-dark-secondary/20 flex items-center justify-center">
-                <ComputerDesktopIcon
+                <Monitor
                   className="h-5 w-5 text-light-secondary dark:text-dark-secondary"
                   aria-hidden="true"
                 />

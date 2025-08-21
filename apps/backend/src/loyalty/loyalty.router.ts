@@ -1,7 +1,11 @@
 import { Input, Mutation, Query, Router } from 'nestjs-trpc';
 import { LoyaltyService } from './loyalty.service';
 import { z } from 'zod';
-import { advantageSchema, historyEntrySchema, historyPagedResponseSchema } from './loyalty.schema';
+import {
+  advantageSchema,
+  historyEntrySchema,
+  historyPagedResponseSchema,
+} from './loyalty.schema';
 
 @Router({ alias: 'loyalty' })
 export class LoyaltyRouter {

@@ -16,7 +16,7 @@ export const createMachineSchema = z.object({
   // Statut optionnel côté input, mais ignoré: le backend force OFFLINE à la création
   status: z
     .enum(['online', 'offline', 'maintenance', 'out_of_service'])
-    .optional()
+    .optional(),
 });
 
 export const updateMachineSchema = createMachineSchema.partial();

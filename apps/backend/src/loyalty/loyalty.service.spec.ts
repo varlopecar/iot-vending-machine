@@ -87,7 +87,11 @@ describe('LoyaltyService', () => {
       mockAuthService.getUserById.mockResolvedValue(mockUser);
       mockPrismaService.user.update.mockResolvedValue(mockUser);
 
-      const result = await service.addPoints(userId, points, 'Unknown location');
+      const result = await service.addPoints(
+        userId,
+        points,
+        'Unknown location',
+      );
 
       expect(result.location).toBe('Unknown');
     });
@@ -134,7 +138,9 @@ describe('LoyaltyService', () => {
       const insufficientUser = { ...mockUser, points: 20 };
       mockAuthService.getUserById.mockResolvedValue(insufficientUser);
 
-      await expect(service.deductPoints(userId, points, reason)).rejects.toThrow('Insufficient points');
+      await expect(
+        service.deductPoints(userId, points, reason),
+      ).rejects.toThrow('Insufficient points');
     });
   });
 
@@ -254,7 +260,9 @@ describe('LoyaltyService', () => {
     ];
 
     it('should return paged history with next offset', async () => {
-      jest.spyOn(service, 'getLoyaltyHistoryFormatted').mockResolvedValue(mockFormattedHistory);
+      jest
+        .spyOn(service, 'getLoyaltyHistoryFormatted')
+        .mockResolvedValue(mockFormattedHistory);
 
       const result = await service.getLoyaltyHistoryPaged(userId, 0, 2);
 
@@ -265,7 +273,9 @@ describe('LoyaltyService', () => {
     });
 
     it('should return null nextOffset for last page', async () => {
-      jest.spyOn(service, 'getLoyaltyHistoryFormatted').mockResolvedValue(mockFormattedHistory);
+      jest
+        .spyOn(service, 'getLoyaltyHistoryFormatted')
+        .mockResolvedValue(mockFormattedHistory);
 
       const result = await service.getLoyaltyHistoryPaged(userId, 2, 2);
 
@@ -312,7 +322,9 @@ describe('LoyaltyService', () => {
     });
 
     it('should throw NotFoundException for invalid advantage', async () => {
-      await expect(service.redeemAdvantage(userId, 'invalid_advantage')).rejects.toThrow(NotFoundException);
+      await expect(
+        service.redeemAdvantage(userId, 'invalid_advantage'),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -345,10 +357,18 @@ describe('LoyaltyService', () => {
 
   describe('extractLocationFromReason', () => {
     it('should extract location from reason string', () => {
-      expect(service['extractLocationFromReason']('Purchase from Sophia')).toBe('Sophia');
-      expect(service['extractLocationFromReason']('Order from Antibes')).toBe('Antibes');
-      expect(service['extractLocationFromReason']('Transaction in Nice')).toBe('Nice');
-      expect(service['extractLocationFromReason']('Unknown location')).toBe('Unknown');
+      expect(service['extractLocationFromReason']('Purchase from Sophia')).toBe(
+        'Sophia',
+      );
+      expect(service['extractLocationFromReason']('Order from Antibes')).toBe(
+        'Antibes',
+      );
+      expect(service['extractLocationFromReason']('Transaction in Nice')).toBe(
+        'Nice',
+      );
+      expect(service['extractLocationFromReason']('Unknown location')).toBe(
+        'Unknown',
+      );
     });
   });
 });

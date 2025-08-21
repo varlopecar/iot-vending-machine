@@ -74,7 +74,9 @@ export class AuthService {
     return { user, token };
   }
 
-  async adminLogin(loginData: AdminLoginInput): Promise<{ user: User; token: string }> {
+  async adminLogin(
+    loginData: AdminLoginInput,
+  ): Promise<{ user: User; token: string }> {
     const user = await this.prisma.user.findUnique({
       where: { email: loginData.email },
     });
@@ -85,7 +87,9 @@ export class AuthService {
 
     // Verify user is admin or operator
     if (user.role !== 'ADMIN' && user.role !== 'OPERATOR') {
-      throw new UnauthorizedException('Access denied: Admin privileges required');
+      throw new UnauthorizedException(
+        'Access denied: Admin privileges required',
+      );
     }
 
     // Verify password

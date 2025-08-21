@@ -96,14 +96,12 @@ export class CardPaymentController {
         };
       }
     } catch (error) {
-
-
       // Gestion des erreurs Stripe spécifiques
       if (
         error &&
         typeof error === 'object' &&
         'type' in error &&
-        (error as any).type === 'StripeCardError'
+        error.type === 'StripeCardError'
       ) {
         const stripeError = error as {
           code?: string;

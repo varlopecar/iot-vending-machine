@@ -11,8 +11,9 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc/client";
 import { useAuth } from "@/contexts/auth-context";
+import { AdminUser } from "@/lib/secure-auth";
 
 export function AdminLogin() {
   const [email, setEmail] = useState("");
@@ -22,10 +23,10 @@ export function AdminLogin() {
   const router = useRouter();
   const { login } = useAuth();
 
-  const adminLoginMutation = api.auth.adminLogin.useMutation({
+  const adminLoginMutation = trpc.auth.adminLogin.useMutation({
     onSuccess: (data) => {
       // Use the auth context login method
-      login(data.token, data.user);
+      login(data.token, data.user as AdminUser);
 
       // Redirect to dashboard
       router.push("/");
@@ -59,7 +60,7 @@ export function AdminLogin() {
             Back-office Admin
           </CardTitle>
           <CardDescription className="text-center">
-            Connectez-vous pour accéder au panneau d'administration
+            Connectez-vous pour accéder au panneau d&apos;administration
           </CardDescription>
         </CardHeader>
         <CardContent>

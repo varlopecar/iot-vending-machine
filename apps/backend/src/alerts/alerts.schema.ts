@@ -4,7 +4,13 @@ export const alertSchema = z.object({
   id: z.string(),
   machine_id: z.string(),
   stock_id: z.string().nullable(),
-  type: z.enum(['LOW_STOCK', 'CRITICAL', 'INCOMPLETE', 'MACHINE_OFFLINE', 'MAINTENANCE_REQUIRED']),
+  type: z.enum([
+    'LOW_STOCK',
+    'CRITICAL',
+    'INCOMPLETE',
+    'MACHINE_OFFLINE',
+    'MAINTENANCE_REQUIRED',
+  ]),
   message: z.string().nullable(),
   level: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']),
   status: z.enum(['OPEN', 'RESOLVED', 'IGNORED']),
@@ -22,23 +28,33 @@ export const alertWithRelationsSchema = alertSchema.extend({
     contact: z.string().nullable(),
     status: z.enum(['ONLINE', 'OFFLINE', 'MAINTENANCE', 'OUT_OF_SERVICE']),
   }),
-  stock: z.object({
-    id: z.string(),
-    slot_number: z.number(),
-    quantity: z.number(),
-    max_capacity: z.number(),
-    low_threshold: z.number(),
-    product: z.object({
+  stock: z
+    .object({
       id: z.string(),
-      name: z.string(),
-      image_url: z.string(),
-    }),
-  }).nullable(),
+      slot_number: z.number(),
+      quantity: z.number(),
+      max_capacity: z.number(),
+      low_threshold: z.number(),
+      product: z.object({
+        id: z.string(),
+        name: z.string(),
+        image_url: z.string(),
+      }),
+    })
+    .nullable(),
 });
 
 export const machineAlertStatusSchema = z.object({
   machineId: z.string(),
-  alertType: z.enum(['LOW_STOCK', 'CRITICAL', 'INCOMPLETE', 'MACHINE_OFFLINE', 'MAINTENANCE_REQUIRED']).nullable(),
+  alertType: z
+    .enum([
+      'LOW_STOCK',
+      'CRITICAL',
+      'INCOMPLETE',
+      'MACHINE_OFFLINE',
+      'MAINTENANCE_REQUIRED',
+    ])
+    .nullable(),
   alertLevel: z.enum(['INFO', 'WARNING', 'ERROR', 'CRITICAL']).nullable(),
   configuredSlots: z.number(),
   totalSlots: z.number(),

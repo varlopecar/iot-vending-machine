@@ -1,28 +1,17 @@
 "use client";
 
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { useState } from "react";
-
-import { api, trpcClient as staticClient } from "./client";
+import TrpcProvider from "@repo/trpc/TrpcProvider";
 
 export function TRPCProvider({ children }: { children: React.ReactNode }) {
-  const [queryClient] = useState(
-    () =>
-      new QueryClient({
-        defaultOptions: {
-          queries: {
-            staleTime: 60 * 1000,
-            refetchOnWindowFocus: false,
-          },
-        },
-      })
-  );
+  const getUrl = () => {
+    const base = (() => {
+      if (typeof window !== "undefined") return "http://localhost:3000"; // backend url for browser
+      if (process.env.NEXT_PUBLIC_VERCEL_URL_PRODUCTION)
+        return `https://${process.env.NEXT_PUBLIC_VERCEL_URL_PRODUCTION}`; // SSR should use vercel url
+      return `http://localhost:3000`; // Backend runs on port 3000
+    })();
+    return `${base}/trpc`;
+  };
 
-  const [trpcClient] = useState(() => staticClient);
-
-  return (
-    <api.Provider client={trpcClient} queryClient={queryClient}>
-      <QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-    </api.Provider>
-  );
+  return <TrpcProvider url={getUrl()}>{children}</TrpcProvider>;
 }

@@ -15,7 +15,7 @@ export default function QRCodeScreen() {
   const { orderId } = useLocalSearchParams<{ orderId: string }>();
   const { getOrderById, setOrderStatus } = useOrders();
   const [order, setOrder] = useState<ReturnType<typeof getOrderById> | null>(() => getOrderById(orderId || "") || null);
-  // const [loading, setLoading] = useState(false); // Unused
+  const [loading, setLoading] = useState(false);
 
   // Sync si ordre arrive plus tard
   React.useEffect(() => {
@@ -96,6 +96,18 @@ export default function QRCodeScreen() {
       ]
     );
   };
+
+  if (loading && !order) {
+    return (
+      <View className={`${isDark ? 'bg-dark-background' : 'bg-light-background'} flex-1 justify-center items-center`}>
+        <Text
+          className={`${isDark ? 'text-dark-textSecondary' : 'text-light-text'} text-lg`}
+        >
+          Chargement…
+        </Text>
+      </View>
+    );
+  }
 
   if (!order) {
     return (

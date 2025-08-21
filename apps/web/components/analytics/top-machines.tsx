@@ -1,7 +1,7 @@
 "use client";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ComputerDesktopIcon, MapPinIcon } from "@heroicons/react/24/outline";
+import { Monitor, MapPin } from "lucide-react";
 import { TopMachineRevenue } from "@/lib/types";
 
 interface TopMachinesProps {
@@ -22,7 +22,7 @@ export function TopMachines({ machines, isLoading }: TopMachinesProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-light-text dark:text-dark-text">
-            <ComputerDesktopIcon
+            <Monitor
               className="h-5 w-5 text-green-600 dark:text-green-400"
               aria-hidden="true"
             />
@@ -66,7 +66,7 @@ export function TopMachines({ machines, isLoading }: TopMachinesProps) {
       <Card>
         <CardHeader>
           <CardTitle className="flex items-center gap-2 text-light-text dark:text-dark-text">
-            <ComputerDesktopIcon
+            <Monitor
               className="h-5 w-5 text-green-600 dark:text-green-400"
               aria-hidden="true"
             />
@@ -79,7 +79,7 @@ export function TopMachines({ machines, isLoading }: TopMachinesProps) {
             role="status"
             aria-label="Aucune machine rentable"
           >
-            <ComputerDesktopIcon
+            <Monitor
               className="h-12 w-12 mx-auto text-gray-300 dark:text-gray-600 mb-3"
               aria-hidden="true"
             />
@@ -97,7 +97,7 @@ export function TopMachines({ machines, isLoading }: TopMachinesProps) {
           id="top-machines-title"
           className="flex items-center gap-2 text-light-text dark:text-dark-text"
         >
-          <ComputerDesktopIcon
+          <Monitor
             className="h-5 w-5 text-green-600 dark:text-green-400"
             aria-hidden="true"
           />
@@ -128,7 +128,7 @@ export function TopMachines({ machines, isLoading }: TopMachinesProps) {
                     {machine.machineLabel}
                   </p>
                   <div className="flex items-center gap-1 text-sm text-light-textSecondary dark:text-dark-textSecondary">
-                    <MapPinIcon className="h-3 w-3" aria-hidden="true" />
+                    <MapPin className="h-3 w-3" aria-hidden="true" />
                     {machine.location}
                   </div>
                 </div>

@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "../ui";
-import { api } from "../../lib/trpc/client";
-import { ArrowPathIcon, ClockIcon, CubeIcon } from "@heroicons/react/24/outline";
+import { RefreshCw, History, Package } from "lucide-react";
+import { trpc } from "../../lib/trpc/client";
 
 interface MachineRestockHistoryProps {
   machineId: string;
@@ -14,7 +14,7 @@ type RestockItemType = "addition" | "removal";
 export function MachineRestockHistory({
   machineId,
 }: MachineRestockHistoryProps) {
-  const query = (api as any).restocks.getRestocksByMachine.useQuery(
+  const query = trpc.restocks.getRestocksByMachine.useQuery(
     { machine_id: machineId },
     { enabled: false }
   );
@@ -80,8 +80,8 @@ export function MachineRestockHistory({
     const map = new Map<string, typeof list>();
     for (const r of list) {
       const day = new Date(r.created_at).toLocaleDateString("fr-FR");
-      if (!map.has(day)) map.set(day, [] as any);
-      (map.get(day) as any).push(r);
+      if (!map.has(day)) map.set(day, []);
+      map.get(day)!.push(r);
     }
     return Array.from(map.entries()).map(([date, entries]) => ({
       date,
@@ -175,7 +175,7 @@ export function MachineRestockHistory({
     <Card id="restock-history">
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
-          <ClockIcon className="w-5 h-5" />
+          <History className="w-5 h-5" />
           Historique des ravitaillements
         </CardTitle>
       </CardHeader>
@@ -183,7 +183,7 @@ export function MachineRestockHistory({
         {showInitialButton && (
           <div className="flex items-center justify-center py-4">
             <Button variant="ghost" onClick={handleShow}>
-              <ClockIcon className="w-4 h-4 mr-2" /> Afficher l'historique
+              <History className="w-4 h-4 mr-2" /> Afficher l&apos;historique
             </Button>
           </div>
         )}
@@ -198,8 +198,8 @@ export function MachineRestockHistory({
         {restocks && (
           <div className="flex items-center justify-between mb-4">
             <div className="text-sm text-muted-foreground">
-              Affichage: 10 derniers ravitaillements — l'export inclut tout
-              l'historique
+              Affichage: 10 derniers ravitaillements — l&apos;export inclut tout
+              l&apos;historique
             </div>
             <div className="flex items-center gap-2">
               {/* Filtres type */}
@@ -228,7 +228,7 @@ export function MachineRestockHistory({
                 onClick={exportCsv}
                 disabled={Boolean(isFetching)}
               >
-                <ClockIcon className="w-4 h-4 mr-2" /> Exporter tout l'historique
+                <History className="w-4 h-4 mr-2" /> Exporter tout l&apos;historique
                 (CSV)
               </Button>
               <Button
@@ -241,12 +241,12 @@ export function MachineRestockHistory({
               >
                 {isFetching ? (
                   <>
-                    <ArrowPathIcon className="w-4 h-4 mr-2 animate-spin" />{" "}
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />{" "}
                     Actualisation...
                   </>
                 ) : (
                   <>
-                    <ArrowPathIcon className="w-4 h-4 mr-2" /> Actualiser
+                    <RefreshCw className="w-4 h-4 mr-2" /> Actualiser
                   </>
                 )}
               </Button>
@@ -258,7 +258,7 @@ export function MachineRestockHistory({
           <div className="text-center py-8">
             <div className="text-red-600 mb-3">Erreur: {error.message}</div>
             <Button variant="secondary" onClick={handleShow}>
-              <ArrowPathIcon className="w-4 h-4 mr-2" /> Réessayer
+              <RefreshCw className="w-4 h-4 mr-2" /> Réessayer
             </Button>
           </div>
         )}
@@ -316,7 +316,7 @@ export function MachineRestockHistory({
                               className="flex items-center gap-3 bg-muted/40 rounded-md p-2"
                             >
                               <div className="w-8 h-8 flex items-center justify-center rounded bg-white border">
-                                <CubeIcon className="w-4 h-4" />
+                                <Package className="w-4 h-4" />
                               </div>
                               <div className="flex-1">
                                 <div className="text-sm font-medium">
