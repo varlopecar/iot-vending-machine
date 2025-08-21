@@ -23,7 +23,15 @@ interface ProductCardProps {
     image_url?: string;
     soldCount: number;
   };
-  onEdit: (product: any) => void;
+  onEdit: (product: {
+    id: string;
+    name: string;
+    category: string;
+    price: number;
+    purchase_price: number;
+    image_url?: string;
+    soldCount: number;
+  }) => void;
   onDelete: (productId: string) => void;
   index: number;
 }

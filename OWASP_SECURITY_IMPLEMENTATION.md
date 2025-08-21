@@ -562,7 +562,7 @@ async handleStripeWebhook(@Req() req: Request, @Res() res: Response) {
 ```typescript
 // Validation des URLs API
 const API_BASE_URL: string = process.env.EXPO_PUBLIC_API_URL || 
-  'https://8f7a26872266.ngrok-free.app';
+  'https://ab13e2c66694.ngrok-free.app';
 
 // Headers de sécurité pour ngrok
 const headers: Record<string, string> = {

@@ -2,8 +2,8 @@
 
 import React, { useState, useRef, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { X, Upload, Package } from "lucide-react";
-import { Button, Input, Card } from "@/components/ui";
+import { X, Package } from "lucide-react";
+import { Button, Input } from "@/components/ui";
 import { trpc } from "@/lib/trpc/client";
 
 interface AddProductModalProps {
@@ -14,12 +14,25 @@ interface AddProductModalProps {
 
 const categories = ["Boissons", "Snacks", "Confiseries", "Sandwichs", "Autres"] as const;
 
+type AddProductFormData = {
+  name: string;
+  category: string;
+  price: string;
+  purchase_price: string;
+  allergens: string;
+  calories: string;
+  protein: string;
+  carbs: string;
+  fat: string;
+  serving: string;
+};
+
 export function AddProductModal({
   isOpen,
   onClose,
   onSuccess,
 }: AddProductModalProps) {
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<AddProductFormData>({
     name: "",
     category: categories[0] || "Boissons",
     price: "",

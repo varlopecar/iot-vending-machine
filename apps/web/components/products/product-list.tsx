@@ -3,11 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, RefreshCw } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  Button,
-} from "@/components/ui";
+import { Button } from "@/components/ui";
 import { ProductCard } from "./product-card";
 import { ProductFilters } from "./product-filters";
 import { AddProductModal } from "./add-product-modal";
@@ -15,7 +11,18 @@ import { EditProductModal } from "./edit-product-modal";
 import { trpc } from "@/lib/trpc/client";
 
 // Fonction pour générer des catégories uniques à partir des produits
-const generateCategories = (products: any[]) => {
+type ProductItem = {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  purchase_price: number;
+  soldCount: number;
+  image_url?: string;
+  description?: string;
+};
+
+const generateCategories = (products: ProductItem[]) => {
   const categories = new Set<string>();
   products?.forEach((product) => {
     if (product.category) {
@@ -28,7 +35,7 @@ const generateCategories = (products: any[]) => {
 export function ProductList() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<any>(null);
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: products, isLoading, refetch } = trpc.products.getAllProductsWithStats.useQuery();
@@ -40,12 +47,12 @@ export function ProductList() {
     },
   });
 
-  const categories = generateCategories(products || []);
+  const categories = generateCategories((products as ProductItem[] | undefined) || []);
 
-  const filteredProducts = products?.filter((product) => {
+  const filteredProducts = (products as ProductItem[] | undefined)?.filter((product) => {
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (product.description || "").toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   }) || [];
 
@@ -55,7 +62,7 @@ export function ProductList() {
     }
   };
 
-  const handleEdit = (product: any) => {
+  const handleEdit = (product: ProductItem) => {
     setEditingProduct(product);
   };
 
