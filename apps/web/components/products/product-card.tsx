@@ -13,6 +13,36 @@ import {
 import { formatCurrency } from "@/lib/utils/format";
 import Image from "next/image";
 
+// Function to get appropriate image for each product
+const getProductImage = (productName: string, category: string): string => {
+  const name = productName.toLowerCase();
+
+  if (name.includes('chips') || name.includes('energy')) {
+    return '/assets/images/chips.png';
+  }
+  if (name.includes('coca') || name.includes('cola')) {
+    return '/assets/images/coca.png';
+  }
+  if (name.includes('kinder') || name.includes('bueno')) {
+    return '/assets/images/kinder.png';
+  }
+  if (name.includes('water') || name.includes('eau')) {
+    return '/assets/images/eau.png';
+  }
+
+  // Fallback based on category
+  switch (category.toLowerCase()) {
+    case 'snacks':
+      return '/assets/images/chips.png';
+    case 'boissons':
+      return '/assets/images/coca.png';
+    case 'confiseries':
+      return '/assets/images/kinder.png';
+    default:
+      return '/assets/images/coca.png';
+  }
+};
+
 interface ProductCardProps {
   product: {
     id: string;
@@ -63,16 +93,10 @@ export function ProductCard({
         <CardHeader className="p-0">
           <div className="relative h-48 bg-gray-100">
             <Image
-              src={product.image_url || "/assets/images/coca.png"}
+              src={getProductImage(product.name, product.category)}
               alt={product.name}
               fill
-              className="object-cover"
-              sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
-              onError={(e) => {
-                // Fallback to default image if external image fails
-                const target = e.target as HTMLImageElement;
-                target.src = "/assets/images/coca.png";
-              }}
+              className="object-contain p-2"
             />
             <div className="absolute top-2 right-2">
               <Badge variant="secondary" className="text-xs">

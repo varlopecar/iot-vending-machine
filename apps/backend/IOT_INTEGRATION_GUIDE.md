@@ -81,6 +81,10 @@ curl -X POST http://localhost:3000/api/order-delivery/confirm \
 - `DELETE /api/order-delivery/order/:orderId` - Delete order
 - `POST /api/order-delivery/cancel/:orderId` - Cancel order
 
+### Stock Management Endpoints
+
+- `POST /api/stocks/update-quantity` - Update stock quantity (for IoT machines)
+
 ### Order Validation Endpoints
 
 - `POST /api/order-validation/validate-qr` - Validate QR code
@@ -174,6 +178,19 @@ class IoTVendingMachine {
         body: JSON.stringify({ qrData }),
       },
     );
+
+    return response.json();
+  }
+
+  async updateStockQuantity(stockId: string, quantity: number) {
+    const response = await fetch(`${this.baseUrl}/api/stocks/update-quantity`, {
+      method: 'POST',
+      headers: {
+        Authorization: `Bearer ${this.machineToken}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ stockId, quantity }),
+    });
 
     return response.json();
   }
