@@ -64,7 +64,7 @@ export default function CommandesScreen() {
   // Déclenche un re-render toutes les minutes pour rafraîchir le compte à rebours
   useEffect(() => {
     const id = setInterval(() => {
-      setTick((t) => t + 1);
+      // setTick supprimé: on force juste un re-render pour rafraîchir les expirations
       setLocalOrders((prev) => [...prev]);
     }, 60000);
     return () => clearInterval(id);

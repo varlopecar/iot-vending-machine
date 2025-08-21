@@ -41,7 +41,7 @@ export const useStripeCheckout = () => {
       };
 
       // URL ngrok déployée
-const NGROK_URL = 'https://feca382d5f60.ngrok-free.app';
+const NGROK_URL = 'https://8f7a26872266.ngrok-free.app';
       const endpoint = `${NGROK_URL}/trpc/stripe.createPaymentIntent`;
       
       
