@@ -10,7 +10,7 @@ const nextConfig = {
       },
     },
   },
-  transpilePackages: [],
+  transpilePackages: ["@repo/trpc"],
   
   // Headers de sécurité selon recommandations OWASP
   async headers() {
