@@ -10,9 +10,9 @@ export const envSchema = z.object({
   // Server
   PORT: z
     .string()
+    .default('3000')
     .transform(Number)
-    .pipe(z.number().positive())
-    .default(() => 3000),
+    .pipe(z.number().positive()),
   NODE_ENV: z
     .enum(['development', 'production', 'test'])
     .default('development'),

@@ -11,8 +11,14 @@ import express from 'express';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
+  console.log('🔧 Starting application bootstrap...');
+  console.log('🔧 Node.js version:', process.version);
+  console.log('🔧 Environment PORT:', process.env.PORT);
+  console.log('🔧 Environment NODE_ENV:', process.env.NODE_ENV);
+  
   // Valider les variables d'environnement au démarrage
   const env = validateEnv();
+  console.log('✅ Environment validation successful, PORT:', env.PORT);
 
   // Créer l'application avec Express adapter pour configurer le raw body
   const expressApp = express();
