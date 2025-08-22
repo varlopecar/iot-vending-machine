@@ -150,21 +150,21 @@ jobs:
 
       - name: Setup SSH key for Scalingo
         run: |
-          echo "🔑 Setting up SSH key for Scalingo deployment..."
+          echo "🔑 Setting up ED25519 SSH key for Scalingo deployment..."
           mkdir -p ~/.ssh
-          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
+          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_ed25519
+          chmod 600 ~/.ssh/id_ed25519
           chmod 700 ~/.ssh
           ssh-keyscan -H ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
 
           # Start SSH agent and add the key
           eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
+          ssh-add ~/.ssh/id_ed25519
 
-          # Optional: Add SSH config
+          # Add SSH config for Scalingo
           echo "Host ssh.osc-fr1.scalingo.com" >> ~/.ssh/config
-          echo "  IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/id_ed25519" >> ~/.ssh/config
           echo "  IdentitiesOnly yes" >> ~/.ssh/config
           echo "  StrictHostKeyChecking no" >> ~/.ssh/config
           echo "  User git" >> ~/.ssh/config
@@ -173,7 +173,7 @@ jobs:
           echo "🧪 Testing SSH connection to Scalingo..."
           ssh -T git@ssh.osc-fr1.scalingo.com || echo "SSH test completed (exit code expected)"
 
-          echo "✅ SSH key setup completed"
+          echo "✅ ED25519 SSH key setup completed"
 
       - name: Setup Git for deployment
         run: |
