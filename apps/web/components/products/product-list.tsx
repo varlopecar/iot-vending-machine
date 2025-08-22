@@ -146,15 +146,17 @@ export function ProductList() {
         }}
       />
 
-      <EditProductModal
-        isOpen={!!editingProduct}
-        onClose={() => setEditingProduct(null)}
-        product={editingProduct}
-        onSuccess={() => {
-          setEditingProduct(null);
-          utils.products.getAllProductsWithStats.invalidate();
-        }}
-      />
+      {editingProduct && (
+        <EditProductModal
+          isOpen={!!editingProduct}
+          onClose={() => setEditingProduct(null)}
+          product={editingProduct}
+          onSuccess={() => {
+            setEditingProduct(null);
+            utils.products.getAllProductsWithStats.invalidate();
+          }}
+        />
+      )}
     </div>
   );
 }

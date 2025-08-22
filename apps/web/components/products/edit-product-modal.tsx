@@ -50,7 +50,7 @@ export function EditProductModal({
 }: EditProductModalProps) {
   const [formData, setFormData] = useState<EditProductFormData>({
     name: "",
-    category: categories[0] || "Boissons",
+    category: categories[0],
     price: "",
     purchase_price: "",
     allergens: "",
