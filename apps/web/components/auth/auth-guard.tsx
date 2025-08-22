@@ -10,12 +10,19 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
 
   useEffect(() => {
-    // Don't redirect if still loading or if already on login page
-    if (isLoading || pathname === "/login") return;
+    // Don't redirect if still loading
+    if (isLoading) return;
 
-    // Redirect to login if not authenticated
-    if (!isAuthenticated) {
+    // If not authenticated and not on login page, redirect to login
+    if (!isAuthenticated && pathname !== "/login") {
       router.push("/login");
+      return;
+    }
+
+    // If authenticated and on login page, redirect to dashboard
+    if (isAuthenticated && pathname === "/login") {
+      router.push("/");
+      return;
     }
   }, [isAuthenticated, isLoading, router, pathname]);
 
@@ -28,7 +35,7 @@ export function AuthGuard({ children }: { children: React.ReactNode }) {
     );
   }
 
-  // Show login page if not authenticated
+  // If not authenticated and not on login page, show nothing (will redirect)
   if (!isAuthenticated && pathname !== "/login") {
     return null;
   }

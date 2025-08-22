@@ -49,11 +49,11 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { email, password },
       );
       setUser(data.user);
-      setToken(data.token);
-      
+      setToken(data.access_token);
+
       // Stockage sécurisé des données d'authentification
       await Promise.all([
-        secureStorage.setAuthToken(data.token),
+        secureStorage.setAuthToken(data.access_token),
         secureStorage.setAuthUser(data.user),
       ]);
     } catch (e: any) {
@@ -77,7 +77,7 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setUser(null);
     setToken(null);
-    
+
     // Suppression sécurisée des données d'authentification
     try {
       await secureStorage.clearAuthData();

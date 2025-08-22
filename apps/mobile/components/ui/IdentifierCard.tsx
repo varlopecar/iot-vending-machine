@@ -22,7 +22,7 @@ export default function IdentifierCard({
       onCopy();
     }
     // Ici on pourrait ajouter la logique pour copier dans le presse-papiers
-    
+
   };
 
   return (
@@ -33,19 +33,18 @@ export default function IdentifierCard({
           value={identifier}
           width={2}
           height={60}
-          format="CODE128"
           displayValue={false}
           lineColor="#000000"
           background="#FFFFFF"
         />
       </View>
-      
+
       {/* Identifiant numérique */}
       <View className="flex-row items-center justify-between">
         <Text className="text-black text-lg font-mono tracking-wider">
           {identifier}
         </Text>
-        
+
         {showCopyButton && (
           <TouchableOpacity
             onPress={handleCopy}

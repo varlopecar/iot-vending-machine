@@ -43,8 +43,8 @@ function SkeletonElement({ width, height, borderRadius = 4, className = '' }: Sk
   return (
     <Animated.View
       style={{
-        width,
-        height,
+        width: typeof width === 'string' ? parseInt(width, 10) : width,
+        height: typeof height === 'string' ? parseInt(height, 10) : height,
         borderRadius,
         opacity: shimmerOpacity,
         backgroundColor: isDark ? '#493837' : '#E5E5E5',
@@ -62,7 +62,7 @@ export function ProductCardSkeleton() {
         <View className="flex-row items-center flex-1">
           {/* Image placeholder */}
           <SkeletonElement width={60} height={60} borderRadius={8} className="mr-4" />
-          
+
           {/* Content */}
           <View className="flex-1">
             <SkeletonElement width="80%" height={20} className="mb-2" />
@@ -70,11 +70,11 @@ export function ProductCardSkeleton() {
             <SkeletonElement width="40%" height={16} />
           </View>
         </View>
-        
+
         {/* Button placeholder */}
         <SkeletonElement width={80} height={36} borderRadius={18} />
       </View>
-      
+
       {/* Bottom border */}
       <View className="w-full h-px bg-gray-200" />
     </View>
@@ -91,11 +91,11 @@ export function OrderCardSkeleton() {
           <SkeletonElement width="50%" height={16} className="mb-2" />
           <SkeletonElement width="40%" height={16} />
         </View>
-        
+
         {/* Status indicator */}
         <SkeletonElement width={60} height={24} borderRadius={12} />
       </View>
-      
+
       {/* Bottom border */}
       <View className="w-full h-px bg-gray-200" />
     </View>

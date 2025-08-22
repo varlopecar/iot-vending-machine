@@ -8,12 +8,14 @@ import {
   BadRequestException,
   InternalServerErrorException,
 } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse, ApiHeader } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { StripeWebhookService } from './stripe-webhook.service';
 import { getStripeWebhookSecret } from '../stripe/stripeClient';
 import { getStripeClient } from '../stripe/stripeClient';
 import type Stripe from 'stripe';
 
+@ApiTags('webhooks')
 @Controller('webhooks')
 export class StripeWebhookController {
   private readonly logger = new Logger(StripeWebhookController.name);
@@ -29,6 +31,32 @@ export class StripeWebhookController {
    * @returns Réponse HTTP appropriée
    */
   @Post('stripe')
+  @ApiOperation({
+    summary: 'Stripe webhook',
+    description: 'Handle Stripe webhook events for payment processing',
+  })
+  @ApiHeader({
+    name: 'stripe-signature',
+    description: 'Stripe webhook signature for verification',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Webhook processed successfully',
+    schema: {
+      type: 'object',
+      properties: {
+        received: { type: 'boolean', example: true },
+        eventId: { type: 'string', example: 'evt_1234567890abcdef' },
+        eventType: { type: 'string', example: 'payment_intent.succeeded' },
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid webhook signature or data',
+  })
+  @ApiResponse({ status: 500, description: 'Internal server error' })
   async handleStripeWebhook(
     @Req() req: Request,
     @Res() res: Response,

@@ -13,6 +13,7 @@ import { PaymentQRView } from './PaymentQRView';
 import {
   CheckoutState,
   PaymentSheetConfig,
+  CheckoutCreateIntentResponse,
 } from '../types/stripe';
 
 interface CheckoutScreenProps {
@@ -20,8 +21,6 @@ interface CheckoutScreenProps {
   onSuccess?: () => void;
   onError?: (error: string) => void;
 }
-
-
 
 export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
   orderId,
@@ -46,7 +45,8 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
       // Implémentation à venir
       throw new Error('API de checkout non implémentée');
 
-      // 2. Configurer PaymentSheet
+      // 2. Configurer PaymentSheet (commented out until API is implemented)
+      /*
       const config: PaymentSheetConfig = {
         merchantDisplayName: 'Vending Machine',
         paymentIntentClientSecret: paymentData.paymentIntentClientSecret,
@@ -67,6 +67,7 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
         status: 'ready',
         paymentData,
       }));
+      */
 
     } catch (error) {
       const errorMessage = error instanceof Error ? error.message : 'Erreur inconnue';
@@ -118,6 +119,7 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
         // Implémentation à venir
         throw new Error('API de statut non implémentée');
 
+        /*
         if (status.orderStatus === 'PAID' && status.qrCodeToken) {
           // Paiement confirmé, arrêter le polling
           clearInterval(interval);
@@ -132,27 +134,26 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
         }
 
         setState(prev => ({ ...prev, orderStatus: status }));
+        */
 
       } catch (error) {
-
+        // Handle error silently for now
       }
     }, 2000); // Polling toutes les 2 secondes
 
-    setPollingInterval(interval);
+    setPollingInterval(interval as unknown as NodeJS.Timeout);
 
     // Timeout après 60 secondes
     setTimeout(() => {
-      if (interval) {
-        clearInterval(interval);
-        setState(prev => ({
-          ...prev,
-          isPolling: false,
-          status: 'error',
-          error: 'Délai d\'attente dépassé. Vérifiez le statut manuellement.',
-        }));
-      }
+      clearInterval(interval);
+      setState(prev => ({
+        ...prev,
+        status: 'error',
+        error: 'Timeout: Le paiement n\'a pas été confirmé dans les 60 secondes',
+        isPolling: false,
+      }));
     }, 60000);
-  }, [orderId, onSuccess]);
+  }, [onSuccess]);
 
   // Nettoyer le polling
   useEffect(() => {
@@ -253,8 +254,8 @@ export const CheckoutScreen: React.FC<CheckoutScreenProps> = ({
           onPress={handlePayment}
           disabled={state.status !== 'ready'}
           className={`px-6 py-4 rounded-xl ${state.status === 'ready'
-              ? 'bg-blue-500'
-              : 'bg-gray-300'
+            ? 'bg-blue-500'
+            : 'bg-gray-300'
             }`}
           activeOpacity={0.8}
         >

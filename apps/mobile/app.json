@@ -8,6 +8,7 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/images/icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vendingmachine.mobile",
@@ -15,9 +16,7 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLName": "stripe-redirect",
-            "CFBundleURLSchemes": [
-              "mobile"
-            ]
+            "CFBundleURLSchemes": ["mobile"]
           }
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -36,10 +35,7 @@
               "scheme": "mobile"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },

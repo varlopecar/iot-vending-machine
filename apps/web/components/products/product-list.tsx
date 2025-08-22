@@ -3,9 +3,7 @@
 import React, { useState } from "react";
 import { motion } from "framer-motion";
 import { Plus, RefreshCw } from "lucide-react";
-import {
-  Button,
-} from "@/components/ui";
+import { Button } from "@/components/ui";
 import { ProductCard } from "./product-card";
 import { ProductFilters } from "./product-filters";
 import { AddProductModal } from "./add-product-modal";
@@ -13,7 +11,18 @@ import { EditProductModal } from "./edit-product-modal";
 import { trpc } from "@/lib/trpc/client";
 
 // Fonction pour générer des catégories uniques à partir des produits
-const generateCategories = (products: Array<{ category?: string }>) => {
+type ProductItem = {
+  id: string;
+  name: string;
+  category: string;
+  price: number;
+  purchase_price: number;
+  soldCount: number;
+  image_url?: string;
+  description?: string;
+};
+
+const generateCategories = (products: ProductItem[]) => {
   const categories = new Set<string>();
   products?.forEach((product) => {
     if (product.category) {
@@ -26,21 +35,7 @@ const generateCategories = (products: Array<{ category?: string }>) => {
 export function ProductList() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<{
-    id: string;
-    name: string;
-    category: "Boissons" | "Snacks" | "Confiseries" | "Sandwichs" | "Autres";
-    price: number;
-    purchase_price: number;
-    allergens_list?: string[];
-    nutritional?: {
-      calories?: number;
-      protein?: number;
-      carbs?: number;
-      fat?: number;
-      serving?: string;
-    };
-  } | null>(null);
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
   const [searchTerm, setSearchTerm] = useState("");
 
   const { data: products, isLoading, refetch } = trpc.products.getAllProductsWithStats.useQuery();
@@ -52,12 +47,12 @@ export function ProductList() {
     },
   });
 
-  const categories = generateCategories(products || []);
+  const categories = generateCategories((products as ProductItem[] | undefined) || []);
 
-  const filteredProducts = products?.filter((product) => {
+  const filteredProducts = (products as ProductItem[] | undefined)?.filter((product) => {
     const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
     const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      product.description.toLowerCase().includes(searchTerm.toLowerCase());
+      (product.description || "").toLowerCase().includes(searchTerm.toLowerCase());
     return matchesCategory && matchesSearch;
   }) || [];
 
@@ -67,22 +62,8 @@ export function ProductList() {
     }
   };
 
-  const handleEdit = (product: {
-    id: string;
-    name: string;
-    category: string;
-    price: number;
-    purchase_price: number;
-    image_url?: string;
-    soldCount: number;
-  }) => {
-    setEditingProduct({
-      id: product.id,
-      name: product.name,
-      category: product.category as "Boissons" | "Snacks" | "Confiseries" | "Sandwichs" | "Autres",
-      price: product.price,
-      purchase_price: product.purchase_price,
-    });
+  const handleEdit = (product: ProductItem) => {
+    setEditingProduct(product);
   };
 
   const handleAddProduct = () => {

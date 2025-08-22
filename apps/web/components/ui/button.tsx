@@ -44,11 +44,11 @@ const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       const { children: _, ...restProps } = props;
 
-      return React.cloneElement(child, {
-        className: cn(baseClasses, (child.props as React.HTMLAttributes<HTMLElement>)?.className),
+      return React.cloneElement(child as React.ReactElement, {
+        className: cn(baseClasses, (child.props as Record<string, unknown>)?.className as string),
         ref,
         ...restProps,
-      } as React.HTMLAttributes<HTMLElement>);
+      } as unknown as React.Attributes);
     }
 
     return <button className={baseClasses} ref={ref} {...props} />;

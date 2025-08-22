@@ -1,6 +1,15 @@
 import { Controller, Get, HttpCode, HttpStatus } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiResponse } from '@nestjs/swagger';
 import { PaymentMetricsService } from './payment-metrics.service';
+import {
+  MetricsSummaryDto,
+  DetailedMetricsDto,
+  DailyMetricsDto,
+  MetricsHealthDto,
+  PrometheusMetricsDto,
+} from '../dto/metrics.dto';
 
+@ApiTags('metrics')
 @Controller('metrics/payments')
 export class PaymentMetricsController {
   constructor(private readonly metricsService: PaymentMetricsService) {}
@@ -11,6 +20,15 @@ export class PaymentMetricsController {
    */
   @Get()
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get payment metrics summary',
+    description: 'Get a summary of payment metrics',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Payment metrics summary retrieved successfully',
+    type: MetricsSummaryDto,
+  })
   getMetricsSummary() {
     return this.metricsService.getMetricsSummary();
   }
@@ -21,6 +39,15 @@ export class PaymentMetricsController {
    */
   @Get('detailed')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get detailed payment metrics',
+    description: 'Get detailed payment metrics information',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Detailed payment metrics retrieved successfully',
+    type: DetailedMetricsDto,
+  })
   getDetailedMetrics() {
     return this.metricsService.getMetrics();
   }
@@ -31,6 +58,15 @@ export class PaymentMetricsController {
    */
   @Get('daily')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get daily payment metrics',
+    description: 'Get payment metrics for the last 24 hours',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Daily payment metrics retrieved successfully',
+    type: DailyMetricsDto,
+  })
   getDailyMetrics() {
     return this.metricsService.getDailyMetrics();
   }
@@ -41,6 +77,15 @@ export class PaymentMetricsController {
    */
   @Get('prometheus')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get Prometheus metrics',
+    description: 'Get payment metrics in Prometheus format',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Prometheus metrics retrieved successfully',
+    type: PrometheusMetricsDto,
+  })
   getPrometheusMetrics() {
     const metrics = this.metricsService.getPrometheusMetrics();
     return {
@@ -55,6 +100,15 @@ export class PaymentMetricsController {
    */
   @Get('health')
   @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Get metrics health',
+    description: 'Get health status of payment metrics',
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Metrics health retrieved successfully',
+    type: MetricsHealthDto,
+  })
   getHealth() {
     const metrics = this.metricsService.getMetrics();
     const totalPayments =
