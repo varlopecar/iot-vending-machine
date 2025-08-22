@@ -12,7 +12,17 @@
     "test": "jest",
     "test:watch": "jest --watch",
     "test:coverage": "jest --coverage",
-    "test:stripe": "jest --testNamePattern=Stripe"
+    "test:stripe": "jest --testNamePattern=Stripe",
+    "build:android": "eas build --platform android",
+    "build:ios": "eas build --platform ios",
+    "build:all": "eas build --platform all",
+    "build:preview": "eas build --profile preview",
+    "build:production": "eas build --profile production",
+    "submit:android": "eas submit --platform android",
+    "submit:ios": "eas submit --platform ios",
+    "submit:all": "eas submit --platform all",
+    "deploy:preview": "eas build --profile preview --platform all && eas submit --profile preview --platform all",
+    "deploy:production": "eas build --profile production --platform all && eas submit --profile production --platform all"
   },
   "dependencies": {
     "@expo/vector-icons": "^14.1.0",
@@ -26,6 +36,7 @@
     "expo": "~53.0.20",
     "expo-blur": "~14.1.5",
     "expo-constants": "~17.1.7",
+    "expo-dev-client": "^5.2.4",
     "expo-font": "~13.3.2",
     "expo-haptics": "~14.1.4",
     "expo-image": "~2.4.0",

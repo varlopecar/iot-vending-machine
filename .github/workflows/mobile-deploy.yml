@@ -1,0 +1,271 @@
+name: Mobile App CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/mobile-deploy.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/mobile/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/mobile-deploy.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
+
+env:
+  EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+  EAS_PROJECT_ID: "167b24d6-c41d-47af-a449-b2f97c5e0ffd"
+
+jobs:
+  test:
+    name: Test Mobile App
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: |
+          cd apps/mobile
+          echo "🔍 Running TypeScript type checking..."
+          npx tsc --noEmit
+          echo "✅ Type checking passed"
+
+      - name: Lint code
+        run: |
+          cd apps/mobile
+          echo "🧹 Running ESLint..."
+          pnpm lint
+          echo "✅ Linting passed"
+
+      - name: Run tests
+        run: |
+          cd apps/mobile
+          echo "🧪 Running tests..."
+          pnpm test --passWithNoTests
+          echo "✅ Tests passed"
+
+      - name: Run Expo Doctor
+        run: |
+          cd apps/mobile
+          echo "🔍 Running Expo Doctor..."
+          npx expo doctor
+          echo "✅ Expo Doctor completed"
+
+      - name: Validate EAS configuration
+        run: |
+          cd apps/mobile
+          echo "🔧 Validating EAS configuration..."
+          npx eas-cli build:configure --non-interactive
+          echo "✅ EAS configuration validated"
+
+  build-preview:
+    name: Build Preview
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install EAS CLI
+        run: npm install -g @expo/eas-cli
+
+      - name: Login to EAS
+        run: |
+          echo ${{ secrets.EXPO_TOKEN }} | eas login --non-interactive
+
+      - name: Build Android Preview
+        run: |
+          cd apps/mobile
+          eas build --platform android --profile preview --non-interactive --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS Preview
+        run: |
+          cd apps/mobile
+          eas build --platform ios --profile preview --non-interactive --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Comment PR with build status
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 📱 Mobile App Preview Build Started!
+              
+              ### 🔧 Build Status:
+              - ✅ Tests passed
+              - ✅ Type checking passed
+              - ✅ Linting passed
+              - 🔄 Android preview build in progress
+              - 🔄 iOS preview build in progress
+              
+              ### 📋 What's included:
+              - React Native mobile app
+              - Expo Router navigation
+              - Stripe payment integration
+              - QR code generation and scanning
+              - Loyalty program features
+              - Product reservation system
+              
+              ### 📱 Platforms:
+              - **Android**: Internal distribution build
+              - **iOS**: Simulator build
+              
+              Check the EAS dashboard for build progress and download links.
+              
+              **EAS Project ID:** ${process.env.EAS_PROJECT_ID}`
+            })
+
+  build-production:
+    name: Build Production
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install EAS CLI
+        run: npm install -g @expo/eas-cli
+
+      - name: Login to EAS
+        run: |
+          echo ${{ secrets.EXPO_TOKEN }} | eas login --non-interactive
+
+      - name: Build Android Production
+        id: build-android
+        run: |
+          cd apps/mobile
+          eas build --platform android --profile production --non-interactive --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Build iOS Production
+        id: build-ios
+        run: |
+          cd apps/mobile
+          eas build --platform ios --profile production --non-interactive --no-wait
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+
+      - name: Create deployment summary
+        run: |
+          echo "## 📱 Production Mobile App Build Ready for Approval" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📱 Build Status:" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Android production build in progress" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 iOS production build in progress" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 What will be built:" >> $GITHUB_STEP_SUMMARY
+          echo "- React Native mobile app" >> $GITHUB_STEP_SUMMARY
+          echo "- Expo Router navigation" >> $GITHUB_STEP_SUMMARY
+          echo "- Stripe payment integration" >> $GITHUB_STEP_SUMMARY
+          echo "- QR code generation and scanning" >> $GITHUB_STEP_SUMMARY
+          echo "- Loyalty program features" >> $GITHUB_STEP_SUMMARY
+          echo "- Product reservation system" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🧪 Test Status:" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Type checking passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Linting passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Tests passed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Expo Doctor completed" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ EAS configuration validated" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 🚀 Build Status:" >> $GITHUB_STEP_SUMMARY
+          echo "- Production builds initiated for Android and iOS" >> $GITHUB_STEP_SUMMARY
+          echo "- **EAS Project ID:** ${{ env.EAS_PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
+
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [test, build-production]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Notify success
+        if: needs.test.result == 'success' && needs.build-production.result == 'success'
+        run: |
+          echo "✅ Mobile app build completed successfully!"
+          echo "📱 Production builds started for Android and iOS"
+          echo "📋 All tests passed including Expo Doctor"
+          echo "🔗 Check EAS dashboard for build progress"
+          echo "🔗 EAS Dashboard: https://expo.dev/accounts/[username]/projects/${{ env.EAS_PROJECT_ID }}/builds"
+      - name: Notify failure
+        if: needs.test.result == 'failure' || needs.build-production.result == 'failure'
+        run: |
+          echo "❌ Mobile app build failed!"
+          echo "Check the logs above for more details."
+          if [ "${{ needs.test.result }}" == "failure" ]; then
+            echo "❌ Test stage failed"
+          fi
+          if [ "${{ needs.build-production.result }}" == "failure" ]; then
+            echo "❌ Production build failed"
+          fi

@@ -231,8 +231,8 @@ export class OrderValidationController {
     summary: 'Get order status',
     description: 'Get the current status of an order',
   })
-  @ApiParam({ 
-    name: 'orderId', 
+  @ApiParam({
+    name: 'orderId',
     description: 'Order ID to check',
     example: 'order_123456789',
     type: 'string',
