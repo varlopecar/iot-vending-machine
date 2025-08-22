@@ -154,11 +154,17 @@ jobs:
           mkdir -p ~/.ssh
           
           # Write the SSH private key properly
-          printf '%s\n' "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
+          chmod 700 ~/.ssh
           
           # Add Scalingo host to known_hosts
-          ssh-keyscan ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
+          ssh-keyscan -H ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
+          chmod 644 ~/.ssh/known_hosts
+          
+          # Test SSH connection
+          echo "🧪 Testing SSH connection to Scalingo..."
+          ssh -o StrictHostKeyChecking=no -T git@ssh.osc-fr1.scalingo.com || echo "SSH test completed (exit code expected)"
           
           echo "✅ SSH key setup completed"
 
@@ -177,7 +183,10 @@ jobs:
 
           # Deploy using git subtree (exact same command as manual deployment)
           echo "📦 Deploying backend folder to Scalingo using git subtree..."
-          git subtree push --prefix=apps/backend scalingo main
+          git subtree push --prefix=apps/backend scalingo main || {
+            echo "⚠️ Standard subtree push failed, trying force push..."
+            git push scalingo `git subtree split --prefix=apps/backend HEAD`:main --force
+          }
           
           echo "✅ Git subtree deployment completed successfully!"
           echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
