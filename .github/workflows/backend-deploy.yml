@@ -94,8 +94,8 @@ jobs:
             echo "❌ SCALINGO_API_TOKEN secret is not set"
             exit 1
           fi
-          if [ -z "${{ vars.SCALINGO_APP_NAME }}" ]; then
-            echo "❌ SCALINGO_APP_NAME variable is not set"
+          if [ -z "${{ secrets.SCALINGO_APP_NAME }}" ]; then
+            echo "❌ SCALINGO_APP_NAME secret is not set"
             exit 1
           fi
           if [ -z "${{ vars.SCALINGO_REGION }}" ]; then
@@ -210,8 +210,8 @@ jobs:
             echo "❌ SCALINGO_API_TOKEN secret is not set"
             exit 1
           fi
-          if [ -z "${{ vars.SCALINGO_APP_NAME }}" ]; then
-            echo "❌ SCALINGO_APP_NAME variable is not set"
+          if [ -z "${{ secrets.SCALINGO_APP_NAME }}" ]; then
+            echo "❌ SCALINGO_APP_NAME secret is not set"
             exit 1
           fi
           if [ -z "${{ vars.SCALINGO_REGION }}" ]; then
@@ -244,7 +244,7 @@ jobs:
           fi
 
           # Set deployment URL (you'll need to adjust this based on your Scalingo app URL)
-          echo "deployment-url=https://${{ vars.SCALINGO_APP_NAME }}.${{ vars.SCALINGO_REGION }}.scalingo.io" >> $GITHUB_OUTPUT
+          echo "deployment-url=https://${{ secrets.SCALINGO_APP_NAME }}.${{ vars.SCALINGO_REGION }}.scalingo.io" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
@@ -284,7 +284,7 @@ jobs:
           echo "✅ Backend deployment completed successfully!"
           echo "🚀 Backend API is now live in production"
           echo "📋 All tests passed, build successful, and deployment completed"
-          echo "🔗 Backend URL: https://${{ vars.SCALINGO_APP_NAME }}.${{ vars.SCALINGO_REGION }}.scalingo.io"
+          echo "🔗 Backend URL: https://${{ secrets.SCALINGO_APP_NAME }}.${{ vars.SCALINGO_REGION }}.scalingo.io"
 
       - name: Notify failure
         if: needs.test.result == 'failure' || needs.build.result == 'failure' || needs.deploy-production.result == 'failure'
