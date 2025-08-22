@@ -215,12 +215,16 @@ jobs:
           echo "🔑 Setting up SSH key for Scalingo deployment..."
           mkdir -p ~/.ssh
 
-          # Write the SSH private key properly
-          printf '%s\n' "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          # Write the SSH private key properly with proper formatting
+          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
 
           # Add Scalingo host to known_hosts
-          ssh-keyscan ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
+          ssh-keyscan -H ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts 2>/dev/null || true
+
+          # Start SSH agent and add key
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
 
           echo "✅ SSH key setup completed"
 
@@ -238,6 +242,18 @@ jobs:
           echo ""
           echo "SSH agent status:"
           ssh-add -l || echo "No SSH agent running"
+
+      - name: Test SSH Connection
+        run: |
+          echo "🔍 Testing SSH connection to Scalingo..."
+          if ssh -o ConnectTimeout=10 -o BatchMode=yes git@ssh.osc-fr1.scalingo.com 2>&1 | grep -q "PTY allocation request failed"; then
+            echo "✅ SSH connection successful (PTY allocation failed is expected)"
+          else
+            echo "❌ SSH connection failed"
+            echo "Testing with verbose output:"
+            ssh -v -o ConnectTimeout=10 git@ssh.osc-fr1.scalingo.com || true
+            exit 1
+          fi
 
       - name: Setup Git for deployment
         run: |
@@ -261,33 +277,26 @@ jobs:
           else
             echo "⚠️ Git subtree deployment failed, trying alternative method..."
             
-            # Alternative: Use Scalingo CLI if available
-            if command -v scalingo &> /dev/null; then
-              echo "🔄 Attempting Scalingo CLI deployment via git..."
-              scalingo login --api-token "${{ secrets.SCALINGO_API_TOKEN }}"
-              
-              # Create a temporary directory and extract just the backend
-              mkdir -p /tmp/backend-deploy
-              cp -r apps/backend/* /tmp/backend-deploy/
-              cd /tmp/backend-deploy
-              
-              # Initialize git repo and add scalingo remote
-              git init
-              git add .
-              git commit -m "Deploy backend to Scalingo"
-              git branch -M main
-              git remote add scalingo git@ssh.osc-fr1.scalingo.com:iot-vending-machine.git
-              
-              # Push to Scalingo
-              git push scalingo main --force
-              echo "✅ Scalingo CLI deployment completed!"
-              echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
-              echo "deployment-method=scalingo-cli" >> $GITHUB_OUTPUT
-            else
-              echo "❌ Both deployment methods failed"
-              echo "Please check your SSH key configuration and Scalingo credentials"
-              exit 1
-            fi
+            # Alternative: Use Scalingo CLI deployment
+            echo "🔄 Attempting Scalingo CLI deployment..."
+            
+            # Login to Scalingo
+            scalingo login --api-token "${{ secrets.SCALINGO_API_TOKEN }}"
+            
+            # Create a temporary directory and extract just the backend
+            mkdir -p /tmp/backend-deploy
+            cp -r apps/backend/* /tmp/backend-deploy/
+            cd /tmp/backend-deploy
+            
+            # Create a tarball for deployment
+            tar -czf backend-deploy.tar.gz .
+            
+            # Deploy using Scalingo CLI
+            scalingo --app "${{ secrets.SCALINGO_APP_NAME }}" --region "${{ secrets.SCALINGO_REGION }}" deploy backend-deploy.tar.gz
+            
+            echo "✅ Scalingo CLI deployment completed!"
+            echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
+            echo "deployment-method=scalingo-cli" >> $GITHUB_OUTPUT
           fi
 
       - name: Create deployment summary

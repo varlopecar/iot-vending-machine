@@ -49,7 +49,7 @@ const mockStocks = [
         product_price: 2.5,
         product_image_url: "/assets/images/coca.png",
         machine_name: "Machine Campus A",
-        machine_location: "Bâtiment Sciences",
+        machine_location: "Bâtiment Sciences 3",
     },
     {
         id: "stock-003",
