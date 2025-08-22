@@ -25,6 +25,12 @@ module.exports = {
     assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...resolver.sourceExts, "svg"],
     nodeModulesPaths: [projectRoot, workspaceRoot],
+    // Add resolver for Stripe React Native web compatibility
+    alias: {
+      ...resolver.alias,
+      // Mock Stripe React Native modules for web builds
+      '@stripe/stripe-react-native': path.resolve(__dirname, './stripe-web-mock.js'),
+    },
   },
   watchFolders: [workspaceRoot],
 };

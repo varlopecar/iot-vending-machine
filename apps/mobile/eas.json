@@ -7,12 +7,14 @@
     "development": {
       "developmentClient": true,
       "distribution": "internal",
+      "platform": ["ios", "android"],
       "env": {
         "NODE_ENV": "development"
       }
     },
     "preview": {
       "distribution": "internal",
+      "platform": ["ios", "android"],
       "ios": {
         "simulator": true
       },
@@ -22,6 +24,7 @@
     },
     "production": {
       "autoIncrement": true,
+      "platform": ["ios", "android"],
       "env": {
         "NODE_ENV": "production"
       }
