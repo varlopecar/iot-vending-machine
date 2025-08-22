@@ -114,18 +114,15 @@ jobs:
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
 
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
         run: |
           url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
           echo "preview-url=$url" >> $GITHUB_OUTPUT
-        working-directory: apps/web
 
       - name: Comment PR
         uses: actions/github-script@v7
@@ -182,18 +179,15 @@ jobs:
 
       - name: Pull Vercel Environment Information
         run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
 
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
-        working-directory: apps/web
 
       - name: Deploy Project Artifacts to Vercel
         id: deploy
         run: |
           url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
           echo "production-url=$url" >> $GITHUB_OUTPUT
-        working-directory: apps/web
 
       - name: Create deployment summary
         run: |
