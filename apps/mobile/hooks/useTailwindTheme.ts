@@ -1,7 +1,6 @@
 import { useColorScheme } from 'react-native';
 import { useState, useEffect, useRef } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { EventEmitter } from 'events';
 
 export type Theme = 'light' | 'dark' | 'system';
 
@@ -53,10 +52,28 @@ export const darkTheme: ThemeColors = {
   info: '#3b82f6',
 };
 
+// Simple event emitter for React Native
+class ThemeEventEmitter {
+  private listeners: Array<(theme: Theme) => void> = [];
+
+  on(callback: (theme: Theme) => void) {
+    this.listeners.push(callback);
+  }
+
+  off(callback: (theme: Theme) => void) {
+    const index = this.listeners.indexOf(callback);
+    if (index > -1) {
+      this.listeners.splice(index, 1);
+    }
+  }
+
+  emit(theme: Theme) {
+    this.listeners.forEach(callback => callback(theme));
+  }
+}
+
 // Événement global pour synchroniser le thème
-const themeEmitter = new EventEmitter();
-themeEmitter.setMaxListeners(20); // Augmenter la limite de listeners
-const THEME_CHANGE_EVENT = 'themeChange';
+const themeEmitter = new ThemeEventEmitter();
 
 // État global du thème
 let globalTheme: Theme = 'system';
@@ -83,11 +100,11 @@ export function useTailwindTheme() {
     }
 
     // Écouter les changements de thème
-    themeEmitter.on(THEME_CHANGE_EVENT, listenerRef.current);
+    themeEmitter.on(listenerRef.current);
     
     return () => {
       if (listenerRef.current) {
-        themeEmitter.off(THEME_CHANGE_EVENT, listenerRef.current);
+        themeEmitter.off(listenerRef.current);
       }
     };
   }, []); // Supprimer systemColorScheme de la dépendance
@@ -132,7 +149,7 @@ export function useTailwindTheme() {
       globalIsDark = theme === 'light' ? false : theme === 'dark' ? true : systemColorScheme === 'dark';
       setCurrentTheme(theme);
       setIsDark(globalIsDark);
-      themeEmitter.emit(THEME_CHANGE_EVENT, theme);
+      themeEmitter.emit(theme);
     } catch (error) {
       // Gestion silencieuse de l'erreur
     }
