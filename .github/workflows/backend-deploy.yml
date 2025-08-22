@@ -177,8 +177,9 @@ jobs:
           echo "📋 App Name: ${{ secrets.SCALINGO_APP_NAME }}"
           echo "📋 Region: ${{ secrets.SCALINGO_REGION }}"
 
-          # Login to Scalingo
-          echo "${{ secrets.SCALINGO_API_TOKEN }}" | scalingo login --api-token -
+          # Login to Scalingo using environment variable
+          export SCALINGO_API_TOKEN="${{ secrets.SCALINGO_API_TOKEN }}"
+          scalingo login --api-token "$SCALINGO_API_TOKEN"
 
           # Deploy the backend app
           scalingo --app "${{ secrets.SCALINGO_APP_NAME }}" --region "${{ secrets.SCALINGO_REGION }}" deploy
