@@ -337,7 +337,6 @@ jobs:
         if: needs.test.result == 'success' && needs.build.result == 'success' && needs.deploy-production.result == 'success'
         run: |
           echo "✅ Backend deployment completed successfully!"
-          echo "🚀 Backend API is now live in production"
           echo "📋 All tests passed, build successful, and deployment completed"
           echo "🔗 Backend URL: https://iot-vending-machine.osc-fr1.scalingo.io"
 
