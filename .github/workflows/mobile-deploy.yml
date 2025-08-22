@@ -73,7 +73,7 @@ jobs:
         run: |
           cd apps/mobile
           echo "🔍 Running Expo Doctor..."
-          npx expo doctor
+          npx expo-doctor
           echo "✅ Expo Doctor completed"
 
       - name: Validate EAS configuration
