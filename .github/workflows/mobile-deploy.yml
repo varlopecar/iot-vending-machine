@@ -118,7 +118,12 @@ jobs:
 
       - name: Login to EAS
         run: |
-          eas login
+          echo "🔐 Authenticating with EAS using token..."
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "❌ EXPO_TOKEN secret is not configured"
+            exit 1
+          fi
+          echo "✅ EAS authentication configured via EXPO_TOKEN"
 
       - name: Build Android Preview
         run: |
@@ -198,7 +203,12 @@ jobs:
 
       - name: Login to EAS
         run: |
-          eas login
+          echo "🔐 Authenticating with EAS using token..."
+          if [ -z "${{ secrets.EXPO_TOKEN }}" ]; then
+            echo "❌ EXPO_TOKEN secret is not configured"
+            exit 1
+          fi
+          echo "✅ EAS authentication configured via EXPO_TOKEN"
 
       - name: Build Android Production
         id: build-android
