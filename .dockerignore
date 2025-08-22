@@ -73,19 +73,19 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# Mobile app specific
-apps/mobile/android
-apps/mobile/ios
-apps/mobile/.expo
-apps/mobile/dist
+# Mobile app specific (exclude entire mobile app)
+apps/mobile/
 
-# Web app specific
-apps/web/.next
-apps/web/out
+# Web app specific (exclude entire web app)
+apps/web/
 
 # Backend specific
 apps/backend/dist
 apps/backend/node_modules
+
+# Packages (exclude all packages except trpc)
+packages/eslint-config/
+packages/typescript-config/
 
 # Temporary files
 tmp
