@@ -1,0 +1,1 @@
+web: pnpm build:prod && pnpm start:prod

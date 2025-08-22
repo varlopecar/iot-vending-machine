@@ -41,7 +41,8 @@
     "jobs:test:simple": "ts-node scripts/test-jobs-simple.ts",
     "jobs:test:minimal": "ts-node scripts/test-jobs-minimal.ts",
     "check:payments": "ts-node scripts/check-payments-setup.ts",
-    "setup:deployment": "./scripts/setup-deployment.sh"
+    "setup:deployment": "chmod +x ./scripts/setup-deployment.sh && ./scripts/setup-deployment.sh",
+    "build:prod": "pnpm build && pnpm prune --prod"
   },
   "dependencies": {
     "@nestjs/common": "^11.0.1",
