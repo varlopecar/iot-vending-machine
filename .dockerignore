@@ -11,7 +11,8 @@ build
 .next
 out
 
-# Development files
+# Environment files
+.env
 .env.local
 .env.development.local
 .env.test.local
@@ -31,6 +32,19 @@ Thumbs.db
 .git
 .gitignore
 
+# Documentation
+README.md
+*.md
+docs
+
+# Test files
+coverage
+.nyc_output
+*.test.js
+*.spec.js
+__tests__
+test
+
 # Logs
 logs
 *.log
@@ -43,25 +57,12 @@ pids
 
 # Coverage directory used by tools like istanbul
 coverage
-*.lcov
-
-# nyc test coverage
-.nyc_output
 
 # Dependency directories
 jspm_packages/
 
 # Optional npm cache directory
 .npm
-
-# Optional eslint cache
-.eslintcache
-
-# Microbundle cache
-.rpt2_cache/
-.rts2_cache_cjs/
-.rts2_cache_es/
-.rts2_cache_umd/
 
 # Optional REPL history
 .node_repl_history
@@ -72,70 +73,27 @@ jspm_packages/
 # Yarn Integrity file
 .yarn-integrity
 
-# parcel-bundler cache (https://parceljs.org/)
+# Mobile app specific
+apps/mobile/android
+apps/mobile/ios
+apps/mobile/.expo
+apps/mobile/dist
+
+# Web app specific
+apps/web/.next
+apps/web/out
+
+# Backend specific
+apps/backend/dist
+apps/backend/node_modules
+
+# Temporary files
+tmp
+temp
+
+# Cache directories
 .cache
 .parcel-cache
 
-# Next.js build output
-.next
-
-# Nuxt.js build / generate output
-.nuxt
-
-# Gatsby files
-.cache/
-public
-
-# Storybook build outputs
-.out
-.storybook-out
-
-# Temporary folders
-tmp/
-temp/
-
-# Mobile app files (not needed for backend)
-apps/mobile/
-.expo/
-
-# Web app files (not needed for backend)
-apps/web/
-
-# Packages that are not needed for backend
-packages/eslint-config/
-packages/typescript-config/
-
-# Test files
-**/*.spec.ts
-**/*.test.ts
-**/*.spec.js
-**/*.test.js
-test/
-__tests__/
-
-# Documentation
-*.md
-docs/
-
-# CI/CD files
-.github/
-.gitlab-ci.yml
-.travis.yml
-
-# Docker files
-Dockerfile*
-docker-compose*
-
-# Backup files
-*.bak
-*.backup
-
-# Lock files (keep only pnpm-lock.yaml)
-package-lock.json
-yarn.lock
-
-# TypeScript cache
-*.tsbuildinfo
-
 # Turbo cache
-.turbo/
+.turbo
