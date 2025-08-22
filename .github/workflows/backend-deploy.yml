@@ -94,7 +94,7 @@ jobs:
           pnpm build
           echo "✅ Build process completed"
           echo "📁 Checking output directory..."
-          ls -la dist/ || echo "⚠️ dist directory not found after build"
+          ls -la dist/ || echo "⚠️ the dist directory is not found after build"
 
       - name: Create deployment summary
         run: |
