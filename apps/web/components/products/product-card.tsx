@@ -3,13 +3,7 @@
 import React from "react";
 import { motion } from "framer-motion";
 import { Edit, Trash2 } from "lucide-react";
-import {
-  Card,
-  CardContent,
-  CardHeader,
-  Button,
-  Badge,
-} from "@/components/ui";
+import { Card, CardContent, CardHeader, Button, Badge } from "@/components/ui";
 import { formatCurrency } from "@/lib/utils/format";
 import Image from "next/image";
 
@@ -17,29 +11,29 @@ import Image from "next/image";
 const getProductImage = (productName: string, category: string): string => {
   const name = productName.toLowerCase();
 
-  if (name.includes('chips') || name.includes('energy')) {
-    return '/assets/images/chips.png';
+  if (name.includes("chips") || name.includes("energy")) {
+    return "/assets/images/chips.png";
   }
-  if (name.includes('coca') || name.includes('cola')) {
-    return '/assets/images/coca.png';
+  if (name.includes("coca") || name.includes("cola")) {
+    return "/assets/images/coca.png";
   }
-  if (name.includes('kinder') || name.includes('bueno')) {
-    return '/assets/images/kinder.png';
+  if (name.includes("kinder") || name.includes("bueno")) {
+    return "/assets/images/kinder.png";
   }
-  if (name.includes('water') || name.includes('eau')) {
-    return '/assets/images/eau.png';
+  if (name.includes("water") || name.includes("eau")) {
+    return "/assets/images/eau.png";
   }
 
   // Fallback based on category
   switch (category.toLowerCase()) {
-    case 'snacks':
-      return '/assets/images/chips.png';
-    case 'boissons':
-      return '/assets/images/coca.png';
-    case 'confiseries':
-      return '/assets/images/kinder.png';
+    case "snacks":
+      return "/assets/images/chips.png";
+    case "boissons":
+      return "/assets/images/coca.png";
+    case "confiseries":
+      return "/assets/images/kinder.png";
     default:
-      return '/assets/images/coca.png';
+      return "/assets/images/coca.png";
   }
 };
 
@@ -108,29 +102,35 @@ export function ProductCard({
         <CardContent className="p-4">
           <div className="space-y-3">
             <div>
-              <h3 className="font-semibold text-lg text-gray-900 truncate">
+              <h3 className="font-semibold text-lg text-light-text dark:text-dark-text truncate">
                 {product.name}
               </h3>
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
                 Vendu: {product.soldCount} fois
               </p>
             </div>
 
             <div className="space-y-2">
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Prix de vente:</span>
+                <span className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
+                  Prix de vente:
+                </span>
                 <span className="font-semibold text-green-600">
                   {formatCurrency(product.price)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Prix d&apos;achat:</span>
-                <span className="text-gray-700">
+                <span className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
+                  Prix d&apos;achat:
+                </span>
+                <span className="text-light-text dark:text-dark-text">
                   {formatCurrency(product.purchase_price)}
                 </span>
               </div>
               <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">Marge:</span>
+                <span className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
+                  Marge:
+                </span>
                 <span className="font-medium text-blue-600">
                   {formatCurrency(margin)} ({marginPercentage}%)
                 </span>
