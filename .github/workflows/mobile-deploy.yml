@@ -173,8 +173,8 @@ jobs:
               **EAS Project ID:** ${process.env.EAS_PROJECT_ID}`
             })
 
-  build-production:
-    name: Build Production
+  build-preview-main:
+    name: Build Preview (Main Branch)
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
@@ -210,42 +210,29 @@ jobs:
           fi
           echo "✅ EAS authentication configured via EXPO_TOKEN"
 
-      - name: Build Android Production
+      - name: Build Android Preview
         id: build-android
         run: |
           cd apps/mobile
-          echo "🤖 Starting Android production build..."
-          eas build --platform android --profile production --non-interactive --no-wait
-          echo "✅ Android build initiated successfully!"
+          echo "🤖 Starting Android preview build..."
+          eas build --platform android --profile preview --non-interactive --no-wait
+          echo "✅ Android preview build initiated successfully!"
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
-      - name: Build iOS Production (Optional - requires Apple Developer credentials)
+      - name: Build iOS Preview
         id: build-ios
-        continue-on-error: true
         run: |
           cd apps/mobile
-          echo "🍎 Starting iOS production build..."
-          echo "⚠️ Note: iOS builds require Apple Developer credentials"
-          
-          if eas build --platform ios --profile production --non-interactive --no-wait; then
-            echo "✅ iOS build initiated successfully!"
-            echo "ios-build-status=success" >> $GITHUB_OUTPUT
-          else
-            echo "🔴 iOS build failed - likely due to missing Apple Developer credentials"
-            echo "ios-build-status=skipped" >> $GITHUB_OUTPUT
-            echo "📝 To enable iOS builds:"
-            echo "  1. Sign up for Apple Developer Program (\$99/year)"
-            echo "  2. Run 'eas credentials' to set up iOS certificates"
-            echo "  3. Configure provisioning profiles"
-            echo "✅ Android build will continue normally"
-          fi
+          echo "🍎 Starting iOS preview build..."
+          eas build --platform ios --profile preview --non-interactive --no-wait
+          echo "✅ iOS preview build initiated successfully!"
         env:
           EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
 
       - name: Create deployment summary
         run: |
-          echo "## 📱 Production Mobile App Build Ready for Approval" >> $GITHUB_STEP_SUMMARY
+          echo "## 📱 Preview Mobile App Build Ready for Testing" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
@@ -253,8 +240,8 @@ jobs:
           echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📱 Build Status:" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔄 Android production build in progress" >> $GITHUB_STEP_SUMMARY
-          echo "- 🔄 iOS production build in progress" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 Android preview build in progress" >> $GITHUB_STEP_SUMMARY
+          echo "- 🔄 iOS preview build in progress" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 📋 What will be built:" >> $GITHUB_STEP_SUMMARY
           echo "- React Native mobile app" >> $GITHUB_STEP_SUMMARY
@@ -272,32 +259,32 @@ jobs:
           echo "- ✅ EAS configuration validated" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "### 🚀 Build Status:" >> $GITHUB_STEP_SUMMARY
-          echo "- Production builds initiated for Android and iOS" >> $GITHUB_STEP_SUMMARY
+          echo "- Preview builds initiated for Android and iOS" >> $GITHUB_STEP_SUMMARY
           echo "- **EAS Project ID:** ${{ env.EAS_PROJECT_ID }}" >> $GITHUB_STEP_SUMMARY
 
   notify:
     name: Notify Deployment Status
     runs-on: ubuntu-latest
-    needs: [test, build-production]
+    needs: [test, build-preview-main]
     if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push'
 
     steps:
       - name: Notify success
-        if: needs.test.result == 'success' && needs.build-production.result == 'success'
+        if: needs.test.result == 'success' && needs.build-preview-main.result == 'success'
         run: |
           echo "✅ Mobile app build completed successfully!"
-          echo "📱 Production builds started for Android and iOS"
+          echo "📱 Preview builds started for Android and iOS"
           echo "📋 All tests passed including Expo Doctor"
           echo "🔗 Check EAS dashboard for build progress"
           echo "🔗 EAS Dashboard: https://expo.dev/accounts/[username]/projects/${{ env.EAS_PROJECT_ID }}/builds"
       - name: Notify failure
-        if: needs.test.result == 'failure' || needs.build-production.result == 'failure'
+        if: needs.test.result == 'failure' || needs.build-preview-main.result == 'failure'
         run: |
           echo "❌ Mobile app build failed!"
           echo "Check the logs above for more details."
           if [ "${{ needs.test.result }}" == "failure" ]; then
             echo "❌ Test stage failed"
           fi
-          if [ "${{ needs.build-production.result }}" == "failure" ]; then
-            echo "❌ Production build failed"
+          if [ "${{ needs.build-preview-main.result }}" == "failure" ]; then
+            echo "❌ Preview build failed"
           fi
