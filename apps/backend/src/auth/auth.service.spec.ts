@@ -1,11 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { ConflictException, UnauthorizedException, NotFoundException } from '@nestjs/common';
+import {
+  ConflictException,
+  UnauthorizedException,
+  NotFoundException,
+} from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
-import { CreateUserInput, LoginInput, AdminLoginInput, UpdateUserInput } from './auth.schema';
+import { CreateUserInput, LoginInput, AdminLoginInput } from './auth.schema';
 
 // Mock bcrypt
 jest.mock('bcrypt');
@@ -28,6 +32,7 @@ describe('AuthService', () => {
   const mockJwtService = {
     signAsync: jest.fn(),
     verify: jest.fn(),
+    sign: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -65,7 +70,7 @@ describe('AuthService', () => {
       email: 'john@example.com',
       password: 'hashedPassword',
       points: 0,
-      barcode: 'BC001',
+      barcode: '351866588799',
       role: 'CUSTOMER',
       created_at: new Date().toISOString(),
     };
@@ -74,6 +79,7 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       mockBcrypt.hash.mockResolvedValue('hashedPassword' as never);
       mockPrismaService.user.create.mockResolvedValue(mockUser);
+      mockJwtService.signAsync.mockResolvedValue('mock-jwt-token');
 
       const result = await service.register(registerDto);
 
@@ -88,15 +94,29 @@ describe('AuthService', () => {
           password: 'hashedPassword',
           points: 0,
           barcode: expect.any(String),
+          role: 'CUSTOMER',
         },
       });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        access_token: 'mock-jwt-token',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: {
+          id: mockUser.id,
+          email: mockUser.email,
+          full_name: mockUser.full_name,
+          barcode: mockUser.barcode,
+          role: mockUser.role,
+        },
+      });
     });
 
     it('should throw ConflictException if user already exists', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
 
-      await expect(service.register(registerDto)).rejects.toThrow(ConflictException);
+      await expect(service.register(registerDto)).rejects.toThrow(
+        ConflictException,
+      );
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: registerDto.email },
       });
@@ -130,20 +150,33 @@ describe('AuthService', () => {
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: loginDto.email },
       });
-      expect(mockBcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
+      expect(mockBcrypt.compare).toHaveBeenCalledWith(
+        loginDto.password,
+        mockUser.password,
+      );
       expect(mockJwtService.signAsync).toHaveBeenCalledWith({
         sub: mockUser.id,
       });
       expect(result).toEqual({
-        user: mockUser,
-        token: 'mock-jwt-token',
+        access_token: 'mock-jwt-token',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: {
+          id: mockUser.id,
+          email: mockUser.email,
+          full_name: mockUser.full_name,
+          barcode: mockUser.barcode,
+          role: mockUser.role,
+        },
       });
     });
 
     it('should throw UnauthorizedException for invalid email', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { email: loginDto.email },
       });
@@ -153,8 +186,13 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(mockUser);
       mockBcrypt.compare.mockResolvedValue(false as never);
 
-      await expect(service.login(loginDto)).rejects.toThrow(UnauthorizedException);
-      expect(mockBcrypt.compare).toHaveBeenCalledWith(loginDto.password, mockUser.password);
+      await expect(service.login(loginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
+      expect(mockBcrypt.compare).toHaveBeenCalledWith(
+        loginDto.password,
+        mockUser.password,
+      );
     });
   });
 
@@ -186,8 +224,16 @@ describe('AuthService', () => {
         sub: mockAdminUser.id,
       });
       expect(result).toEqual({
-        user: mockAdminUser,
-        token: 'mock-admin-jwt-token',
+        access_token: 'mock-admin-jwt-token',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: {
+          id: mockAdminUser.id,
+          email: mockAdminUser.email,
+          full_name: mockAdminUser.full_name,
+          barcode: mockAdminUser.barcode,
+          role: mockAdminUser.role,
+        },
       });
     });
 
@@ -196,7 +242,9 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(customerUser);
       mockBcrypt.compare.mockResolvedValue(true as never);
 
-      await expect(service.adminLogin(adminLoginDto)).rejects.toThrow(UnauthorizedException);
+      await expect(service.adminLogin(adminLoginDto)).rejects.toThrow(
+        UnauthorizedException,
+      );
     });
   });
 
@@ -227,7 +275,9 @@ describe('AuthService', () => {
     it('should throw NotFoundException if user not found', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.getUserById(userId)).rejects.toThrow(NotFoundException);
+      await expect(service.getUserById(userId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
         where: { id: userId },
       });
@@ -261,42 +311,9 @@ describe('AuthService', () => {
     it('should throw NotFoundException if user not found', async () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
 
-      await expect(service.getUserByBarcode(barcode)).rejects.toThrow(NotFoundException);
-    });
-  });
-
-  describe('updateUser', () => {
-    const userId = 'user-1';
-    const updateDto: UpdateUserInput = {
-      full_name: 'John Updated',
-      email: 'john.updated@example.com',
-    };
-
-    const mockUpdatedUser = {
-      id: 'user-1',
-      full_name: 'John Updated',
-      email: 'john.updated@example.com',
-      password: 'hashedPassword',
-      points: 150,
-      barcode: 'BC001',
-      role: 'CUSTOMER',
-      created_at: new Date().toISOString(),
-    };
-
-    it('should update user successfully', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(mockUpdatedUser);
-      mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
-
-      const result = await service.updateUser(userId, updateDto);
-
-      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { id: userId },
-      });
-      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
-        where: { id: userId },
-        data: updateDto,
-      });
-      expect(result).toEqual(mockUpdatedUser);
+      await expect(service.getUserByBarcode(barcode)).rejects.toThrow(
+        NotFoundException,
+      );
     });
   });
 
@@ -355,6 +372,26 @@ describe('AuthService', () => {
         sub: userId,
       });
       expect(token).toBe('mock.jwt.token');
+    });
+  });
+
+  describe('generateMachineToken', () => {
+    const userId = 'user-1';
+    const machineId = 'machine-1';
+
+    it('should generate machine-specific JWT token', () => {
+      mockJwtService.sign.mockReturnValue('mock.machine.token');
+
+      const token = service.generateMachineToken(userId, machineId);
+
+      expect(mockJwtService.sign).toHaveBeenCalledWith({
+        sub: userId,
+        machineId: machineId,
+        type: 'machine',
+        iat: expect.any(Number),
+        exp: expect.any(Number),
+      });
+      expect(token).toBe('mock.machine.token');
     });
   });
 });

@@ -4,16 +4,10 @@ import {
   UnauthorizedException,
   ConflictException,
 } from '@nestjs/common';
-import {
-  CreateUserInput,
-  LoginInput,
-  AdminLoginInput,
-  UpdateUserInput,
-  User,
-} from './auth.schema';
 import { PrismaService } from '../prisma/prisma.service';
-import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
+import * as bcrypt from 'bcrypt';
+import { LoginDto, RegisterDto, AuthResponseDto } from '../dto/auth.dto';
 
 @Injectable()
 export class AuthService {
@@ -22,11 +16,11 @@ export class AuthService {
     private jwt: JwtService,
   ) {}
 
-  async register(userData: CreateUserInput): Promise<User> {
+  async register(userData: RegisterDto): Promise<AuthResponseDto> {
     // Check if user already exists
-    const existingUser = (await this.prisma.user.findUnique({
+    const existingUser = await this.prisma.user.findUnique({
       where: { email: userData.email },
-    })) as User;
+    });
 
     if (existingUser) {
       throw new ConflictException('User with this email already exists');
@@ -35,23 +29,37 @@ export class AuthService {
     // Hash password
     const hashedPassword = await bcrypt.hash(userData.password, 10);
 
-    // Generate unique barcode
-    const barcode = this.generateBarcode();
+    // Generate unique barcode if not provided
+    const barcode = userData.barcode || this.generateBarcode();
 
-    const user = (await this.prisma.user.create({
+    const user = await this.prisma.user.create({
       data: {
         full_name: userData.full_name,
         email: userData.email,
         password: hashedPassword,
         points: 0,
         barcode,
+        role: 'CUSTOMER',
       },
-    })) as User;
+    });
 
-    return user;
+    const token = await this.generateJwt(user.id);
+
+    return {
+      access_token: token,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        barcode: user.barcode,
+        role: user.role,
+      },
+    };
   }
 
-  async login(loginData: LoginInput): Promise<{ user: User; token: string }> {
+  async login(loginData: LoginDto): Promise<AuthResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { email: loginData.email },
     });
@@ -71,10 +79,21 @@ export class AuthService {
 
     const token = await this.generateJwt(user.id);
 
-    return { user, token };
+    return {
+      access_token: token,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        barcode: user.barcode,
+        role: user.role,
+      },
+    };
   }
 
-  async adminLogin(loginData: AdminLoginInput): Promise<{ user: User; token: string }> {
+  async adminLogin(loginData: LoginDto): Promise<AuthResponseDto> {
     const user = await this.prisma.user.findUnique({
       where: { email: loginData.email },
     });
@@ -85,7 +104,9 @@ export class AuthService {
 
     // Verify user is admin or operator
     if (user.role !== 'ADMIN' && user.role !== 'OPERATOR') {
-      throw new UnauthorizedException('Access denied: Admin privileges required');
+      throw new UnauthorizedException(
+        'Access denied: Admin privileges required',
+      );
     }
 
     // Verify password
@@ -99,10 +120,21 @@ export class AuthService {
 
     const token = await this.generateJwt(user.id);
 
-    return { user, token };
+    return {
+      access_token: token,
+      token_type: 'Bearer',
+      expires_in: 3600,
+      user: {
+        id: user.id,
+        email: user.email,
+        full_name: user.full_name,
+        barcode: user.barcode,
+        role: user.role,
+      },
+    };
   }
 
-  async getUserById(id: string): Promise<User> {
+  async getUserById(id: string) {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -113,7 +145,7 @@ export class AuthService {
     return user;
   }
 
-  async getUserByBarcode(barcode: string): Promise<User> {
+  async getUserByBarcode(barcode: string) {
     const user = await this.prisma.user.findUnique({
       where: { barcode },
     });
@@ -124,24 +156,7 @@ export class AuthService {
     return user;
   }
 
-  async updateUser(id: string, updateData: UpdateUserInput): Promise<User> {
-    const user = await this.prisma.user.findUnique({
-      where: { id },
-    });
-
-    if (!user) {
-      throw new NotFoundException('User not found');
-    }
-
-    const updatedUser = await this.prisma.user.update({
-      where: { id },
-      data: updateData,
-    });
-
-    return updatedUser;
-  }
-
-  async updatePoints(id: string, points: number): Promise<User> {
+  async updatePoints(id: string, points: number) {
     const user = await this.prisma.user.findUnique({
       where: { id },
     });
@@ -165,5 +180,18 @@ export class AuthService {
 
   private async generateJwt(userId: string): Promise<string> {
     return await this.jwt.signAsync({ sub: userId });
+  }
+
+  generateMachineToken(userId: string, machineId: string): string {
+    // Generate a machine-specific token with additional claims
+    const payload = {
+      sub: userId,
+      machineId: machineId,
+      type: 'machine',
+      iat: Math.floor(Date.now() / 1000),
+      exp: Math.floor(Date.now() / 1000) + 3600, // 1 hour
+    };
+
+    return this.jwt.sign(payload);
   }
 }

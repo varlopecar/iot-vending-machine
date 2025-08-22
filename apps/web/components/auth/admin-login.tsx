@@ -11,21 +11,24 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { api } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc/client";
 import { useAuth } from "@/contexts/auth-context";
+import { AdminUser } from "@/lib/secure-auth";
+import { Eye, EyeOff } from "lucide-react";
 
 export function AdminLogin() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
   const [error, setError] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const router = useRouter();
   const { login } = useAuth();
 
-  const adminLoginMutation = api.auth.adminLogin.useMutation({
+  const adminLoginMutation = trpc.auth.adminLogin.useMutation({
     onSuccess: (data) => {
       // Use the auth context login method
-      login(data.token, data.user);
+      login(data.access_token, data.user as AdminUser);
 
       // Redirect to dashboard
       router.push("/");
@@ -46,7 +49,7 @@ export function AdminLogin() {
         email,
         password,
       });
-    } catch (error) {
+    } catch {
       // Error is handled in onError callback
     }
   };
@@ -59,7 +62,7 @@ export function AdminLogin() {
             Back-office Admin
           </CardTitle>
           <CardDescription className="text-center">
-            Connectez-vous pour accéder au panneau d'administration
+            Connectez-vous pour accéder au panneau d&apos;administration
           </CardDescription>
         </CardHeader>
         <CardContent>
@@ -94,14 +97,28 @@ export function AdminLogin() {
               >
                 Mot de passe
               </label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={(e) => setPassword(e.target.value)}
-                required
-              />
+              <div className="relative">
+                <Input
+                  id="password"
+                  type={showPassword ? "text" : "password"}
+                  placeholder="••••••••"
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  required
+                  className="pr-10"
+                />
+                <button
+                  type="button"
+                  onClick={() => setShowPassword(!showPassword)}
+                  className="absolute inset-y-0 right-0 flex items-center pr-3 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  {showPassword ? (
+                    <EyeOff className="h-4 w-4" />
+                  ) : (
+                    <Eye className="h-4 w-4" />
+                  )}
+                </button>
+              </div>
             </div>
 
             <Button

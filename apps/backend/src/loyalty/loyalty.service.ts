@@ -94,13 +94,14 @@ export class LoyaltyService {
 
     const entries: HistoryEntry[] = [];
     for (const o of orders) {
-      const location = (o as any).machine?.label || (o as any).machine?.location || 'Unknown';
+      const location =
+        (o as any).machine?.label || (o as any).machine?.location || 'Unknown';
       if (((o as any).points_spent ?? 0) > 0) {
         entries.push({
           id: `order_${o.id}_spent`,
           date: new Date(o.created_at).toLocaleDateString('fr-FR'),
           location,
-          points: -(((o as any).points_spent ?? 0)),
+          points: -((o as any).points_spent ?? 0),
         });
       }
       if (((o as any).points_earned ?? 0) > 0) {
@@ -108,7 +109,7 @@ export class LoyaltyService {
           id: `order_${o.id}_earned`,
           date: new Date(o.created_at).toLocaleDateString('fr-FR'),
           location,
-          points: ((o as any).points_earned ?? 0),
+          points: (o as any).points_earned ?? 0,
         });
       }
     }

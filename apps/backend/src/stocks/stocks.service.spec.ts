@@ -5,7 +5,11 @@ import { TRPCError } from '@trpc/server';
 import { StocksService } from './stocks.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { AlertsService } from '../alerts/alerts.service';
-import { CreateStockInput, UpdateStockInput, AddSlotInput } from './stocks.schema';
+import {
+  CreateStockInput,
+  UpdateStockInput,
+  AddSlotInput,
+} from './stocks.schema';
 
 describe('StocksService', () => {
   let service: StocksService;
@@ -179,7 +183,9 @@ describe('StocksService', () => {
     it('should throw NotFoundException if stock not found', async () => {
       mockPrismaService.stock.findUnique.mockResolvedValue(null);
 
-      await expect(service.getStockById(stockId)).rejects.toThrow(NotFoundException);
+      await expect(service.getStockById(stockId)).rejects.toThrow(
+        NotFoundException,
+      );
       expect(mockPrismaService.stock.findUnique).toHaveBeenCalledWith({
         where: { id: stockId },
       });
@@ -230,7 +236,8 @@ describe('StocksService', () => {
         product_name: mockStocksWithProduct[0].product.name,
         product_price: mockStocksWithProduct[0].product.price,
         product_image_url: mockStocksWithProduct[0].product.image_url,
-        product_ingredients_list: mockStocksWithProduct[0].product.ingredients_list,
+        product_ingredients_list:
+          mockStocksWithProduct[0].product.ingredients_list,
         product_allergens_list: mockStocksWithProduct[0].product.allergens_list,
         product_nutritional: mockStocksWithProduct[0].product.nutritional,
       });
@@ -272,7 +279,7 @@ describe('StocksService', () => {
         data: updateDto,
       });
       expect(mockAlertsService.updateMachineAlerts).toHaveBeenCalledWith(
-        mockUpdatedStock.machine_id
+        mockUpdatedStock.machine_id,
       );
       expect(result).toEqual({
         id: mockUpdatedStock.id,
@@ -287,7 +294,9 @@ describe('StocksService', () => {
 
     it('should handle alerts service errors gracefully', async () => {
       mockPrismaService.stock.update.mockResolvedValue(mockUpdatedStock);
-      mockAlertsService.updateMachineAlerts.mockRejectedValue(new Error('Alert service error'));
+      mockAlertsService.updateMachineAlerts.mockRejectedValue(
+        new Error('Alert service error'),
+      );
 
       const result = await service.updateStock(stockId, updateDto);
 
@@ -340,13 +349,17 @@ describe('StocksService', () => {
     });
 
     it('should throw BadRequestException for negative quantity', async () => {
-      await expect(service.updateStockQuantity(stockId, -1)).rejects.toThrow(BadRequestException);
+      await expect(service.updateStockQuantity(stockId, -1)).rejects.toThrow(
+        BadRequestException,
+      );
     });
 
     it('should throw NotFoundException if stock not found', async () => {
       mockPrismaService.stock.findUnique.mockResolvedValue(null);
 
-      await expect(service.updateStockQuantity(stockId, quantity)).rejects.toThrow(NotFoundException);
+      await expect(
+        service.updateStockQuantity(stockId, quantity),
+      ).rejects.toThrow(NotFoundException);
     });
   });
 
@@ -365,8 +378,12 @@ describe('StocksService', () => {
     };
 
     it('should add stock quantity successfully', async () => {
-      mockPrismaService.stock.findUnique.mockResolvedValueOnce(mockCurrentStock); // For getStockById
-      mockPrismaService.stock.findUnique.mockResolvedValueOnce(mockCurrentStock); // For updateStockQuantity
+      mockPrismaService.stock.findUnique.mockResolvedValueOnce(
+        mockCurrentStock,
+      ); // For getStockById
+      mockPrismaService.stock.findUnique.mockResolvedValueOnce(
+        mockCurrentStock,
+      ); // For updateStockQuantity
       mockPrismaService.stock.update.mockResolvedValue({
         ...mockCurrentStock,
         quantity: 13,
@@ -394,8 +411,12 @@ describe('StocksService', () => {
     };
 
     it('should remove stock quantity successfully', async () => {
-      mockPrismaService.stock.findUnique.mockResolvedValueOnce(mockCurrentStock); // For getStockById
-      mockPrismaService.stock.findUnique.mockResolvedValueOnce(mockCurrentStock); // For updateStockQuantity
+      mockPrismaService.stock.findUnique.mockResolvedValueOnce(
+        mockCurrentStock,
+      ); // For getStockById
+      mockPrismaService.stock.findUnique.mockResolvedValueOnce(
+        mockCurrentStock,
+      ); // For updateStockQuantity
       mockPrismaService.stock.update.mockResolvedValue({
         ...mockCurrentStock,
         quantity: 5,
@@ -410,7 +431,9 @@ describe('StocksService', () => {
     it('should throw error for insufficient stock', async () => {
       mockPrismaService.stock.findUnique.mockResolvedValue(mockCurrentStock);
 
-      await expect(service.removeStockQuantity(stockId, 10)).rejects.toThrow('Insufficient stock');
+      await expect(service.removeStockQuantity(stockId, 10)).rejects.toThrow(
+        'Insufficient stock',
+      );
     });
   });
 
@@ -438,7 +461,9 @@ describe('StocksService', () => {
     ];
 
     it('should return low stock items', async () => {
-      mockPrismaService.stock.findMany.mockResolvedValue(mockLowStocksWithProduct);
+      mockPrismaService.stock.findMany.mockResolvedValue(
+        mockLowStocksWithProduct,
+      );
 
       const result = await service.getLowStockItems(threshold);
 
@@ -496,7 +521,9 @@ describe('StocksService', () => {
         { slot_number: 6 },
       ]);
 
-      await expect(service.getNextAvailableSlotNumber(machineId)).rejects.toThrow(BadRequestException);
+      await expect(
+        service.getNextAvailableSlotNumber(machineId),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -513,7 +540,7 @@ describe('StocksService', () => {
           low_threshold: 2,
           product: {
             name: 'Coca Cola',
-            price: 2.50,
+            price: 2.5,
             image_url: 'coca.jpg',
             ingredients_list: ['water', 'sugar'],
             allergens_list: ['none'],
@@ -531,7 +558,7 @@ describe('StocksService', () => {
         id: 'stock-1',
         machine_id: 'machine-1',
         product_name: 'Coca Cola',
-        product_price: 2.50,
+        product_price: 2.5,
         product_image_url: 'coca.jpg',
       });
       expect(mockPrismaService.stock.findMany).toHaveBeenCalledWith({
@@ -555,7 +582,10 @@ describe('StocksService', () => {
 
       mockPrismaService.stock.findFirst.mockResolvedValue(mockStock);
 
-      const result = await service.getStockByMachineAndProduct('machine-1', 'product-1');
+      const result = await service.getStockByMachineAndProduct(
+        'machine-1',
+        'product-1',
+      );
 
       expect(result).toMatchObject({
         id: 'stock-1',
@@ -567,7 +597,10 @@ describe('StocksService', () => {
     it('should return null if no stock found', async () => {
       mockPrismaService.stock.findFirst.mockResolvedValue(null);
 
-      const result = await service.getStockByMachineAndProduct('machine-1', 'product-1');
+      const result = await service.getStockByMachineAndProduct(
+        'machine-1',
+        'product-1',
+      );
 
       expect(result).toBeNull();
     });
@@ -586,7 +619,10 @@ describe('StocksService', () => {
 
     it('should update stock quantity successfully', async () => {
       mockPrismaService.stock.findUnique.mockResolvedValue(mockStock);
-      mockPrismaService.stock.update.mockResolvedValue({ ...mockStock, quantity: 8 });
+      mockPrismaService.stock.update.mockResolvedValue({
+        ...mockStock,
+        quantity: 8,
+      });
       mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.updateStockQuantity('stock-1', 8);
@@ -596,7 +632,9 @@ describe('StocksService', () => {
         where: { id: 'stock-1' },
         data: { quantity: 8 },
       });
-      expect(mockAlertsService.updateMachineAlerts).toHaveBeenCalledWith('machine-1');
+      expect(mockAlertsService.updateMachineAlerts).toHaveBeenCalledWith(
+        'machine-1',
+      );
     });
 
     it('should throw error for negative quantity', async () => {
@@ -623,8 +661,13 @@ describe('StocksService', () => {
 
     it('should handle alerts service error silently', async () => {
       mockPrismaService.stock.findUnique.mockResolvedValue(mockStock);
-      mockPrismaService.stock.update.mockResolvedValue({ ...mockStock, quantity: 8 });
-      mockAlertsService.updateMachineAlerts.mockRejectedValue(new Error('Alerts error'));
+      mockPrismaService.stock.update.mockResolvedValue({
+        ...mockStock,
+        quantity: 8,
+      });
+      mockAlertsService.updateMachineAlerts.mockRejectedValue(
+        new Error('Alerts error'),
+      );
 
       const result = await service.updateStockQuantity('stock-1', 8);
 
@@ -646,8 +689,11 @@ describe('StocksService', () => {
 
       mockPrismaService.stock.findUnique
         .mockResolvedValueOnce(mockStock) // for getStockById
-        .mockResolvedValueOnce(mockStock) // for updateStockQuantity
-      mockPrismaService.stock.update.mockResolvedValue({ ...mockStock, quantity: 8 });
+        .mockResolvedValueOnce(mockStock); // for updateStockQuantity
+      mockPrismaService.stock.update.mockResolvedValue({
+        ...mockStock,
+        quantity: 8,
+      });
       mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.addStockQuantity('stock-1', 3);
@@ -674,8 +720,11 @@ describe('StocksService', () => {
 
       mockPrismaService.stock.findUnique
         .mockResolvedValueOnce(mockStock) // for getStockById
-        .mockResolvedValueOnce(mockStock) // for updateStockQuantity
-      mockPrismaService.stock.update.mockResolvedValue({ ...mockStock, quantity: 2 });
+        .mockResolvedValueOnce(mockStock); // for updateStockQuantity
+      mockPrismaService.stock.update.mockResolvedValue({
+        ...mockStock,
+        quantity: 2,
+      });
       mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.removeStockQuantity('stock-1', 3);
@@ -715,7 +764,7 @@ describe('StocksService', () => {
           low_threshold: 2,
           product: {
             name: 'Low Stock Item',
-            price: 1.50,
+            price: 1.5,
             image_url: 'low.jpg',
             ingredients_list: [],
             allergens_list: [],
@@ -790,9 +839,9 @@ describe('StocksService', () => {
         { slot_number: 6 },
       ]);
 
-      await expect(service.getNextAvailableSlotNumber('machine-1')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.getNextAvailableSlotNumber('machine-1'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -874,7 +923,9 @@ describe('StocksService', () => {
       mockPrismaService.machine.findUnique.mockResolvedValue(mockMachine);
       mockPrismaService.product.findUnique.mockResolvedValue(mockProduct);
       mockPrismaService.stock.count.mockResolvedValue(2);
-      mockPrismaService.stock.findFirst.mockResolvedValue({ id: 'existing-slot' });
+      mockPrismaService.stock.findFirst.mockResolvedValue({
+        id: 'existing-slot',
+      });
 
       await expect(service.addSlot(mockSlotData)).rejects.toThrow(
         BadRequestException,
@@ -921,7 +972,9 @@ describe('StocksService', () => {
         max_capacity: 5,
         low_threshold: 1,
       });
-      mockAlertsService.updateMachineAlerts.mockRejectedValue(new Error('Alerts error'));
+      mockAlertsService.updateMachineAlerts.mockRejectedValue(
+        new Error('Alerts error'),
+      );
 
       const result = await service.addSlot(mockSlotData);
 
@@ -945,7 +998,7 @@ describe('StocksService', () => {
 
     it('should handle quantity update with transaction and restock logging', async () => {
       const updateData = { quantity: 8 };
-      
+
       mockPrismaService.stock.findUnique.mockResolvedValue(mockStock);
       mockPrismaService.user.findFirst.mockResolvedValue(mockUser);
       mockPrismaService.$transaction.mockImplementation(async (cb) => {
@@ -953,11 +1006,15 @@ describe('StocksService', () => {
           ...mockPrismaService,
           restock: { create: jest.fn().mockResolvedValue(mockRestock) },
           restockItem: { create: jest.fn().mockResolvedValue({}) },
-          stock: { update: jest.fn().mockResolvedValue({ ...mockStock, quantity: 8 }) },
+          stock: {
+            update: jest.fn().mockResolvedValue({ ...mockStock, quantity: 8 }),
+          },
         };
         return cb(txMock);
       });
-      mockPrismaService.stock.findUnique.mockResolvedValueOnce(mockStock).mockResolvedValueOnce({ ...mockStock, quantity: 8 });
+      mockPrismaService.stock.findUnique
+        .mockResolvedValueOnce(mockStock)
+        .mockResolvedValueOnce({ ...mockStock, quantity: 8 });
       mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.updateStock('stock-1', updateData);
@@ -968,16 +1025,21 @@ describe('StocksService', () => {
 
     it('should throw TRPCError if quantity exceeds max capacity in updateStock', async () => {
       const updateData = { quantity: 15 };
-      
+
       mockPrismaService.stock.findUnique.mockResolvedValue(mockStock);
 
-      await expect(service.updateStock('stock-1', updateData)).rejects.toThrow(TRPCError);
+      await expect(service.updateStock('stock-1', updateData)).rejects.toThrow(
+        TRPCError,
+      );
     });
 
     it('should handle updateStock without quantity change', async () => {
       const updateData = { low_threshold: 3 };
-      
-      mockPrismaService.stock.update.mockResolvedValue({ ...mockStock, low_threshold: 3 });
+
+      mockPrismaService.stock.update.mockResolvedValue({
+        ...mockStock,
+        low_threshold: 3,
+      });
       mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.updateStock('stock-1', updateData);

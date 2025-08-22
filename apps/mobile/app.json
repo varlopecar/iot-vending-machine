@@ -8,6 +8,7 @@
     "scheme": "mobile",
     "userInterfaceStyle": "automatic",
     "newArchEnabled": true,
+    "icon": "./assets/images/icon.png",
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.vendingmachine.mobile",
@@ -15,15 +16,7 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLName": "stripe-redirect",
-            "CFBundleURLSchemes": [
-              "mobile"
-            ]
-          },
-          {
-            "CFBundleURLName": "stripe-redirect",
-            "CFBundleURLSchemes": [
-              "mobile"
-            ]
+            "CFBundleURLSchemes": ["mobile"]
           }
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -42,10 +35,7 @@
               "scheme": "mobile"
             }
           ],
-          "category": [
-            "BROWSABLE",
-            "DEFAULT"
-          ]
+          "category": ["BROWSABLE", "DEFAULT"]
         }
       ]
     },
@@ -55,7 +45,16 @@
     },
     "plugins": [
       "expo-router",
-      "expo-splash-screen"
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 200,
+          "resizeMode": "contain",
+          "backgroundColor": "#ffffff"
+        }
+      ],
+      "expo-secure-store"
     ],
     "experiments": {
       "typedRoutes": true

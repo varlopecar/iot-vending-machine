@@ -114,7 +114,7 @@ export class OrdersService {
       // On crédite même si des points ont été dépensés: net = +earned - spent
       // Calcul des points uniquement sur les items payants
       const paidSubtotalCents = items.reduce(
-        (sum, item) => sum + ((item.subtotal_cents ?? 0)),
+        (sum, item) => sum + (item.subtotal_cents ?? 0),
         0,
       );
       const pointsToAdd = Math.floor(paidSubtotalCents / 50);
@@ -133,16 +133,18 @@ export class OrdersService {
         // Marquer la commande
         await tx.order.update({
           where: { id: order.id },
-          data: ({
+          data: {
             points_earned: { increment: pointsToAdd },
             loyalty_applied: true,
-          } as any),
+          } as any,
         });
       }
 
       // Décrémenter les points fidélité si points_spent est fourni
       if (orderData.points_spent && orderData.points_spent > 0) {
-        const user = await tx.user.findUnique({ where: { id: orderData.user_id } });
+        const user = await tx.user.findUnique({
+          where: { id: orderData.user_id },
+        });
         if (!user) throw new NotFoundException('User not found');
         if (user.points < orderData.points_spent) {
           throw new BadRequestException('Insufficient loyalty points');

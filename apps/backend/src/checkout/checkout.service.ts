@@ -233,7 +233,6 @@ export class CheckoutService {
         throw error;
       }
 
-
       throw new BadRequestException('Erreur lors de la récupération du statut');
     }
   }
@@ -254,8 +253,6 @@ export class CheckoutService {
     error: Stripe.errors.StripeError,
     orderId: string,
   ): never {
-
-
     switch (error.type) {
       case 'StripeInvalidRequestError':
         throw new BadRequestException('Données de paiement invalides');

@@ -7,8 +7,26 @@ import {
   BadRequestException,
   NotFoundException,
 } from '@nestjs/common';
+import {
+  ApiTags,
+  ApiOperation,
+  ApiResponse,
+  ApiParam,
+  ApiBody,
+} from '@nestjs/swagger';
 import { OrdersService } from '../orders/orders.service';
 import { z } from 'zod';
+import {
+  ConfirmDeliveryDto,
+  DeliveryResponseDto,
+  DeleteOrderResponseDto,
+  CancelOrderResponseDto,
+} from '../dto/order-delivery.dto';
+import {
+  ValidationErrorDto,
+  NotFoundErrorDto,
+  BadRequestErrorDto,
+} from '../dto/error.dto';
 
 // Schema pour confirmer la livraison
 const confirmDeliverySchema = z.object({
@@ -28,11 +46,37 @@ const confirmDeliverySchema = z.object({
 
 type ConfirmDeliveryData = z.infer<typeof confirmDeliverySchema>;
 
+@ApiTags('order-delivery')
 @Controller('api/order-delivery')
 export class OrderDeliveryController {
   constructor(private readonly ordersService: OrdersService) {}
 
   @Post('confirm')
+  @ApiOperation({
+    summary: 'Confirm order delivery',
+    description: 'Confirm that an order has been delivered to the customer',
+  })
+  @ApiBody({ type: ConfirmDeliveryDto })
+  @ApiResponse({
+    status: 200,
+    description: 'Delivery confirmed successfully',
+    type: DeliveryResponseDto,
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'Invalid delivery data',
+    type: ValidationErrorDto,
+  })
+  @ApiResponse({
+    status: 404,
+    description: 'Order not found',
+    type: NotFoundErrorDto,
+  })
+  @ApiResponse({
+    status: 500,
+    description: 'Internal server error',
+    type: BadRequestErrorDto,
+  })
   async confirmDelivery(@Body() body: ConfirmDeliveryData) {
     try {
       // Validation des données d'entrée
@@ -120,8 +164,6 @@ export class OrderDeliveryController {
         items: order.items,
       };
     } catch (error) {
-
-
       if (error instanceof z.ZodError) {
         throw new BadRequestException({
           status: 'VALIDATION_ERROR',
@@ -155,6 +197,24 @@ export class OrderDeliveryController {
   }
 
   @Delete('order/:orderId')
+  @ApiOperation({
+    summary: 'Delete delivered order',
+    description:
+      'Archive a delivered order (marks as cancelled to preserve history)',
+  })
+  @ApiParam({
+    name: 'orderId',
+    description: 'Order ID to delete',
+    example: 'order_123456789',
+    type: 'string',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Order deleted successfully',
+    type: DeleteOrderResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid order or operation' })
   async deleteDeliveredOrder(@Param('orderId') orderId: string) {
     try {
       // Récupérer la commande pour vérification
@@ -178,7 +238,6 @@ export class OrderDeliveryController {
         };
       }
 
-  
       // plutôt que de supprimer complètement pour garder l'historique
       // Ici, on simule une suppression en mettant à jour le statut
 
@@ -194,8 +253,6 @@ export class OrderDeliveryController {
         previous_status: order.status,
       };
     } catch (error) {
-
-
       if (error instanceof NotFoundException) {
         return {
           status: 'DELETE_ERROR',
@@ -213,6 +270,23 @@ export class OrderDeliveryController {
   }
 
   @Post('cancel/:orderId')
+  @ApiOperation({
+    summary: 'Cancel order',
+    description: 'Cancel an active order',
+  })
+  @ApiParam({
+    name: 'orderId',
+    description: 'Order ID to cancel',
+    example: 'order_123456789',
+    type: 'string',
+    required: true,
+  })
+  @ApiResponse({
+    status: 200,
+    description: 'Order cancelled successfully',
+    type: CancelOrderResponseDto,
+  })
+  @ApiResponse({ status: 400, description: 'Invalid order or operation' })
   async cancelOrder(@Param('orderId') orderId: string) {
     try {
       // Annuler la commande (méthode existante)
@@ -226,8 +300,6 @@ export class OrderDeliveryController {
         order_status: cancelledOrder.status,
       };
     } catch (error) {
-
-
       if (error instanceof NotFoundException) {
         return {
           status: 'CANCEL_ERROR',

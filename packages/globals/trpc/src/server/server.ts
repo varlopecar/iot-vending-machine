@@ -1123,8 +1123,6 @@ const appRouter = t.router({
         user_id: z.string().min(1),
         machine_id: z.string().min(1),
       }),
-      supportsNativePay: z.boolean().optional(),
-      platform: z.enum(['ios', 'android', 'web']).optional(),
     })).output(z.object({
       id: z.string(),
       client_secret: z.string(),
@@ -1132,15 +1130,12 @@ const appRouter = t.router({
       currency: z.string(),
       status: z.string(),
       metadata: z.record(z.string(), z.string()),
-      supportsNativePay: z.boolean(),
-      paymentMethodTypes: z.array(z.string()),
     })).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     getPaymentIntent: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.any()).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     confirmPaymentIntent: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.any()).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
     cancelPaymentIntent: publicProcedure.input(z.object({ id: z.string().min(1) })).output(z.any()).mutation(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any),
-    checkNativePayAvailability: publicProcedure.input(z.object({ domain: z.string().optional() })).output(z.object({
-      applePay: z.boolean(),
-      googlePay: z.boolean(),
+    getPublishableKey: publicProcedure.input(z.void()).output(z.object({
+      publishableKey: z.string(),
     })).query(async () => "PLACEHOLDER_DO_NOT_REMOVE" as any)
   }),
   checkout: t.router({

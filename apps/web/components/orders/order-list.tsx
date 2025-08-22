@@ -4,7 +4,6 @@ import { useState } from "react";
 import { motion } from "framer-motion";
 import {
   Search,
-  Filter,
   Download,
   Eye,
   ShoppingCart,
@@ -20,25 +19,42 @@ import {
 import {
   Card,
   CardContent,
-  CardHeader,
-  CardTitle,
   Button,
   Input,
   Badge,
 } from "@/components/ui";
 
-
+// Mock data for demonstration
+const mockOrders = [
+  {
+    id: "ORDER-001",
+    customerName: "Sophie Dubois",
     customerEmail: "sophie.dubois@email.com",
     items: [{ name: "Chips Nature 45g", price: 1.8, quantity: 1 }],
     total: 1.8,
     machine: "Machine Campus A",
     location: "Bâtiment Sciences",
-    status: "cancelled" as const,
+    status: "pending" as const,
     paymentMethod: "card",
     qrCode: "QR789123456",
     orderDate: "2024-01-15T13:15:00Z",
     pickupDate: null,
-    expiresAt: null,
+    expiresAt: "2024-01-15T15:15:00Z",
+  },
+  {
+    id: "ORDER-002",
+    customerName: "Jean Martin",
+    customerEmail: "jean.martin@email.com",
+    items: [{ name: "Coca-Cola 33cl", price: 2.1, quantity: 2 }],
+    total: 4.2,
+    machine: "Machine Campus B",
+    location: "Bâtiment Lettres",
+    status: "completed" as const,
+    paymentMethod: "apple_pay",
+    qrCode: "QR456789123",
+    orderDate: "2024-01-15T10:30:00Z",
+    pickupDate: "2024-01-15T11:15:00Z",
+    expiresAt: "2024-01-15T12:30:00Z",
   },
 ];
 
@@ -79,7 +95,7 @@ const paymentMethods = {
 export function OrderList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
-  const [orders] = useState([]);
+  const [orders] = useState(mockOrders);
 
   const filteredOrders = orders.filter((order) => {
     const matchesSearch =
@@ -323,14 +339,13 @@ export function OrderList() {
                         )}
                         {timeRemaining && order.status === "pending" && (
                           <div
-                            className={`text-xs mt-1 ${
-                              timeRemaining === "Expirée"
-                                ? "text-red-600"
-                                : timeRemaining.includes("min") &&
-                                    !timeRemaining.includes("h")
-                                  ? "text-orange-600"
-                                  : "text-yellow-600"
-                            }`}
+                            className={`text-xs mt-1 ${timeRemaining === "Expirée"
+                              ? "text-red-600"
+                              : timeRemaining.includes("min") &&
+                                !timeRemaining.includes("h")
+                                ? "text-orange-600"
+                                : "text-yellow-600"
+                              }`}
                           >
                             Expire dans: {timeRemaining}
                           </div>
@@ -345,7 +360,7 @@ export function OrderList() {
                         <div className="text-xs text-muted-foreground mb-2">
                           {
                             paymentMethods[
-                              order.paymentMethod as keyof typeof paymentMethods
+                            order.paymentMethod as keyof typeof paymentMethods
                             ]
                           }
                         </div>

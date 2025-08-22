@@ -111,7 +111,6 @@ export async function logLocalPaymentEvent(
   try {
     // Vérifier que les méthodes nécessaires existent
     if (!prisma.payment?.findUnique || !prisma.paymentEvent?.create) {
-      
       return;
     }
 
@@ -131,9 +130,7 @@ export async function logLocalPaymentEvent(
         },
       });
     }
-  } catch (error) {
-
-  }
+  } catch (error) {}
 }
 
 /**

@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useEffect, useMemo, useState } from 'react';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { trpcMutation, LoginResponse, AuthUser } from '../lib/api';
+import { secureStorage } from '../lib/secure-storage';
 
 type AuthState = {
   user: AuthUser | null;
@@ -25,13 +25,16 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
     (async () => {
       try {
         const [storedToken, storedUser] = await Promise.all([
-          AsyncStorage.getItem('auth.token'),
-          AsyncStorage.getItem('auth.user'),
+          secureStorage.getAuthToken(),
+          secureStorage.getAuthUser(),
         ]);
         if (storedToken && storedUser) {
           setToken(storedToken);
-          setUser(JSON.parse(storedUser));
+          setUser(storedUser);
         }
+      } catch (error) {
+        console.error('Erreur lors de la récupération des données d\'authentification:', error);
+        // En cas d'erreur, on considère que l'utilisateur n'est pas connecté
       } finally {
         setIsLoading(false);
       }
@@ -46,9 +49,13 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
         { email, password },
       );
       setUser(data.user);
-      setToken(data.token);
-      await AsyncStorage.setItem('auth.token', data.token);
-      await AsyncStorage.setItem('auth.user', JSON.stringify(data.user));
+      setToken(data.access_token);
+
+      // Stockage sécurisé des données d'authentification
+      await Promise.all([
+        secureStorage.setAuthToken(data.access_token),
+        secureStorage.setAuthUser(data.user),
+      ]);
     } catch (e: any) {
       setError(e?.message || 'Identifiants invalides');
       throw e;
@@ -70,7 +77,14 @@ export const AuthProvider: React.FC<{ children: React.ReactNode }> = ({ children
   const logout = async () => {
     setUser(null);
     setToken(null);
-    await AsyncStorage.multiRemove(['auth.token', 'auth.user']);
+
+    // Suppression sécurisée des données d'authentification
+    try {
+      await secureStorage.clearAuthData();
+    } catch (error) {
+      console.error('Erreur lors de la déconnexion:', error);
+      // On continue même en cas d'erreur pour ne pas bloquer la déconnexion
+    }
   };
 
   const clearError = () => setError(null);

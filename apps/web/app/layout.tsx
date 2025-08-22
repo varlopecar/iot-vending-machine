@@ -4,7 +4,6 @@ import "./globals.css";
 import { TRPCProvider } from "@/lib/trpc/provider";
 import { AuthProvider } from "@/contexts/auth-context";
 import { AuthGuard } from "@/components/auth/auth-guard";
-import { MainLayout } from "@/components/layout";
 
 const geistSans = localFont({
   src: "./fonts/GeistVF.woff",
@@ -32,9 +31,7 @@ export default function RootLayout({
       >
         <TRPCProvider>
           <AuthProvider>
-            <AuthGuard>
-              <MainLayout>{children}</MainLayout>
-            </AuthGuard>
+            <AuthGuard>{children}</AuthGuard>
           </AuthProvider>
         </TRPCProvider>
       </body>

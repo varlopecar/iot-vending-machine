@@ -8,6 +8,7 @@ import {
   ReactNode,
 } from "react";
 import { useRouter } from "next/navigation";
+import { secureAuth, AdminUser } from "@/lib/secure-auth";
 
 interface User {
   id: string;
@@ -20,55 +21,70 @@ interface User {
 }
 
 interface AuthContextType {
-  user: User | null;
+  user: AdminUser | null;
   token: string | null;
   isLoading: boolean;
-  login: (token: string, user: User) => void;
+  login: (token: string, user: AdminUser) => void;
   logout: () => void;
   isAuthenticated: boolean;
+  hasRole: (roles: Array<'ADMIN' | 'OPERATOR'>) => boolean;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null);
+  const [user, setUser] = useState<AdminUser | null>(null);
   const [token, setToken] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const router = useRouter();
 
   useEffect(() => {
-    // Check if user is already logged in
-    const storedToken = localStorage.getItem("admin_token");
-    const storedUser = localStorage.getItem("admin_user");
+    // Initialiser le service d'authentification sécurisé
+    secureAuth.initialize();
 
-    if (storedToken && storedUser) {
-      try {
-        const parsedUser = JSON.parse(storedUser);
-        setToken(storedToken);
-        setUser(parsedUser);
-      } catch (error) {
-        // Clear corrupted data
-        localStorage.removeItem("admin_token");
-        localStorage.removeItem("admin_user");
-      }
+    // Vérifier si l'utilisateur est déjà connecté avec un token valide
+    const validToken = secureAuth.getValidToken();
+    const validUser = secureAuth.getValidUser();
+
+    if (validToken && validUser) {
+      setToken(validToken);
+      setUser(validUser);
     }
 
-    setIsLoading(false);
-  }, []);
+    // Écouter les événements d'expiration de token
+    const handleTokenExpired = () => {
+      setToken(null);
+      setUser(null);
+      router.push("/login");
+    };
 
-  const login = (newToken: string, newUser: User) => {
+    window.addEventListener('auth:tokenExpired', handleTokenExpired);
+
+    setIsLoading(false);
+
+    // Cleanup
+    return () => {
+      window.removeEventListener('auth:tokenExpired', handleTokenExpired);
+    };
+  }, [router]);
+
+  const login = (newToken: string, newUser: AdminUser) => {
+    // Utiliser le service d'authentification sécurisé
+    secureAuth.setAuthData(newToken, newUser);
     setToken(newToken);
     setUser(newUser);
-    localStorage.setItem("admin_token", newToken);
-    localStorage.setItem("admin_user", JSON.stringify(newUser));
   };
 
   const logout = () => {
+    // Nettoyer les données sécurisées
+    secureAuth.clearAuthData();
     setToken(null);
     setUser(null);
-    localStorage.removeItem("admin_token");
-    localStorage.removeItem("admin_user");
     router.push("/login");
+  };
+
+  const hasRole = (roles: Array<'ADMIN' | 'OPERATOR'>): boolean => {
+    return secureAuth.hasRole(roles);
   };
 
   const value = {
@@ -77,7 +93,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     isLoading,
     login,
     logout,
-    isAuthenticated: !!token && !!user,
+    hasRole,
+    isAuthenticated: secureAuth.isAuthenticated(),
   };
 
   return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;

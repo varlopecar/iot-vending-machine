@@ -1,10 +1,10 @@
 import { Query, Router } from 'nestjs-trpc';
 import { AnalyticsService } from './analytics.service';
-import { 
-  popularProductSchema, 
+import {
+  popularProductSchema,
   topMachineRevenueSchema,
   currentMonthAnalyticsSchema,
-  dashboardStatsSchema
+  dashboardStatsSchema,
 } from './analytics.schema';
 import { z } from 'zod';
 

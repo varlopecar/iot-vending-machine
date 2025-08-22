@@ -1,6 +1,6 @@
 "use client";
 
-import { api } from "@/lib/trpc/client";
+import { trpc } from "@/lib/trpc/client";
 import {
   Card,
   CardContent,
@@ -49,7 +49,7 @@ export function AlertsWidget() {
     data: alertsSummary,
     isLoading,
     refetch,
-  } = api.alerts.getAlertsSummary.useQuery();
+  } = trpc.alerts.getAlertsSummary.useQuery();
 
   if (isLoading) {
     return (

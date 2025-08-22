@@ -1,5 +1,9 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { BadRequestException, NotFoundException, ForbiddenException } from '@nestjs/common';
+import {
+  BadRequestException,
+  NotFoundException,
+  ForbiddenException,
+} from '@nestjs/common';
 import { CheckoutService } from './checkout.service';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreateIntentInput, GetStatusInput } from './checkout.schema';
@@ -42,8 +46,6 @@ describe('CheckoutService', () => {
     $transaction: jest.fn((cb) => cb(mockPrismaService)),
   };
 
-
-
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [
@@ -57,7 +59,7 @@ describe('CheckoutService', () => {
 
     service = module.get<CheckoutService>(CheckoutService);
     prismaService = module.get<PrismaService>(PrismaService);
-    
+
     // Mock Stripe client
     mockStripe = mockStripeClient;
     jest.clearAllMocks();
@@ -131,35 +133,38 @@ describe('CheckoutService', () => {
     it('should throw NotFoundException if order not found', async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.createIntent(createIntentInput, 'user-123')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.createIntent(createIntentInput, 'user-123'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user does not own the order', async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
 
-      await expect(service.createIntent(createIntentInput, 'user-456')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.createIntent(createIntentInput, 'user-456'),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should throw BadRequestException if order status is not payable', async () => {
       const nonPayableOrder = { ...mockOrder, status: 'PAID' };
       mockPrismaService.order.findUnique.mockResolvedValue(nonPayableOrder);
 
-      await expect(service.createIntent(createIntentInput, 'user-123')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.createIntent(createIntentInput, 'user-123'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if order has expired', async () => {
-      const expiredOrder = { ...mockOrder, expires_at: new Date(Date.now() - 3600000) };
+      const expiredOrder = {
+        ...mockOrder,
+        expires_at: new Date(Date.now() - 3600000),
+      };
       mockPrismaService.order.findUnique.mockResolvedValue(expiredOrder);
 
-      await expect(service.createIntent(createIntentInput, 'user-123')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.createIntent(createIntentInput, 'user-123'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should throw BadRequestException if calculated amount is 0', async () => {
@@ -169,9 +174,9 @@ describe('CheckoutService', () => {
       };
       mockPrismaService.order.findUnique.mockResolvedValue(zeroAmountOrder);
 
-      await expect(service.createIntent(createIntentInput, 'user-123')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.createIntent(createIntentInput, 'user-123'),
+      ).rejects.toThrow(BadRequestException);
     });
 
     it('should update order amount if calculated amount differs', async () => {
@@ -180,7 +185,9 @@ describe('CheckoutService', () => {
         amount_total_cents: 400,
         items: [{ subtotal_cents: 500 }],
       };
-      mockPrismaService.order.findUnique.mockResolvedValue(orderWithDifferentAmount);
+      mockPrismaService.order.findUnique.mockResolvedValue(
+        orderWithDifferentAmount,
+      );
       mockPrismaService.user.update.mockResolvedValue(mockUser);
       mockPrismaService.payment.upsert.mockResolvedValue({});
       mockPrismaService.order.update.mockResolvedValue(mockOrder);
@@ -206,7 +213,9 @@ describe('CheckoutService', () => {
         ...mockOrder,
         user: { ...mockUser, stripe_customer_id: 'cus_existing' },
       };
-      mockPrismaService.order.findUnique.mockResolvedValue(orderWithExistingCustomer);
+      mockPrismaService.order.findUnique.mockResolvedValue(
+        orderWithExistingCustomer,
+      );
       mockPrismaService.payment.upsert.mockResolvedValue({});
       mockPrismaService.order.update.mockResolvedValue(mockOrder);
 
@@ -230,13 +239,11 @@ describe('CheckoutService', () => {
 
     it('should handle Stripe errors appropriately', async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
-      mockStripe.customers.create.mockRejectedValue(
-        new Error('Stripe error'),
-      );
+      mockStripe.customers.create.mockRejectedValue(new Error('Stripe error'));
 
-      await expect(service.createIntent(createIntentInput, 'user-123')).rejects.toThrow(
-        BadRequestException,
-      );
+      await expect(
+        service.createIntent(createIntentInput, 'user-123'),
+      ).rejects.toThrow(BadRequestException);
     });
   });
 
@@ -292,17 +299,17 @@ describe('CheckoutService', () => {
     it('should throw NotFoundException if order not found', async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(null);
 
-      await expect(service.getStatus(getStatusInput, 'user-123')).rejects.toThrow(
-        NotFoundException,
-      );
+      await expect(
+        service.getStatus(getStatusInput, 'user-123'),
+      ).rejects.toThrow(NotFoundException);
     });
 
     it('should throw ForbiddenException if user does not own the order', async () => {
       mockPrismaService.order.findUnique.mockResolvedValue(mockOrder);
 
-      await expect(service.getStatus(getStatusInput, 'user-456')).rejects.toThrow(
-        ForbiddenException,
-      );
+      await expect(
+        service.getStatus(getStatusInput, 'user-456'),
+      ).rejects.toThrow(ForbiddenException);
     });
 
     it('should handle missing optional fields', async () => {
@@ -313,7 +320,9 @@ describe('CheckoutService', () => {
         qr_code_token: null,
         stripe_payment_intent_id: null,
       };
-      mockPrismaService.order.findUnique.mockResolvedValue(orderWithMissingFields);
+      mockPrismaService.order.findUnique.mockResolvedValue(
+        orderWithMissingFields,
+      );
 
       const result = await service.getStatus(getStatusInput, 'user-123');
 
@@ -342,7 +351,7 @@ describe('CheckoutService', () => {
     it('should handle Stripe errors appropriately', () => {
       const error = new Error('Stripe error') as any;
       error.type = 'StripeInvalidRequestError';
-      
+
       expect(() => service['handleStripeError'](error, 'order-123')).toThrow(
         BadRequestException,
       );
@@ -351,7 +360,7 @@ describe('CheckoutService', () => {
     it('should handle unknown Stripe errors', () => {
       const error = new Error('Unknown error') as any;
       error.type = 'UnknownError';
-      
+
       expect(() => service['handleStripeError'](error, 'order-123')).toThrow(
         BadRequestException,
       );

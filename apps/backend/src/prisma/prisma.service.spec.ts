@@ -65,7 +65,9 @@ describe('PrismaService', () => {
       const disconnectionError = new Error('Disconnection failed');
       mockPrismaService.onModuleDestroy.mockRejectedValue(disconnectionError);
 
-      await expect(service.onModuleDestroy()).rejects.toThrow('Disconnection failed');
+      await expect(service.onModuleDestroy()).rejects.toThrow(
+        'Disconnection failed',
+      );
       expect(service.onModuleDestroy).toHaveBeenCalledTimes(1);
     });
   });

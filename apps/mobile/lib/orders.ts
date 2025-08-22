@@ -1,4 +1,5 @@
 import { trpcMutation, trpcQuery } from './api';
+import { secureStorage } from './secure-storage';
 
 export type CreateOrderItemInput = {
   product_id: string;
@@ -33,19 +34,23 @@ export type OrderWithItems = {
 };
 
 export async function createOrder(input: CreateOrderInput) {
-  return trpcMutation<CreateOrderInput, OrderWithItems>('orders.createOrder', input);
+  const token = await secureStorage.getAuthToken();
+  return trpcMutation<CreateOrderInput, OrderWithItems>('orders.createOrder', input, { token: token || undefined });
 }
 
 export async function getOrdersByUserId(user_id: string) {
-  return trpcQuery<{ user_id: string }, OrderWithItems[]>('orders.getOrdersByUserId', { user_id });
+  const token = await secureStorage.getAuthToken();
+  return trpcQuery<{ user_id: string }, OrderWithItems[]>('orders.getOrdersByUserId', { user_id }, { token: token || undefined });
 }
 
 export async function getOrderById(id: string) {
-  return trpcQuery<{ id: string }, OrderWithItems>('orders.getOrderById', { id });
+  const token = await secureStorage.getAuthToken();
+  return trpcQuery<{ id: string }, OrderWithItems>('orders.getOrderById', { id }, { token: token || undefined });
 }
 
 export async function cancelOrder(id: string) {
-  return trpcMutation<{ id: string }, any>('orders.cancelOrder', { id });
+  const token = await secureStorage.getAuthToken();
+  return trpcMutation<{ id: string }, any>('orders.cancelOrder', { id }, { token: token || undefined });
 }
 
 

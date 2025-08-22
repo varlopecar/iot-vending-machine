@@ -1,0 +1,233 @@
+name: Web Dashboard CI/CD Pipeline
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/web-deploy.yml"
+  pull_request:
+    branches: [main]
+    paths:
+      - "apps/web/**"
+      - "packages/**"
+      - "pnpm-lock.yaml"
+      - ".github/workflows/web-deploy.yml"
+
+permissions:
+  contents: read
+  pull-requests: write
+  deployments: write
+
+env:
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
+
+jobs:
+  test:
+    name: Test Web Dashboard
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Type check
+        run: |
+          cd apps/web
+          echo "🔍 Running TypeScript type checking..."
+          pnpm check-types
+          echo "✅ Type checking passed"
+      - name: Lint code
+        run: |
+          cd apps/web
+          echo "🧹 Running ESLint..."
+          pnpm lint
+          echo "✅ Linting passed"
+      - name: Build application
+        run: |
+          cd apps/web
+          echo "🔨 Building Next.js application..."
+          pnpm build
+          echo "✅ Build completed successfully"
+          # Verify build output
+          if [ -d ".next" ]; then
+            echo "📁 Build output verified - .next directory exists"
+            echo "📊 Build stats:"
+            ls -la .next/
+          else
+            echo "❌ Build failed - .next directory not found"
+            exit 1
+          fi
+        env:
+          # Add any build-time environment variables here
+          NEXT_PUBLIC_API_URL: ${{ secrets.NEXT_PUBLIC_API_URL_PRODUCTION || 'http://localhost:3000' }}
+
+      - name: Run tests (if any)
+        run: |
+          cd apps/web
+          # Add test command when tests are available
+          echo "✅ No tests configured yet"
+  deploy-preview:
+    name: Deploy Preview
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.event_name == 'pull_request'
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --token=${{ secrets.VERCEL_TOKEN }})
+          echo "preview-url=$url" >> $GITHUB_OUTPUT
+
+      - name: Comment PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            github.rest.issues.createComment({
+              issue_number: context.issue.number,
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              body: `## 🚀 Preview Deployment Ready!
+              
+              **Preview URL:** ${{ steps.deploy.outputs.preview-url }}
+              
+              ### 📋 What's included:
+              - ✅ Web Dashboard with latest changes
+              - ✅ Back-office interface
+              - ✅ Admin authentication
+              - ✅ All UI components and features
+              
+              ### 🧪 Test Status:
+              - ✅ Type checking passed
+              - ✅ Linting passed
+              - ✅ Build successful
+              
+              This preview will be automatically updated with new commits to this PR.`
+            })
+  deploy-production:
+    name: Deploy to Production
+    runs-on: ubuntu-latest
+    needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+    environment: dev
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v2
+        with:
+          version: 9
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "18"
+          cache: "pnpm"
+
+      - name: Install Vercel CLI
+        run: npm install --global vercel@latest
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Pull Vercel Environment Information
+        run: vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Build Project Artifacts
+        run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
+
+      - name: Deploy Project Artifacts to Vercel
+        id: deploy
+        run: |
+          url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
+          echo "production-url=$url" >> $GITHUB_OUTPUT
+
+      - name: Create deployment summary
+        run: |
+          echo "## 🚀 Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "**Production URL:** ${{ steps.deploy.outputs.production-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Timestamp:** $(date -u)" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "### 📋 What was deployed:" >> $GITHUB_STEP_SUMMARY
+          echo "- Web Dashboard (Back-office)" >> $GITHUB_STEP_SUMMARY
+          echo "- Admin authentication system" >> $GITHUB_STEP_SUMMARY
+          echo "- Machine management interface" >> $GITHUB_STEP_SUMMARY
+          echo "- Product management interface" >> $GITHUB_STEP_SUMMARY
+          echo "- Order tracking system" >> $GITHUB_STEP_SUMMARY
+          echo "- Analytics dashboard" >> $GITHUB_STEP_SUMMARY
+          echo "- Stock management interface" >> $GITHUB_STEP_SUMMARY
+  notify:
+    name: Notify Deployment Status
+    runs-on: ubuntu-latest
+    needs: [test, deploy-production]
+    if: always() && github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+    steps:
+      - name: Notify success
+        if: needs.test.result == 'success' && needs.deploy-production.result == 'success'
+        run: |
+          echo "✅ Web Dashboard deployment completed successfully!"
+          echo "🚀 Production site is now live"
+          echo "📋 All tests passed and application built successfully"
+      - name: Notify failure
+        if: needs.test.result == 'failure' || needs.deploy-production.result == 'failure'
+        run: |
+          echo "❌ Web Dashboard deployment failed!"
+          echo "Check the logs above for more details."
+          if [ "${{ needs.test.result }}" == "failure" ]; then
+            echo "❌ Test stage failed"
+          fi
+          if [ "${{ needs.deploy-production.result }}" == "failure" ]; then
+            echo "❌ Production deployment failed"
+          fi

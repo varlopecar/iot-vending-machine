@@ -8,7 +8,12 @@ import {
   manualRestockSchema,
   restockWithItemsSchema,
 } from './restocks.schema';
-import type { CreateRestockInput, RestockToMaxInput, RestockSlotToMaxInput, ManualRestockInput } from './restocks.schema';
+import type {
+  CreateRestockInput,
+  RestockToMaxInput,
+  RestockSlotToMaxInput,
+  ManualRestockInput,
+} from './restocks.schema';
 
 @Router({ alias: 'restocks' })
 export class RestocksRouter {

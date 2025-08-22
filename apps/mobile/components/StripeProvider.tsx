@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useEffect, useState, ReactElement } from 'react';
 import { StripeProvider as StripeProviderBase } from '@stripe/stripe-react-native';
 // Attention: ce fichier sera scindé en .native et .web pour éviter l'import web du module natif
 
@@ -12,7 +12,7 @@ interface StripeContextType {
 const StripeContext = createContext<StripeContextType | undefined>(undefined);
 
 interface StripeProviderProps {
-  children: React.ReactNode;
+  children: ReactElement | ReactElement[];
 }
 
 

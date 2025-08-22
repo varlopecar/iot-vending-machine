@@ -4,7 +4,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTailwindTheme } from '../../hooks/useTailwindTheme';
 
 interface ProfileAvatarProps {
-  imageUri?: string | number;
+  imageUri?: string | number | null;
   size?: 'small' | 'medium' | 'large';
   onPress?: () => void;
   showSettingsIcon?: boolean;
@@ -98,7 +98,7 @@ export default function ProfileAvatar({
             },
           ]}
         >
-                  {imageUri ? (
+          {imageUri ? (
             <Image
               source={typeof imageUri === 'string' ? { uri: imageUri } : imageUri}
               style={styles.avatarImage}
@@ -113,7 +113,7 @@ export default function ProfileAvatar({
           )}
         </View>
       </TouchableOpacity>
-      
+
       {showSettingsIcon && (
         <TouchableOpacity
           onPress={onSettingsPress}

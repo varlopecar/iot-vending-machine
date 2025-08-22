@@ -11,7 +11,7 @@ import {
   Wrench,
 } from "lucide-react";
 import { Card, CardContent, CardHeader, Button, Badge } from "../ui";
-import { api } from "../../lib/trpc/client";
+import { trpc } from "../../lib/trpc/client";
 import Image from "next/image";
 
 type StockLevel = "empty" | "low" | "normal" | "full";
@@ -82,7 +82,7 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
   const [isRestocking, setIsRestocking] = useState(false);
 
   // Mutation pour ravitailler au maximum
-  const restockSlotMutation = api.restocks.restockSlotToMax.useMutation({
+  const restockSlotMutation = trpc.restocks.restockSlotToMax.useMutation({
     retry: 3,
     retryDelay: 1000,
     onSuccess: () => {
@@ -196,15 +196,14 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               aria-label={`Niveau de stock: ${slot.quantity} sur ${slot.max_capacity}`}
             >
               <div
-                className={`h-2 rounded-full transition-all duration-300 ${
-                  stockLevel === "empty"
-                    ? "bg-red-500"
-                    : stockLevel === "low"
-                      ? "bg-yellow-500"
-                      : stockLevel === "full"
-                        ? "bg-green-500"
-                        : "bg-blue-500"
-                }`}
+                className={`h-2 rounded-full transition-all duration-300 ${stockLevel === "empty"
+                  ? "bg-red-500"
+                  : stockLevel === "low"
+                    ? "bg-yellow-500"
+                    : stockLevel === "full"
+                      ? "bg-green-500"
+                      : "bg-blue-500"
+                  }`}
                 style={{ width: `${fillPercentage}%` }}
               />
             </div>

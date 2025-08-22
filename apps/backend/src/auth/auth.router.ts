@@ -20,32 +20,70 @@ export class AuthRouter {
   constructor(private readonly authService: AuthService) {}
 
   @Mutation({
-    input: createUserSchema,
-    output: userSchema,
+    input: z.object({
+      email: z.string().email(),
+      password: z.string().min(6),
+      full_name: z.string().min(1),
+      barcode: z.string().optional(),
+    }),
+    output: z.object({
+      access_token: z.string(),
+      token_type: z.string(),
+      expires_in: z.number(),
+      user: z.object({
+        id: z.string(),
+        email: z.string(),
+        full_name: z.string(),
+        barcode: z.string().optional(),
+        role: z.string(),
+      }),
+    }),
   })
-  register(@Input() userData: CreateUserInput) {
+  register(@Input() userData: any) {
     return this.authService.register(userData);
   }
 
   @Mutation({
-    input: loginSchema,
+    input: z.object({
+      email: z.string().email(),
+      password: z.string().min(6),
+    }),
     output: z.object({
-      user: userSchema,
-      token: z.string(),
+      access_token: z.string(),
+      token_type: z.string(),
+      expires_in: z.number(),
+      user: z.object({
+        id: z.string(),
+        email: z.string(),
+        full_name: z.string(),
+        barcode: z.string().optional(),
+        role: z.string(),
+      }),
     }),
   })
-  login(@Input() loginData: LoginInput) {
+  login(@Input() loginData: any) {
     return this.authService.login(loginData);
   }
 
   @Mutation({
-    input: adminLoginSchema,
+    input: z.object({
+      email: z.string().email(),
+      password: z.string().min(6),
+    }),
     output: z.object({
-      user: userSchema,
-      token: z.string(),
+      access_token: z.string(),
+      token_type: z.string(),
+      expires_in: z.number(),
+      user: z.object({
+        id: z.string(),
+        email: z.string(),
+        full_name: z.string(),
+        barcode: z.string().optional(),
+        role: z.string(),
+      }),
     }),
   })
-  adminLogin(@Input() loginData: AdminLoginInput) {
+  adminLogin(@Input() loginData: any) {
     return this.authService.adminLogin(loginData);
   }
 
@@ -72,8 +110,9 @@ export class AuthRouter {
     }),
     output: userSchema,
   })
-  updateUser(@Input('id') id: string, @Input('data') data: UpdateUserInput) {
-    return this.authService.updateUser(id, data);
+  updateUser(@Input('id') id: string, @Input('data') data: any) {
+    // This method was removed from AuthService, so we'll throw an error
+    throw new Error('updateUser method not implemented');
   }
 
   @Mutation({

@@ -1,0 +1,82 @@
+{
+  "auth_endpoints": {
+    "register": {
+      "url": "http://localhost:3000/api/auth/register",
+      "method": "POST",
+      "body": {
+        "email": "test@example.com",
+        "password": "password123",
+        "full_name": "Test User",
+        "barcode": "123456789"
+      },
+      "description": "Register a new user"
+    },
+    "login": {
+      "url": "http://localhost:3000/api/auth/login",
+      "method": "POST",
+      "body": {
+        "email": "test@example.com",
+        "password": "password123"
+      },
+      "description": "Login with user credentials"
+    },
+    "admin_login": {
+      "url": "http://localhost:3000/api/auth/admin/login",
+      "method": "POST",
+      "body": {
+        "email": "admin@example.com",
+        "password": "admin123"
+      },
+      "description": "Login with admin credentials"
+    },
+    "profile": {
+      "url": "http://localhost:3000/api/auth/profile",
+      "method": "GET",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "Get user profile (requires authentication)"
+    },
+    "refresh": {
+      "url": "http://localhost:3000/api/auth/refresh",
+      "method": "POST",
+      "body": {
+        "refresh_token": "{{refresh_token}}"
+      },
+      "description": "Refresh access token"
+    }
+  },
+  "protected_endpoints": {
+    "order_delivery_confirm": {
+      "url": "http://localhost:3000/api/order-delivery/confirm",
+      "method": "POST",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "body": {
+        "orderId": "test-order-id",
+        "deliveredItems": [
+          {
+            "productId": "product-1",
+            "quantity": 1
+          }
+        ]
+      },
+      "description": "Confirm order delivery (requires authentication)"
+    },
+    "order_delivery_order": {
+      "url": "http://localhost:3000/api/order-delivery/order/test-order-id",
+      "method": "GET",
+      "headers": {
+        "Authorization": "Bearer {{token}}"
+      },
+      "description": "Get order details (requires authentication)"
+    }
+  },
+  "curl_examples": {
+    "register": "curl -X POST http://localhost:3000/api/auth/register -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"password123\",\"full_name\":\"Test User\"}'",
+    "login": "curl -X POST http://localhost:3000/api/auth/login -H 'Content-Type: application/json' -d '{\"email\":\"test@example.com\",\"password\":\"password123\"}'",
+    "profile": "curl -X GET http://localhost:3000/api/auth/profile -H 'Authorization: Bearer YOUR_TOKEN_HERE'",
+    "protected_endpoint": "curl -X POST http://localhost:3000/api/order-delivery/confirm -H 'Content-Type: application/json' -H 'Authorization: Bearer YOUR_TOKEN_HERE' -d '{\"orderId\":\"test-order-id\",\"deliveredItems\":[{\"productId\":\"product-1\",\"quantity\":1}]}'"
+  }
+}

@@ -12,8 +12,6 @@ export function getStripeClient(): Stripe {
       apiVersion: env.STRIPE_API_VERSION as Stripe.LatestApiVersion,
       typescript: true,
     });
-
-    
   }
 
   return stripeClient;

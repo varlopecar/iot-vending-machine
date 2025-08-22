@@ -1,7 +1,17 @@
-import { Injectable, BadRequestException, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  BadRequestException,
+  NotFoundException,
+} from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { AlertsService } from '../alerts/alerts.service';
-import { CreateRestockInput, RestockToMaxInput, RestockSlotToMaxInput, ManualRestockInput, RestockWithItems } from './restocks.schema';
+import {
+  CreateRestockInput,
+  RestockToMaxInput,
+  RestockSlotToMaxInput,
+  ManualRestockInput,
+  RestockWithItems,
+} from './restocks.schema';
 
 @Injectable()
 export class RestocksService {
@@ -13,13 +23,17 @@ export class RestocksService {
   /**
    * Crée un restock avec les quantités spécifiées
    */
-  async createRestock(restockData: CreateRestockInput): Promise<RestockWithItems> {
+  async createRestock(
+    restockData: CreateRestockInput,
+  ): Promise<RestockWithItems> {
     // Vérifier que la machine existe
     const machine = await this.prisma.machine.findUnique({
       where: { id: restockData.machine_id },
     });
     if (!machine) {
-      throw new NotFoundException(`Machine ${restockData.machine_id} non trouvée`);
+      throw new NotFoundException(
+        `Machine ${restockData.machine_id} non trouvée`,
+      );
     }
 
     // Vérifier que l'utilisateur existe
@@ -27,7 +41,9 @@ export class RestocksService {
       where: { id: restockData.user_id },
     });
     if (!user) {
-      throw new NotFoundException(`Utilisateur ${restockData.user_id} non trouvé`);
+      throw new NotFoundException(
+        `Utilisateur ${restockData.user_id} non trouvé`,
+      );
     }
 
     const result = await this.prisma.$transaction(async (tx) => {
@@ -66,7 +82,7 @@ export class RestocksService {
 
         if (!stock) {
           throw new BadRequestException(
-            `Stock ${item.stock_id} non trouvé pour la machine ${restockData.machine_id}`
+            `Stock ${item.stock_id} non trouvé pour la machine ${restockData.machine_id}`,
           );
         }
 
@@ -76,7 +92,7 @@ export class RestocksService {
         // Vérifier que la quantité finale ne dépasse pas la capacité maximale
         if (quantityAfter > stock.max_capacity) {
           throw new BadRequestException(
-            `La quantité finale (${quantityAfter}) dépasserait la capacité maximale (${stock.max_capacity}) pour le slot ${stock.slot_number}`
+            `La quantité finale (${quantityAfter}) dépasserait la capacité maximale (${stock.max_capacity}) pour le slot ${stock.slot_number}`,
           );
         }
 
@@ -107,7 +123,10 @@ export class RestocksService {
           quantity_before: restockItem.quantity_before,
           quantity_after: restockItem.quantity_after,
           quantity_added: restockItem.quantity_added,
-          type: restockItem.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
+          type:
+            restockItem.quantity_added >= 0
+              ? ('addition' as const)
+              : ('removal' as const),
           slot_number: stock.slot_number,
           product_name: stock.product.name,
           product_image_url: stock.product.image_url,
@@ -125,7 +144,7 @@ export class RestocksService {
       notes: result.restock.notes || undefined,
       items: result.items,
     };
-    
+
     // Déclencher la mise à jour des alertes pour la machine après le restock
     try {
       await this.alertsService.updateMachineAlerts(restockData.machine_id);
@@ -137,13 +156,17 @@ export class RestocksService {
   /**
    * Ravitaille tous les slots de la machine au maximum de leur capacité
    */
-  async restockToMax(restockData: RestockToMaxInput): Promise<RestockWithItems> {
+  async restockToMax(
+    restockData: RestockToMaxInput,
+  ): Promise<RestockWithItems> {
     // Vérifier que la machine existe
     const machine = await this.prisma.machine.findUnique({
       where: { id: restockData.machine_id },
     });
     if (!machine) {
-      throw new NotFoundException(`Machine ${restockData.machine_id} non trouvée`);
+      throw new NotFoundException(
+        `Machine ${restockData.machine_id} non trouvée`,
+      );
     }
 
     // Récupérer l'admin si user_id n'est pas fourni
@@ -167,7 +190,9 @@ export class RestocksService {
     });
 
     if (stocks.length === 0) {
-      throw new BadRequestException(`Aucun slot configuré pour la machine ${restockData.machine_id}`);
+      throw new BadRequestException(
+        `Aucun slot configuré pour la machine ${restockData.machine_id}`,
+      );
     }
 
     const result = await this.prisma.$transaction(async (tx) => {
@@ -286,7 +311,10 @@ export class RestocksService {
         quantity_before: item.quantity_before,
         quantity_after: item.quantity_after,
         quantity_added: item.quantity_added,
-        type: item.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
+        type:
+          item.quantity_added >= 0
+            ? ('addition' as const)
+            : ('removal' as const),
         slot_number: item.stock.slot_number,
         product_name: item.stock.product.name,
         product_image_url: item.stock.product.image_url,
@@ -319,14 +347,17 @@ export class RestocksService {
       user_id: restock.user_id,
       created_at: restock.created_at,
       notes: restock.notes || undefined,
-        items: restock.items.map((item) => ({
+      items: restock.items.map((item) => ({
         id: item.id,
         restock_id: item.restock_id,
         stock_id: item.stock_id,
         quantity_before: item.quantity_before,
         quantity_after: item.quantity_after,
         quantity_added: item.quantity_added,
-          type: item.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
+        type:
+          item.quantity_added >= 0
+            ? ('addition' as const)
+            : ('removal' as const),
         slot_number: item.stock.slot_number,
         product_name: item.stock.product.name,
         product_image_url: item.stock.product.image_url,
@@ -337,11 +368,13 @@ export class RestocksService {
   /**
    * Ravitaille un slot au maximum de sa capacité
    */
-  async restockSlotToMax(restockData: RestockSlotToMaxInput): Promise<RestockWithItems> {
+  async restockSlotToMax(
+    restockData: RestockSlotToMaxInput,
+  ): Promise<RestockWithItems> {
     // Vérifier que le stock existe
     const stock = await this.prisma.stock.findUnique({
       where: { id: restockData.stock_id },
-      include: { 
+      include: {
         product: true,
         machine: true,
       },
@@ -353,7 +386,9 @@ export class RestocksService {
     // Calculer la quantité à ajouter pour atteindre le maximum
     const quantityToAdd = stock.max_capacity - stock.quantity;
     if (quantityToAdd <= 0) {
-      throw new BadRequestException('Le slot est déjà au maximum de sa capacité');
+      throw new BadRequestException(
+        'Le slot est déjà au maximum de sa capacité',
+      );
     }
 
     // Récupérer l'admin si user_id n'est pas fourni
@@ -376,7 +411,9 @@ export class RestocksService {
         data: {
           machine_id: stock.machine_id,
           user_id: userId,
-          notes: restockData.notes || `Ravitaillement au maximum du slot ${stock.slot_number}`,
+          notes:
+            restockData.notes ||
+            `Ravitaillement au maximum du slot ${stock.slot_number}`,
           created_at: new Date().toISOString(),
         },
       });
@@ -408,7 +445,10 @@ export class RestocksService {
             quantity_before: restockItem.quantity_before,
             quantity_after: restockItem.quantity_after,
             quantity_added: restockItem.quantity_added,
-            type: restockItem.quantity_added >= 0 ? 'addition' as const : 'removal' as const,
+            type:
+              restockItem.quantity_added >= 0
+                ? ('addition' as const)
+                : ('removal' as const),
             slot_number: stock.slot_number,
             product_name: stock.product.name,
             product_image_url: stock.product.image_url,
@@ -437,11 +477,13 @@ export class RestocksService {
   /**
    * Ravitaille manuellement un slot avec une quantité spécifique
    */
-  async manualRestock(restockData: ManualRestockInput): Promise<RestockWithItems> {
+  async manualRestock(
+    restockData: ManualRestockInput,
+  ): Promise<RestockWithItems> {
     // Vérifier que le stock existe
     const stock = await this.prisma.stock.findUnique({
       where: { id: restockData.stock_id },
-      include: { 
+      include: {
         product: true,
         machine: true,
       },
@@ -454,7 +496,7 @@ export class RestocksService {
     const newQuantity = stock.quantity + restockData.quantity;
     if (newQuantity > stock.max_capacity) {
       throw new BadRequestException(
-        `La quantité totale (${newQuantity}) dépasserait la capacité maximale (${stock.max_capacity})`
+        `La quantité totale (${newQuantity}) dépasserait la capacité maximale (${stock.max_capacity})`,
       );
     }
 
@@ -478,7 +520,9 @@ export class RestocksService {
         data: {
           machine_id: stock.machine_id,
           user_id: userId,
-          notes: restockData.notes || `Ravitaillement manuel du slot ${stock.slot_number}`,
+          notes:
+            restockData.notes ||
+            `Ravitaillement manuel du slot ${stock.slot_number}`,
           created_at: new Date().toISOString(),
         },
       });

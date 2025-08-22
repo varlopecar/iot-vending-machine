@@ -2,8 +2,8 @@
 
 import { useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle, Badge, Button } from "../ui";
-import { api } from "../../lib/trpc/client";
 import { RefreshCw, History, Package } from "lucide-react";
+import { trpc } from "../../lib/trpc/client";
 
 interface MachineRestockHistoryProps {
   machineId: string;
@@ -14,7 +14,7 @@ type RestockItemType = "addition" | "removal";
 export function MachineRestockHistory({
   machineId,
 }: MachineRestockHistoryProps) {
-  const query = (api as any).restocks.getRestocksByMachine.useQuery(
+  const query = trpc.restocks.getRestocksByMachine.useQuery(
     { machine_id: machineId },
     { enabled: false }
   );
@@ -27,24 +27,24 @@ export function MachineRestockHistory({
 
   const restocks = data as
     | Array<{
+      id: string;
+      machine_id: string;
+      user_id: string;
+      created_at: string;
+      notes?: string;
+      items: Array<{
         id: string;
-        machine_id: string;
-        user_id: string;
-        created_at: string;
-        notes?: string;
-        items: Array<{
-          id: string;
-          restock_id: string;
-          stock_id: string;
-          quantity_before: number;
-          quantity_after: number;
-          quantity_added: number;
-          slot_number: number;
-          product_name: string;
-          product_image_url?: string;
-          type?: RestockItemType;
-        }>;
-      }>
+        restock_id: string;
+        stock_id: string;
+        quantity_before: number;
+        quantity_after: number;
+        quantity_added: number;
+        slot_number: number;
+        product_name: string;
+        product_image_url?: string;
+        type?: RestockItemType;
+      }>;
+    }>
     | undefined;
 
   // Applique le filtre de type au niveau des items, puis enlève les restocks vides
@@ -57,7 +57,7 @@ export function MachineRestockHistory({
           filterType === "all"
             ? true
             : (it.type ?? (it.quantity_added >= 0 ? "addition" : "removal")) ===
-              filterType
+            filterType
         ),
       }))
       .filter((r) => r.items.length > 0);
@@ -80,8 +80,8 @@ export function MachineRestockHistory({
     const map = new Map<string, typeof list>();
     for (const r of list) {
       const day = new Date(r.created_at).toLocaleDateString("fr-FR");
-      if (!map.has(day)) map.set(day, [] as any);
-      (map.get(day) as any).push(r);
+      if (!map.has(day)) map.set(day, []);
+      map.get(day)!.push(r);
     }
     return Array.from(map.entries()).map(([date, entries]) => ({
       date,
@@ -102,7 +102,6 @@ export function MachineRestockHistory({
     let dataToExport = restocks;
     if (!dataToExport) {
       const result = await refetch();
-      // @ts-expect-error react-query returns data on result
       dataToExport = (result?.data || []) as typeof restocks;
     }
     if (!dataToExport || dataToExport.length === 0) {
@@ -184,7 +183,7 @@ export function MachineRestockHistory({
         {showInitialButton && (
           <div className="flex items-center justify-center py-4">
             <Button variant="ghost" onClick={handleShow}>
-              <History className="w-4 h-4 mr-2" /> Afficher l'historique
+              <History className="w-4 h-4 mr-2" /> Afficher l&apos;historique
             </Button>
           </div>
         )}
@@ -199,8 +198,8 @@ export function MachineRestockHistory({
         {restocks && (
           <div className="flex items-center justify-between mb-4">
             <div className="text-sm text-muted-foreground">
-              Affichage: 10 derniers ravitaillements — l'export inclut tout
-              l'historique
+              Affichage: 10 derniers ravitaillements — l&apos;export inclut tout
+              l&apos;historique
             </div>
             <div className="flex items-center gap-2">
               {/* Filtres type */}
@@ -229,7 +228,7 @@ export function MachineRestockHistory({
                 onClick={exportCsv}
                 disabled={Boolean(isFetching)}
               >
-                <History className="w-4 h-4 mr-2" /> Exporter tout l'historique
+                <History className="w-4 h-4 mr-2" /> Exporter tout l&apos;historique
                 (CSV)
               </Button>
               <Button

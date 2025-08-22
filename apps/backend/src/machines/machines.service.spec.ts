@@ -93,8 +93,8 @@ describe('MachinesService', () => {
     };
 
     it('should create machine successfully', async () => {
-      (mockPrismaService.machine.create as jest.Mock).mockResolvedValue(mockMachineFromDb);
-      (mockAlertsService.updateMachineAlerts as jest.Mock).mockResolvedValue(undefined);
+      mockPrismaService.machine.create.mockResolvedValue(mockMachineFromDb);
+      mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.createMachine(createMachineDto);
 
@@ -107,14 +107,20 @@ describe('MachinesService', () => {
           last_update: expect.any(String),
         },
       });
-      expect(mockAlertsService.updateMachineAlerts).toHaveBeenCalledWith('machine-1');
+      expect(mockAlertsService.updateMachineAlerts).toHaveBeenCalledWith(
+        'machine-1',
+      );
       expect(result).toEqual(mockMachine);
     });
 
     it('should handle creation errors', async () => {
-      (mockPrismaService.machine.create as jest.Mock).mockRejectedValue(new Error('Creation failed'));
+      mockPrismaService.machine.create.mockRejectedValue(
+        new Error('Creation failed'),
+      );
 
-      await expect(service.createMachine(createMachineDto)).rejects.toThrow('Creation failed');
+      await expect(service.createMachine(createMachineDto)).rejects.toThrow(
+        'Creation failed',
+      );
     });
 
     it('should create machine with minimal data', async () => {
@@ -131,8 +137,8 @@ describe('MachinesService', () => {
         last_update: new Date(),
       };
 
-      (mockPrismaService.machine.create as jest.Mock).mockResolvedValue(minimalMachine);
-      (mockAlertsService.updateMachineAlerts as jest.Mock).mockResolvedValue(undefined);
+      mockPrismaService.machine.create.mockResolvedValue(minimalMachine);
+      mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.createMachine(minimalDto);
 
@@ -178,7 +184,7 @@ describe('MachinesService', () => {
     ];
 
     it('should return all machines', async () => {
-      (mockPrismaService.machine.findMany as jest.Mock).mockResolvedValue(mockMachinesFromDb);
+      mockPrismaService.machine.findMany.mockResolvedValue(mockMachinesFromDb);
 
       const result = await service.getAllMachines();
 
@@ -187,7 +193,9 @@ describe('MachinesService', () => {
     });
 
     it('should handle database errors', async () => {
-      (mockPrismaService.machine.findMany as jest.Mock).mockRejectedValue(new Error('DB Error'));
+      mockPrismaService.machine.findMany.mockRejectedValue(
+        new Error('DB Error'),
+      );
 
       await expect(service.getAllMachines()).rejects.toThrow('DB Error');
     });
@@ -212,7 +220,7 @@ describe('MachinesService', () => {
     };
 
     it('should return machine by id', async () => {
-      (mockPrismaService.machine.findUnique as jest.Mock).mockResolvedValue(mockMachineFromDb);
+      mockPrismaService.machine.findUnique.mockResolvedValue(mockMachineFromDb);
 
       const result = await service.getMachineById('machine-1');
 
@@ -223,15 +231,21 @@ describe('MachinesService', () => {
     });
 
     it('should throw NotFoundException if machine not found', async () => {
-      (mockPrismaService.machine.findUnique as jest.Mock).mockResolvedValue(null);
+      mockPrismaService.machine.findUnique.mockResolvedValue(null);
 
-      await expect(service.getMachineById('non-existent')).rejects.toThrow(NotFoundException);
+      await expect(service.getMachineById('non-existent')).rejects.toThrow(
+        NotFoundException,
+      );
     });
 
     it('should handle database errors', async () => {
-      (mockPrismaService.machine.findUnique as jest.Mock).mockRejectedValue(new Error('DB Error'));
+      mockPrismaService.machine.findUnique.mockRejectedValue(
+        new Error('DB Error'),
+      );
 
-      await expect(service.getMachineById('machine-1')).rejects.toThrow('DB Error');
+      await expect(service.getMachineById('machine-1')).rejects.toThrow(
+        'DB Error',
+      );
     });
   });
 
@@ -260,8 +274,8 @@ describe('MachinesService', () => {
     };
 
     it('should update machine successfully', async () => {
-      (mockPrismaService.machine.update as jest.Mock).mockResolvedValue(updatedMachineFromDb);
-      (mockAlertsService.updateMachineAlerts as jest.Mock).mockResolvedValue(undefined);
+      mockPrismaService.machine.update.mockResolvedValue(updatedMachineFromDb);
+      mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
       const result = await service.updateMachine('machine-1', updateMachineDto);
 
@@ -279,15 +293,21 @@ describe('MachinesService', () => {
     });
 
     it('should handle update errors', async () => {
-      (mockPrismaService.machine.update as jest.Mock).mockRejectedValue(new Error('Update failed'));
+      mockPrismaService.machine.update.mockRejectedValue(
+        new Error('Update failed'),
+      );
 
-      await expect(service.updateMachine('machine-1', updateMachineDto)).rejects.toThrow('Machine not found');
+      await expect(
+        service.updateMachine('machine-1', updateMachineDto),
+      ).rejects.toThrow('Machine not found');
     });
   });
 
   describe('deleteMachine', () => {
     it('should delete machine successfully', async () => {
-      (mockPrismaService.machine.delete as jest.Mock).mockResolvedValue({ id: 'machine-1' });
+      mockPrismaService.machine.delete.mockResolvedValue({
+        id: 'machine-1',
+      });
 
       const result = await service.deleteMachine('machine-1');
 
@@ -298,9 +318,13 @@ describe('MachinesService', () => {
     });
 
     it('should handle deletion errors', async () => {
-      (mockPrismaService.machine.delete as jest.Mock).mockRejectedValue(new Error('Delete failed'));
+      mockPrismaService.machine.delete.mockRejectedValue(
+        new Error('Delete failed'),
+      );
 
-      await expect(service.deleteMachine('machine-1')).rejects.toThrow('Machine not found');
+      await expect(service.deleteMachine('machine-1')).rejects.toThrow(
+        'Machine not found',
+      );
     });
   });
 
@@ -321,7 +345,7 @@ describe('MachinesService', () => {
     ];
 
     it('should return machines by location', async () => {
-      (mockPrismaService.machine.findMany as jest.Mock).mockResolvedValue(mockMachines);
+      mockPrismaService.machine.findMany.mockResolvedValue(mockMachines);
 
       const result = await service.getMachinesByLocation('Campus A');
 
@@ -333,7 +357,7 @@ describe('MachinesService', () => {
     });
 
     it('should return empty array for location with no machines', async () => {
-      (mockPrismaService.machine.findMany as jest.Mock).mockResolvedValue([]);
+      mockPrismaService.machine.findMany.mockResolvedValue([]);
 
       const result = await service.getMachinesByLocation('Empty Location');
 
@@ -358,7 +382,7 @@ describe('MachinesService', () => {
     ];
 
     it('should return only online machines', async () => {
-      (mockPrismaService.machine.findMany as jest.Mock).mockResolvedValue(mockOnlineMachines);
+      mockPrismaService.machine.findMany.mockResolvedValue(mockOnlineMachines);
 
       const result = await service.getOnlineMachines();
 
@@ -376,25 +400,23 @@ describe('MachinesService', () => {
         { amount_total_cents: 1500 },
       ];
 
-      const mockOrdersPaid30d = [
-        { amount_total_cents: 1000 },
-      ];
+      const mockOrdersPaid30d = [{ amount_total_cents: 1000 }];
 
       const mockStockDetails = [
         { quantity: 5, low_threshold: 10, max_capacity: 20 },
         { quantity: 15, low_threshold: 5, max_capacity: 30 },
       ];
 
-      (mockPrismaService.stock.count as jest.Mock)
+      mockPrismaService.stock.count
         .mockResolvedValueOnce(2) // totalSlots
         .mockResolvedValueOnce(1) // lowStockCount
         .mockResolvedValueOnce(0); // outOfStockCount
 
-      (mockPrismaService.order.findMany as jest.Mock)
+      mockPrismaService.order.findMany
         .mockResolvedValueOnce(mockOrdersPaidAll) // ordersPaidAll
         .mockResolvedValueOnce(mockOrdersPaid30d); // ordersPaid30d
 
-      (mockPrismaService.stock.findMany as jest.Mock).mockResolvedValue(mockStockDetails);
+      mockPrismaService.stock.findMany.mockResolvedValue(mockStockDetails);
 
       const result = await service.getMachineStats('machine-1');
 
@@ -413,16 +435,16 @@ describe('MachinesService', () => {
     });
 
     it('should handle empty orders', async () => {
-      (mockPrismaService.stock.count as jest.Mock)
+      mockPrismaService.stock.count
         .mockResolvedValueOnce(0)
         .mockResolvedValueOnce(0)
         .mockResolvedValueOnce(0);
 
-      (mockPrismaService.order.findMany as jest.Mock)
+      mockPrismaService.order.findMany
         .mockResolvedValueOnce([])
         .mockResolvedValueOnce([]);
 
-      (mockPrismaService.stock.findMany as jest.Mock).mockResolvedValue([]);
+      mockPrismaService.stock.findMany.mockResolvedValue([]);
 
       const result = await service.getMachineStats('machine-1');
 
@@ -430,9 +452,13 @@ describe('MachinesService', () => {
     });
 
     it('should handle count errors', async () => {
-      (mockPrismaService.stock.count as jest.Mock).mockRejectedValue(new Error('Count failed'));
+      mockPrismaService.stock.count.mockRejectedValue(
+        new Error('Count failed'),
+      );
 
-      await expect(service.getMachineStats('machine-1')).rejects.toThrow('Count failed');
+      await expect(service.getMachineStats('machine-1')).rejects.toThrow(
+        'Count failed',
+      );
     });
   });
 
@@ -444,10 +470,13 @@ describe('MachinesService', () => {
         last_update: new Date(),
       };
 
-      (mockPrismaService.machine.update as jest.Mock).mockResolvedValue(updatedMachine);
-      (mockAlertsService.updateMachineAlerts as jest.Mock).mockResolvedValue(undefined);
+      mockPrismaService.machine.update.mockResolvedValue(updatedMachine);
+      mockAlertsService.updateMachineAlerts.mockResolvedValue(undefined);
 
-      const result = await service.updateMachineStatus('machine-1', 'maintenance');
+      const result = await service.updateMachineStatus(
+        'machine-1',
+        'maintenance',
+      );
 
       expect(mockPrismaService.machine.update).toHaveBeenCalledWith({
         where: { id: 'machine-1' },
@@ -459,6 +488,4 @@ describe('MachinesService', () => {
       expect(result.status).toBe('maintenance');
     });
   });
-
-
 });
