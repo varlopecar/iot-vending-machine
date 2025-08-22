@@ -170,22 +170,26 @@ jobs:
           fi
           echo "✅ All Scalingo secrets are configured"
 
-      - name: Deploy to Scalingo
+      - name: Setup Git for deployment
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy to Scalingo via Git
         id: deploy
         run: |
           echo "🚀 Starting deployment to Scalingo..."
           echo "📋 App Name: ${{ secrets.SCALINGO_APP_NAME }}"
           echo "📋 Region: ${{ secrets.SCALINGO_REGION }}"
 
-          # Login to Scalingo using environment variable
-          export SCALINGO_API_TOKEN="${{ secrets.SCALINGO_API_TOKEN }}"
-          scalingo login --api-token "$SCALINGO_API_TOKEN"
+          # Add Scalingo remote
+          git remote add scalingo git@ssh.osc-fr1.scalingo.com:${{ secrets.SCALINGO_APP_NAME }}.git || true
 
-          # Deploy the backend app
-          scalingo --app "${{ secrets.SCALINGO_APP_NAME }}" --region "${{ secrets.SCALINGO_REGION }}" deploy
+          # Push to Scalingo to trigger build and deployment
+          git push scalingo HEAD:main
 
-          echo "✅ Deployment initiated successfully!"
-          echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
+          echo "✅ Deployment triggered successfully!"
+          echo "deployment-url=https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
