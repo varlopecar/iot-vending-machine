@@ -9,12 +9,7 @@ import * as bcrypt from 'bcrypt';
 
 import { AuthService } from './auth.service';
 import { PrismaService } from '../prisma/prisma.service';
-import {
-  CreateUserInput,
-  LoginInput,
-  AdminLoginInput,
-  UpdateUserInput,
-} from './auth.schema';
+import { CreateUserInput, LoginInput, AdminLoginInput } from './auth.schema';
 
 // Mock bcrypt
 jest.mock('bcrypt');
@@ -37,6 +32,7 @@ describe('AuthService', () => {
   const mockJwtService = {
     signAsync: jest.fn(),
     verify: jest.fn(),
+    sign: jest.fn(),
   };
 
   beforeEach(async () => {
@@ -74,7 +70,7 @@ describe('AuthService', () => {
       email: 'john@example.com',
       password: 'hashedPassword',
       points: 0,
-      barcode: 'BC001',
+      barcode: '351866588799',
       role: 'CUSTOMER',
       created_at: new Date().toISOString(),
     };
@@ -83,6 +79,7 @@ describe('AuthService', () => {
       mockPrismaService.user.findUnique.mockResolvedValue(null);
       mockBcrypt.hash.mockResolvedValue('hashedPassword' as never);
       mockPrismaService.user.create.mockResolvedValue(mockUser);
+      mockJwtService.signAsync.mockResolvedValue('mock-jwt-token');
 
       const result = await service.register(registerDto);
 
@@ -97,9 +94,21 @@ describe('AuthService', () => {
           password: 'hashedPassword',
           points: 0,
           barcode: expect.any(String),
+          role: 'CUSTOMER',
         },
       });
-      expect(result).toEqual(mockUser);
+      expect(result).toEqual({
+        access_token: 'mock-jwt-token',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: {
+          id: mockUser.id,
+          email: mockUser.email,
+          full_name: mockUser.full_name,
+          barcode: mockUser.barcode,
+          role: mockUser.role,
+        },
+      });
     });
 
     it('should throw ConflictException if user already exists', async () => {
@@ -149,8 +158,16 @@ describe('AuthService', () => {
         sub: mockUser.id,
       });
       expect(result).toEqual({
-        user: mockUser,
-        token: 'mock-jwt-token',
+        access_token: 'mock-jwt-token',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: {
+          id: mockUser.id,
+          email: mockUser.email,
+          full_name: mockUser.full_name,
+          barcode: mockUser.barcode,
+          role: mockUser.role,
+        },
       });
     });
 
@@ -207,8 +224,16 @@ describe('AuthService', () => {
         sub: mockAdminUser.id,
       });
       expect(result).toEqual({
-        user: mockAdminUser,
-        token: 'mock-admin-jwt-token',
+        access_token: 'mock-admin-jwt-token',
+        token_type: 'Bearer',
+        expires_in: 3600,
+        user: {
+          id: mockAdminUser.id,
+          email: mockAdminUser.email,
+          full_name: mockAdminUser.full_name,
+          barcode: mockAdminUser.barcode,
+          role: mockAdminUser.role,
+        },
       });
     });
 
@@ -292,41 +317,6 @@ describe('AuthService', () => {
     });
   });
 
-  describe('updateUser', () => {
-    const userId = 'user-1';
-    const updateDto: UpdateUserInput = {
-      full_name: 'John Updated',
-      email: 'john.updated@example.com',
-    };
-
-    const mockUpdatedUser = {
-      id: 'user-1',
-      full_name: 'John Updated',
-      email: 'john.updated@example.com',
-      password: 'hashedPassword',
-      points: 150,
-      barcode: 'BC001',
-      role: 'CUSTOMER',
-      created_at: new Date().toISOString(),
-    };
-
-    it('should update user successfully', async () => {
-      mockPrismaService.user.findUnique.mockResolvedValue(mockUpdatedUser);
-      mockPrismaService.user.update.mockResolvedValue(mockUpdatedUser);
-
-      const result = await service.updateUser(userId, updateDto);
-
-      expect(mockPrismaService.user.findUnique).toHaveBeenCalledWith({
-        where: { id: userId },
-      });
-      expect(mockPrismaService.user.update).toHaveBeenCalledWith({
-        where: { id: userId },
-        data: updateDto,
-      });
-      expect(result).toEqual(mockUpdatedUser);
-    });
-  });
-
   describe('updatePoints', () => {
     const userId = 'user-1';
     const newPoints = 500;
@@ -382,6 +372,26 @@ describe('AuthService', () => {
         sub: userId,
       });
       expect(token).toBe('mock.jwt.token');
+    });
+  });
+
+  describe('generateMachineToken', () => {
+    const userId = 'user-1';
+    const machineId = 'machine-1';
+
+    it('should generate machine-specific JWT token', () => {
+      mockJwtService.sign.mockReturnValue('mock.machine.token');
+
+      const token = service.generateMachineToken(userId, machineId);
+
+      expect(mockJwtService.sign).toHaveBeenCalledWith({
+        sub: userId,
+        machineId: machineId,
+        type: 'machine',
+        iat: expect.any(Number),
+        exp: expect.any(Number),
+      });
+      expect(token).toBe('mock.machine.token');
     });
   });
 });
