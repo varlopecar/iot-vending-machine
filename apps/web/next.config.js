@@ -34,13 +34,17 @@ const nextConfig = {
   
   // Headers de sécurité selon recommandations OWASP
   async headers() {
-    const isDev = process.env.NODE_ENV === 'development';
+    // Ensure we're in development mode for local development
+    const isDev = process.env.NODE_ENV === 'development' || process.env.NODE_ENV !== 'production';
+    
+    console.log('🔧 Next.js Config - Environment:', process.env.NODE_ENV);
+    console.log('🔧 Next.js Config - isDev:', isDev);
     
     const csp = [
       "default-src 'self'",
-      // Scripts : plus restrictif en production
+      // Scripts : allow unsafe-inline in development, strict in production
       isDev 
-        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval'" 
+        ? "script-src 'self' 'unsafe-inline' 'unsafe-eval' 'sha256-OBTN3RiyCV4Bq7dFqZ5a2pAXjnCcCYeTJMO2I/LYKeo=' 'sha256-UJWDOKXMYa+QbSjE9DZCWwdSE1eavGoUa8q3qVdc+q0=' 'sha256-K6tdVCj0kScFVzdsrVgAQ6DaGekqxnO3T3WBcDC1RXE=' 'sha256-FhLHRUQz4c4ntLU9VkfEesX7PnzNLENSe/16Hi523Kk=' 'sha256-YjZl9+h6dDmERkT7ebobEOfWJEeKh5MDgzcM2RtuBuM=' 'sha256-bg+CWjI8RppcgHYH6RuW4z4OnLAUEUPDXRoYUo9Tyok='" 
         : "script-src 'self'",
       // Styles : autoriser inline pour Tailwind mais limiter les sources
       "style-src 'self' 'unsafe-inline'",
@@ -48,7 +52,7 @@ const nextConfig = {
       "img-src 'self' data: https:",
       // Connexions : backend et services essentiels uniquement
       isDev
-        ? "connect-src 'self' http://localhost:3000 https://api.stripe.com ws://localhost:*"
+        ? "connect-src 'self' http://localhost:3000 https://api.stripe.com ws://localhost:* wss://localhost:*"
         : "connect-src 'self' https://your-backend-prod.com https://api.stripe.com",
       "font-src 'self'",
       "object-src 'none'",

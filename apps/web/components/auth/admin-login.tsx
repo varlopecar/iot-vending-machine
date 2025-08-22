@@ -34,7 +34,14 @@ export function AdminLogin() {
       router.push("/");
     },
     onError: (error) => {
-      setError(error.message);
+      console.error('🔴 Login error:', error);
+      
+      // Handle connection errors specifically
+      if (error.message.includes('Connection closed') || error.message.includes('fetch')) {
+        setError('Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur http://localhost:3000');
+      } else {
+        setError(error.message);
+      }
       setIsLoading(false);
     },
   });
