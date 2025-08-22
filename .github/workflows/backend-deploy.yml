@@ -131,6 +131,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for git subtree
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -146,50 +148,40 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Install Scalingo CLI
+      - name: Setup SSH key for Scalingo
         run: |
-          echo "📦 Installing Scalingo CLI..."
-          curl -O https://cli-dl.scalingo.com/install.sh
-          bash install.sh
-          echo "✅ Scalingo CLI installed"
-
-      - name: Validate Scalingo Secrets
-        run: |
-          echo "🔍 Validating Scalingo configuration..."
-          if [ -z "${{ secrets.SCALINGO_API_TOKEN }}" ]; then
-            echo "❌ SCALINGO_API_TOKEN secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SCALINGO_APP_NAME }}" ]; then
-            echo "❌ SCALINGO_APP_NAME secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SCALINGO_REGION }}" ]; then
-            echo "❌ SCALINGO_REGION secret is not set"
-            exit 1
-          fi
-          echo "✅ All Scalingo secrets are configured"
+          echo "🔑 Setting up SSH key for Scalingo deployment..."
+          mkdir -p ~/.ssh
+          
+          # Write the SSH private key properly
+          printf '%s\n' "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          
+          # Add Scalingo host to known_hosts
+          ssh-keyscan ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
+          
+          echo "✅ SSH key setup completed"
 
       - name: Setup Git for deployment
         run: |
           git config --global user.name "github-actions[bot]"
           git config --global user.email "github-actions[bot]@users.noreply.github.com"
 
-      - name: Deploy to Scalingo via Git
+      - name: Deploy to Scalingo using git subtree (exact replica of successful manual deployment)
         id: deploy
         run: |
-          echo "🚀 Starting deployment to Scalingo..."
-          echo "📋 App Name: ${{ secrets.SCALINGO_APP_NAME }}"
-          echo "📋 Region: ${{ secrets.SCALINGO_REGION }}"
+          echo "🚀 Starting deployment to Scalingo using the exact same method that worked manually..."
 
-          # Add Scalingo remote
-          git remote add scalingo git@ssh.osc-fr1.scalingo.com:${{ secrets.SCALINGO_APP_NAME }}.git || true
+          # Add Scalingo remote (same as manual deployment)
+          git remote add scalingo git@ssh.osc-fr1.scalingo.com:iot-vending-machine.git || true
 
-          # Push to Scalingo to trigger build and deployment
-          git push scalingo HEAD:main
-
-          echo "✅ Deployment triggered successfully!"
-          echo "deployment-url=https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io" >> $GITHUB_OUTPUT
+          # Deploy using git subtree (exact same command as manual deployment)
+          echo "📦 Deploying backend folder to Scalingo using git subtree..."
+          git subtree push --prefix=apps/backend scalingo main
+          
+          echo "✅ Git subtree deployment completed successfully!"
+          echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
+          echo "deployment-method=git-subtree" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
