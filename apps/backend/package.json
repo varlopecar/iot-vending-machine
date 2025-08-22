@@ -29,7 +29,7 @@
     "seed": "ts-node prisma/seed.ts",
     "migrate:dev": "prisma migrate dev",
     "db:migrate": "prisma migrate deploy",
-    "db:setup": "pnpm prisma migrate status && pnpm prisma migrate deploy && pnpm seed",
+    "db:setup": "npx prisma migrate status && npx prisma migrate deploy && npm run seed",
     "db:backfill:payments": "ts-node scripts/backfill_payments_snapshots.ts",
     "db:verify:constraints": "ts-node scripts/verify_constraints.ts",
     "db:patch:stock-capacity": "prisma db execute --file scripts/patch_stock_capacity.sql --schema prisma/schema.prisma",
