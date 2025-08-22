@@ -24,5 +24,8 @@
   "scripts": {
     "postdeploy": "pnpm run db:setup"
   },
+  "environments": {
+    "BUILD_COMMAND": "cd apps/backend && pnpm install --prod --frozen-lockfile && pnpm build"
+  },
   "addons": ["postgresql"]
 }
