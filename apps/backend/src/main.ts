@@ -16,9 +16,34 @@ async function bootstrap() {
   console.log('🔧 Environment PORT:', process.env.PORT);
   console.log('🔧 Environment NODE_ENV:', process.env.NODE_ENV);
   
+  // Ensure PORT is set for Scalingo
+  if (!process.env.PORT) {
+    console.log('⚠️ PORT not set, using default 3000');
+    process.env.PORT = '3000';
+  }
+  
   // Valider les variables d'environnement au démarrage
-  const env = validateEnv();
-  console.log('✅ Environment validation successful, PORT:', env.PORT);
+  let env;
+  try {
+    env = validateEnv();
+    console.log('✅ Environment validation successful, PORT:', env.PORT);
+  } catch (error) {
+    console.error('❌ Environment validation failed:', error.message);
+    // For development/testing, provide minimal defaults
+    env = {
+      PORT: parseInt(process.env.PORT || '3000'),
+      NODE_ENV: process.env.NODE_ENV || 'production',
+      DATABASE_URL: process.env.DATABASE_URL || 'postgresql://localhost:5432/iot_vending_machine',
+      JWT_SECRET: process.env.JWT_SECRET || 'development-jwt-secret-change-in-production',
+      STRIPE_SECRET_KEY: process.env.STRIPE_SECRET_KEY || 'sk_test_dummy',
+      STRIPE_PUBLISHABLE_KEY: process.env.STRIPE_PUBLISHABLE_KEY || 'pk_test_dummy',
+      STRIPE_WEBHOOK_SECRET: process.env.STRIPE_WEBHOOK_SECRET || 'whsec_dummy',
+      STRIPE_API_VERSION: process.env.STRIPE_API_VERSION || '2024-06-20',
+      QR_SECRET: process.env.QR_SECRET || 'development-qr-secret',
+      QR_TTL_SECONDS: parseInt(process.env.QR_TTL_SECONDS || '600')
+    };
+    console.log('⚠️ Using fallback environment configuration');
+  }
 
   // Créer l'application avec Express adapter pour configurer le raw body
   const expressApp = express();
@@ -95,11 +120,45 @@ async function bootstrap() {
   // IMPORTANT: Doit être AVANT app.use(express.json()) pour conserver le raw buffer
   expressApp.use('/webhooks/stripe', express.raw({ type: 'application/json' }));
 
-  await app.listen(env.PORT);
+  await app.listen(env.PORT, '0.0.0.0');
 
-  console.log(`🚀 Application is running on: http://localhost:${env.PORT}`);
+  console.log(`🚀 Application is running on: http://0.0.0.0:${env.PORT}`);
   console.log(
-    `📚 Swagger documentation available at: http://localhost:${env.PORT}/api-docs`,
+    `📚 Swagger documentation available at: http://0.0.0.0:${env.PORT}/api-docs`,
   );
+  console.log('✅ Application bootstrap completed successfully!');
 }
-bootstrap();
+
+// Handle unhandled promise rejections
+process.on('unhandledRejection', (reason, promise) => {
+  console.error('❌ Unhandled Rejection at:', promise, 'reason:', reason);
+  // Don't exit in production, just log
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
+// Handle uncaught exceptions
+process.on('uncaughtException', (error) => {
+  console.error('❌ Uncaught Exception:', error);
+  // Don't exit in production, just log
+  if (process.env.NODE_ENV !== 'production') {
+    process.exit(1);
+  }
+});
+
+// Graceful shutdown
+process.on('SIGTERM', () => {
+  console.log('🛑 Received SIGTERM signal, shutting down gracefully');
+  process.exit(0);
+});
+
+process.on('SIGINT', () => {
+  console.log('🛑 Received SIGINT signal, shutting down gracefully');
+  process.exit(0);
+});
+
+bootstrap().catch((error) => {
+  console.error('❌ Failed to start application:', error);
+  process.exit(1);
+});

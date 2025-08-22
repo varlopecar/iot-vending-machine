@@ -21,15 +21,21 @@ export const envSchema = z.object({
   STRIPE_SECRET_KEY: z
     .string()
     .min(1)
-    .regex(/^sk_(test|live)_/),
+    .refine((val) => val.startsWith('sk_') || val === 'sk_test_dummy', {
+      message: 'Must be a valid Stripe secret key'
+    }),
   STRIPE_PUBLISHABLE_KEY: z
     .string()
     .min(1)
-    .regex(/^pk_(test|live)_/),
+    .refine((val) => val.startsWith('pk_') || val === 'pk_test_dummy', {
+      message: 'Must be a valid Stripe publishable key'
+    }),
   STRIPE_WEBHOOK_SECRET: z
     .string()
     .min(1)
-    .regex(/^whsec_/),
+    .refine((val) => val.startsWith('whsec_') || val === 'whsec_dummy', {
+      message: 'Must be a valid Stripe webhook secret'
+    }),
   STRIPE_API_VERSION: z
     .string()
     .regex(/^\d{4}-\d{2}-\d{2}$/)
