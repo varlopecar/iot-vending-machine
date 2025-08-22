@@ -126,7 +126,7 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: production
+    environment: dev
 
     steps:
       - name: Checkout code
@@ -153,10 +153,29 @@ jobs:
           bash install.sh
           echo "✅ Scalingo CLI installed"
 
+      - name: Validate Scalingo Secrets
+        run: |
+          echo "🔍 Validating Scalingo configuration..."
+          if [ -z "${{ secrets.SCALINGO_API_TOKEN }}" ]; then
+            echo "❌ SCALINGO_API_TOKEN secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SCALINGO_APP_NAME }}" ]; then
+            echo "❌ SCALINGO_APP_NAME secret is not set"
+            exit 1
+          fi
+          if [ -z "${{ secrets.SCALINGO_REGION }}" ]; then
+            echo "❌ SCALINGO_REGION secret is not set"
+            exit 1
+          fi
+          echo "✅ All Scalingo secrets are configured"
+
       - name: Deploy to Scalingo
         id: deploy
         run: |
           echo "🚀 Starting deployment to Scalingo..."
+          echo "📋 App Name: ${{ secrets.SCALINGO_APP_NAME }}"
+          echo "📋 Region: ${{ secrets.SCALINGO_REGION }}"
 
           # Login to Scalingo
           echo "${{ secrets.SCALINGO_API_TOKEN }}" | scalingo login --api-token -
