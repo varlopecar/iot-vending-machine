@@ -132,7 +132,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for git subtree
+          fetch-depth: 0 # Required for git subtree
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -152,20 +152,27 @@ jobs:
         run: |
           echo "🔑 Setting up SSH key for Scalingo deployment..."
           mkdir -p ~/.ssh
-          
-          # Write the SSH private key properly
           echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
           chmod 700 ~/.ssh
-          
-          # Add Scalingo host to known_hosts
           ssh-keyscan -H ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
           chmod 644 ~/.ssh/known_hosts
-          
+
+          # Start SSH agent and add the key
+          eval "$(ssh-agent -s)"
+          ssh-add ~/.ssh/id_rsa
+
+          # Optional: Add SSH config
+          echo "Host ssh.osc-fr1.scalingo.com" >> ~/.ssh/config
+          echo "  IdentityFile ~/.ssh/id_rsa" >> ~/.ssh/config
+          echo "  IdentitiesOnly yes" >> ~/.ssh/config
+          echo "  StrictHostKeyChecking no" >> ~/.ssh/config
+          echo "  User git" >> ~/.ssh/config
+
           # Test SSH connection
           echo "🧪 Testing SSH connection to Scalingo..."
-          ssh -o StrictHostKeyChecking=no -T git@ssh.osc-fr1.scalingo.com || echo "SSH test completed (exit code expected)"
-          
+          ssh -T git@ssh.osc-fr1.scalingo.com || echo "SSH test completed (exit code expected)"
+
           echo "✅ SSH key setup completed"
 
       - name: Setup Git for deployment
@@ -187,7 +194,7 @@ jobs:
             echo "⚠️ Standard subtree push failed, trying force push..."
             git push scalingo `git subtree split --prefix=apps/backend HEAD`:main --force
           }
-          
+
           echo "✅ Git subtree deployment completed successfully!"
           echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
           echo "deployment-method=git-subtree" >> $GITHUB_OUTPUT
