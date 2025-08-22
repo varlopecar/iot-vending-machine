@@ -12,6 +12,7 @@ import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 
 async function bootstrap() {
   console.log('🔧 Starting application bootstrap...');
+  console.log('🔧 Deployment timestamp:', new Date().toISOString());
   console.log('🔧 Node.js version:', process.version);
   console.log('🔧 Environment PORT:', process.env.PORT);
   console.log('🔧 Environment NODE_ENV:', process.env.NODE_ENV);
