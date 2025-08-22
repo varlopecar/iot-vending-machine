@@ -43,34 +43,43 @@ const nextConfig = {
     console.log('🔧 Next.js Config - NEXT_PUBLIC_DEV_MODE:', process.env.NEXT_PUBLIC_DEV_MODE);
     console.log('🔧 Next.js Config - isDev:', isDev);
 
-    // For development, use a more permissive CSP to avoid constant hash updates
-    const csp = isDev
-      ? [
-        "default-src 'self'",
-        "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
-        "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: https:",
-        "connect-src 'self' http://localhost:3000 https://api.stripe.com ws://localhost:* wss://localhost:*",
-        "font-src 'self'",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "form-action 'self'",
-        "frame-ancestors 'none'",
-      ].join('; ')
-      : [
-        "default-src 'self'",
-        "script-src 'self'",
-        "style-src 'self' 'unsafe-inline'",
-        "img-src 'self' data: https:",
-        "connect-src 'self' https://iot-vending-machine.osc-fr1.scalingo.io https://api.stripe.com",
-        "font-src 'self'",
-        "object-src 'none'",
-        "base-uri 'self'",
-        "form-action 'self'",
-        "frame-ancestors 'none'",
-        "block-all-mixed-content",
-        "upgrade-insecure-requests"
-      ].join('; ');
+    // CSP configuration that allows Next.js inline scripts while maintaining security
+    // In development, we use unsafe-inline for convenience
+    // In production, we could implement nonces for better security
+    const csp = [
+      "default-src 'self'",
+      "script-src 'self' 'unsafe-inline' 'unsafe-eval'",
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      `connect-src 'self' ${isDev ? 'http://localhost:3000 ws://localhost:* wss://localhost:*' : ''} https://iot-vending-machine.osc-fr1.scalingo.io https://api.stripe.com`,
+      "font-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      ...(isDev ? [] : ["block-all-mixed-content", "upgrade-insecure-requests"])
+    ].join('; ');
+
+    // Alternative: More secure CSP for production using nonces
+    // Uncomment the following lines and comment out the above csp configuration
+    // for a more secure production setup
+    /*
+    const nonce = crypto.randomBytes(16).toString('base64');
+    const csp = [
+      "default-src 'self'",
+      `script-src 'self' 'nonce-${nonce}' 'strict-dynamic'`,
+      "style-src 'self' 'unsafe-inline'",
+      "img-src 'self' data: https:",
+      `connect-src 'self' https://iot-vending-machine.osc-fr1.scalingo.io https://api.stripe.com`,
+      "font-src 'self'",
+      "object-src 'none'",
+      "base-uri 'self'",
+      "form-action 'self'",
+      "frame-ancestors 'none'",
+      "block-all-mixed-content",
+      "upgrade-insecure-requests"
+    ].join('; ');
+    */
 
     return [
       {
