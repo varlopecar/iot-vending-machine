@@ -22,7 +22,6 @@
     }
   ],
   "scripts": {
-    "start": "cd apps/backend && node dist/src/main.js",
     "postdeploy": "cd apps/backend && pnpm run db:setup"
   },
   "environments": {
