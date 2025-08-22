@@ -201,31 +201,33 @@ jobs:
           fi
           echo "✅ Deployment configuration validated"
 
-      - name: Deploy to Scalingo
+      - name: Setup SSH key for Scalingo
+        run: |
+          mkdir -p ~/.ssh
+          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+          chmod 600 ~/.ssh/id_rsa
+          ssh-keyscan ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
+          
+      - name: Setup Git for deployment
+        run: |
+          git config --global user.name "github-actions[bot]"
+          git config --global user.email "github-actions[bot]@users.noreply.github.com"
+
+      - name: Deploy to Scalingo using git subtree
         id: deploy
         run: |
-          echo "🚀 Starting deployment to Scalingo..."
-
-          # Set Scalingo region
-          export SCALINGO_REGION="${{ secrets.SCALINGO_REGION }}"
-
-          # Deploy using Scalingo CLI or API
-          echo "📦 Deploying backend to Scalingo..."
-
-          # For now, we'll use git push to Scalingo remote
-          # This assumes you have the Scalingo git remote configured
-          if [ -n "${{ vars.SCALINGO_GIT_REMOTE }}" ]; then
-            echo "🔗 Using Scalingo git remote: ${{ vars.SCALINGO_GIT_REMOTE }}"
-            git remote add scalingo ${{ vars.SCALINGO_GIT_REMOTE }} || true
-            git push scalingo main:master
-            echo "✅ Deployment initiated via git push"
-          else
-            echo "⚠️ SCALINGO_GIT_REMOTE not configured, skipping deployment"
-            echo "📋 Please configure Scalingo git remote for automatic deployment"
-          fi
-
-          # Set deployment URL (you'll need to adjust this based on your Scalingo app URL)
-          echo "deployment-url=https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io" >> $GITHUB_OUTPUT
+          echo "🚀 Starting deployment to Scalingo using git subtree..."
+          
+          # Add Scalingo remote
+          git remote add scalingo git@ssh.osc-fr1.scalingo.com:iot-vending-machine.git || true
+          
+          # Deploy only the backend folder using git subtree
+          echo "📦 Deploying backend folder to Scalingo..."
+          git subtree push --prefix=apps/backend scalingo main
+          
+          echo "✅ Deployment completed successfully!"
+          # Set the actual deployment URL
+          echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
@@ -265,7 +267,7 @@ jobs:
           echo "✅ Backend deployment completed successfully!"
           echo "🚀 Backend API is now live in production"
           echo "📋 All tests passed, build successful, and deployment completed"
-          echo "🔗 Backend URL: https://${{ secrets.SCALINGO_APP_NAME }}.${{ secrets.SCALINGO_REGION }}.scalingo.io"
+          echo "🔗 Backend URL: https://iot-vending-machine.osc-fr1.scalingo.io"
 
       - name: Notify failure
         if: needs.test.result == 'failure' || needs.build.result == 'failure' || needs.deploy-production.result == 'failure'

@@ -187,7 +187,7 @@ jobs:
         id: deploy
         run: |
           url=$(vercel deploy --prebuilt --prod --token=${{ secrets.VERCEL_TOKEN }})
-          echo "production-url=$url" >> $GITHUB_OUTPUT
+          echo "production-url=https://iot-vending-machine-web.vercel.app" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
@@ -218,8 +218,9 @@ jobs:
         if: needs.test.result == 'success' && needs.deploy-production.result == 'success'
         run: |
           echo "✅ Web Dashboard deployment completed successfully!"
-          echo "🚀 Production site is now live"
+          echo "🚀 Production site is now live at https://iot-vending-machine-web.vercel.app/login"
           echo "📋 All tests passed and application built successfully"
+          echo "🔗 Web Dashboard URL: https://iot-vending-machine-web.vercel.app/login"
       - name: Notify failure
         if: needs.test.result == 'failure' || needs.deploy-production.result == 'failure'
         run: |
