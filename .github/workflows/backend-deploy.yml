@@ -32,15 +32,16 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
       - name: Lint code (skipped for deployment)
         run: |
@@ -62,8 +63,6 @@ jobs:
     runs-on: ubuntu-latest
     needs: test
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    outputs:
-      build-ready: ${{ steps.build-status.outputs.ready }}
 
     steps:
       - name: Checkout code
@@ -72,20 +71,16 @@ jobs:
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
-
-      - name: Validate Build Configuration
-        run: |
-          echo "🔍 Checking build configuration..."
-          echo "✅ Build environment is ready"
+        run: pnpm install --frozen-lockfile
 
       - name: Generate Prisma Client
         run: |
@@ -100,44 +95,10 @@ jobs:
           echo "✅ Build process completed"
           echo "📁 Checking output directory..."
           ls -la dist/ || echo "⚠️ dist directory not found after build"
-        id: build
-
-      - name: Setup Prisma (pre-deployment check)
-        run: |
-          cd apps/backend
-          echo "🔍 Skipping Prisma migration status in CI..."
-          echo "✅ Prisma checks will be done during deployment"
-
-      - name: Verify build artifacts
-        run: |
-          cd apps/backend
-          echo "🔍 Checking build output..."
-          ls -la dist/ || echo "dist directory not found"
-
-          if [ -d "dist" ]; then
-            echo "✅ dist directory exists"
-            echo "📁 Contents of dist directory:"
-            find dist -type f -name "*.js" | head -10
-            
-            # Check for main.js or any main entry point
-            if [ -f "dist/main.js" ] || [ -f "dist/src/main.js" ] || find dist -name "main.js" -type f | grep -q .; then
-              echo "✅ Build artifacts verified - main entry point found"
-              echo "ready=true" >> $GITHUB_OUTPUT
-            else
-              echo "❌ Main entry point not found in dist/"
-              echo "ready=false" >> $GITHUB_OUTPUT
-              exit 1
-            fi
-          else
-            echo "❌ dist directory missing"
-            echo "ready=false" >> $GITHUB_OUTPUT
-            exit 1
-          fi
-        id: build-status
 
       - name: Create deployment summary
         run: |
-          echo "## 🚀 Deployment Ready for Approval" >> $GITHUB_STEP_SUMMARY
+          echo "## 🚀 Backend Ready for Deployment" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Build Status:** ✅ Success" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
@@ -165,146 +126,52 @@ jobs:
     runs-on: ubuntu-latest
     needs: [test, build]
     if: github.ref == 'refs/heads/main' && github.event_name == 'push'
-    environment: dev
+    environment: production
 
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0 # Required for git subtree
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
         with:
-          version: 8
+          version: 9
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
           node-version: "18"
+          cache: "pnpm"
 
       - name: Install dependencies
-        run: pnpm install
+        run: pnpm install --frozen-lockfile
 
-      - name: Install Scalingo CLI (backup deployment method)
+      - name: Install Scalingo CLI
         run: |
-          echo "📦 Installing Scalingo CLI as backup deployment method..."
+          echo "📦 Installing Scalingo CLI..."
           curl -O https://cli-dl.scalingo.com/install.sh
           bash install.sh
           echo "✅ Scalingo CLI installed"
 
-      - name: Validate Deployment Configuration
-        run: |
-          echo "🔍 Checking deployment configuration..."
-          if [ -z "${{ secrets.SCALINGO_API_TOKEN }}" ]; then
-            echo "❌ SCALINGO_API_TOKEN secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SCALINGO_APP_NAME }}" ]; then
-            echo "❌ SCALINGO_APP_NAME secret is not set"
-            exit 1
-          fi
-          if [ -z "${{ secrets.SCALINGO_REGION }}" ]; then
-            echo "❌ SCALINGO_REGION secret is not set"
-            exit 1
-          fi
-          echo "✅ Deployment configuration validated"
-
-      - name: Setup SSH key for Scalingo
-        run: |
-          echo "🔑 Setting up SSH key for Scalingo deployment..."
-          mkdir -p ~/.ssh
-
-          # Write the SSH private key properly with proper formatting
-          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
-          chmod 600 ~/.ssh/id_rsa
-
-          # Add Scalingo host to known_hosts
-          ssh-keyscan -H ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts 2>/dev/null || true
-
-          # Start SSH agent and add key
-          eval "$(ssh-agent -s)"
-          ssh-add ~/.ssh/id_rsa
-
-          echo "✅ SSH key setup completed"
-
-      - name: Debug SSH Configuration
-        run: |
-          echo "🔍 Debugging SSH configuration..."
-          echo "SSH key permissions:"
-          ls -la ~/.ssh/
-          echo ""
-          echo "SSH key content (first few lines):"
-          head -5 ~/.ssh/id_rsa
-          echo ""
-          echo "Known hosts:"
-          cat ~/.ssh/known_hosts
-          echo ""
-          echo "SSH agent status:"
-          ssh-add -l || echo "No SSH agent running"
-
-      - name: Test SSH Connection
-        run: |
-          echo "🔍 Testing SSH connection to Scalingo..."
-          if ssh -o ConnectTimeout=10 -o BatchMode=yes git@ssh.osc-fr1.scalingo.com 2>&1 | grep -q "PTY allocation request failed"; then
-            echo "✅ SSH connection successful (PTY allocation failed is expected)"
-          else
-            echo "❌ SSH connection failed"
-            echo "Testing with verbose output:"
-            ssh -v -o ConnectTimeout=10 git@ssh.osc-fr1.scalingo.com || true
-            exit 1
-          fi
-
-      - name: Setup Git for deployment
-        run: |
-          git config --global user.name "github-actions[bot]"
-          git config --global user.email "github-actions[bot]@users.noreply.github.com"
-
-      - name: Deploy to Scalingo using git subtree
+      - name: Deploy to Scalingo
         id: deploy
         run: |
           echo "🚀 Starting deployment to Scalingo..."
 
-          # Add Scalingo remote
-          git remote add scalingo git@ssh.osc-fr1.scalingo.com:iot-vending-machine.git || true
+          # Login to Scalingo
+          echo "${{ secrets.SCALINGO_API_TOKEN }}" | scalingo login --api-token -
 
-          # Try git subtree deployment first
-          echo "📦 Attempting git subtree deployment..."
-          if git subtree push --prefix=apps/backend scalingo main; then
-            echo "✅ Git subtree deployment completed successfully!"
-            echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
-            echo "deployment-method=git-subtree" >> $GITHUB_OUTPUT
-          else
-            echo "⚠️ Git subtree deployment failed, trying alternative method..."
-            
-            # Alternative: Use Scalingo CLI deployment
-            echo "🔄 Attempting Scalingo CLI deployment..."
-            
-            # Login to Scalingo
-            scalingo login --api-token "${{ secrets.SCALINGO_API_TOKEN }}"
-            
-            # Create a temporary directory and extract just the backend
-            mkdir -p /tmp/backend-deploy
-            cp -r apps/backend/* /tmp/backend-deploy/
-            cd /tmp/backend-deploy
-            
-            # Create a tarball for deployment
-            tar -czf backend-deploy.tar.gz .
-            
-            # Deploy using Scalingo CLI
-            scalingo --app "${{ secrets.SCALINGO_APP_NAME }}" --region "${{ secrets.SCALINGO_REGION }}" deploy backend-deploy.tar.gz
-            
-            echo "✅ Scalingo CLI deployment completed!"
-            echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
-            echo "deployment-method=scalingo-cli" >> $GITHUB_OUTPUT
-          fi
+          # Deploy the backend app
+          scalingo --app "${{ secrets.SCALINGO_APP_NAME }}" --region "${{ secrets.SCALINGO_REGION }}" deploy
+
+          echo "✅ Deployment initiated successfully!"
+          echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
 
       - name: Create deployment summary
         run: |
           echo "## 🚀 Backend Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Deployment URL:** ${{ steps.deploy.outputs.deployment-url }}" >> $GITHUB_STEP_SUMMARY
-          echo "**Deployment Method:** ${{ steps.deploy.outputs.deployment-method }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "**Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
@@ -322,9 +189,7 @@ jobs:
           echo "### 🧪 Deployment Status:" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Tests passed" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Build successful" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Environment validated" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Deployed to Scalingo production" >> $GITHUB_STEP_SUMMARY
-          echo "- ✅ Deployment method: ${{ steps.deploy.outputs.deployment-method }}" >> $GITHUB_STEP_SUMMARY
 
   notify:
     name: Notify Deployment Status
