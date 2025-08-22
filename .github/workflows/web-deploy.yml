@@ -22,8 +22,8 @@ permissions:
   deployments: write
 
 env:
-  VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-  VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+  VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+  VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
 jobs:
   test:
@@ -119,20 +119,20 @@ jobs:
             echo "❌ VERCEL_TOKEN secret is not set"
             exit 1
           fi
-          if [ -z "${{ vars.VERCEL_ORG_ID }}" ]; then
-            echo "❌ VERCEL_ORG_ID variable is not set"
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "❌ VERCEL_ORG_ID secret is not set"
             exit 1
           fi
-          if [ -z "${{ vars.VERCEL_PROJECT_ID }}" ]; then
-            echo "❌ VERCEL_PROJECT_ID variable is not set"
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "❌ VERCEL_PROJECT_ID secret is not set"
             exit 1
           fi
           echo "✅ All Vercel secrets are configured"
           vercel pull --yes --environment=preview --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/web
         env:
-          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Build Project Artifacts
         run: vercel build --token=${{ secrets.VERCEL_TOKEN }}
@@ -207,20 +207,20 @@ jobs:
             echo "❌ VERCEL_TOKEN secret is not set"
             exit 1
           fi
-          if [ -z "${{ vars.VERCEL_ORG_ID }}" ]; then
-            echo "❌ VERCEL_ORG_ID variable is not set"
+          if [ -z "${{ secrets.VERCEL_ORG_ID }}" ]; then
+            echo "❌ VERCEL_ORG_ID secret is not set"
             exit 1
           fi
-          if [ -z "${{ vars.VERCEL_PROJECT_ID }}" ]; then
-            echo "❌ VERCEL_PROJECT_ID variable is not set"
+          if [ -z "${{ secrets.VERCEL_PROJECT_ID }}" ]; then
+            echo "❌ VERCEL_PROJECT_ID secret is not set"
             exit 1
           fi
           echo "✅ All Vercel secrets are configured"
           vercel pull --yes --environment=production --token=${{ secrets.VERCEL_TOKEN }}
         working-directory: apps/web
         env:
-          VERCEL_ORG_ID: ${{ vars.VERCEL_ORG_ID }}
-          VERCEL_PROJECT_ID: ${{ vars.VERCEL_PROJECT_ID }}
+          VERCEL_ORG_ID: ${{ secrets.VERCEL_ORG_ID }}
+          VERCEL_PROJECT_ID: ${{ secrets.VERCEL_PROJECT_ID }}
 
       - name: Build Project Artifacts
         run: vercel build --prod --token=${{ secrets.VERCEL_TOKEN }}
