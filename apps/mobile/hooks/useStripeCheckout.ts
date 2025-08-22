@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useStripe } from "@stripe/stripe-react-native";
 import { Platform, Alert } from "react-native";
+import { API_BASE_URL } from "../lib/api";
 
 interface CreatePaymentIntentParams {
   amount: number;
@@ -40,9 +41,8 @@ export const useStripeCheckout = () => {
         platform: Platform.OS,
       };
 
-      // URL ngrok déployée
-      const NGROK_URL = "https://ab13e2c66694.ngrok-free.app";
-      const endpoint = `${NGROK_URL}/trpc/stripe.createPaymentIntent`;
+      // Use API_BASE_URL instead of hardcoded ngrok URL
+      const endpoint = `${API_BASE_URL}/trpc/stripe.createPaymentIntent`;
 
       const response = await fetch(endpoint, {
         method: "POST",

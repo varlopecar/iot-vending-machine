@@ -1,5 +1,6 @@
 import React, { createContext, useContext, useEffect, useState, ReactElement } from 'react';
 import { StripeProvider as StripeProviderBase } from '@stripe/stripe-react-native';
+import { API_BASE_URL } from '../lib/api';
 
 interface StripeContextType {
   publishableKey: string | null;
@@ -17,7 +18,6 @@ interface StripeProviderProps {
 const fetchPublishableKey = async (): Promise<string> => {
   try {
     // Récupérer la clé depuis le backend de manière sécurisée
-    const API_BASE_URL = process.env.EXPO_PUBLIC_API_URL || 'http://localhost:3000';
     const response = await fetch(`${API_BASE_URL}/trpc/stripe.getPublishableKey`);
 
     if (!response.ok) {

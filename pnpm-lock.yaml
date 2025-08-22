@@ -50,6 +50,9 @@ importers:
       '@prisma/extension-accelerate':
         specifier: ^2.0.2
         version: 2.0.2(@prisma/client@6.13.0(prisma@6.13.0(typescript@5.8.3))(typescript@5.8.3))
+      '@trpc/server':
+        specifier: ^10.0.0
+        version: 10.45.2
       '@types/bcrypt':
         specifier: ^6.0.0
         version: 6.0.0
@@ -67,7 +70,7 @@ importers:
         version: 17.2.1
       nestjs-trpc:
         specifier: ^1.6.1
-        version: 1.6.1(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@trpc/server@11.4.4(typescript@5.8.3))(reflect-metadata@0.2.2)(rxjs@7.8.2)(zod@4.0.15)
+        version: 1.6.1(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@trpc/server@10.45.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(zod@4.0.15)
       passport:
         specifier: ^0.7.0
         version: 0.7.0
@@ -2155,6 +2158,9 @@ packages:
       react: '>=18.2.0'
       react-dom: '>=18.2.0'
       typescript: '>=5.7.2'
+
+  '@trpc/server@10.45.2':
+    resolution: {integrity: sha512-wOrSThNNE4HUnuhJG6PfDRp4L2009KDVxsd+2VYH8ro6o/7/jwYZ8Uu5j+VaW+mOmc8EHerHzGcdbGNQSAUPgg==}
 
   '@trpc/server@11.4.4':
     resolution: {integrity: sha512-VkJb2xnb4rCynuwlCvgPBh5aM+Dco6fBBIo6lWAdJJRYVwtyE5bxNZBgUvRRz/cFSEAy0vmzLxF7aABDJfK5Rg==}
@@ -9559,6 +9565,8 @@ snapshots:
       react-dom: 19.0.0(react@19.0.0)
       typescript: 5.8.2
 
+  '@trpc/server@10.45.2': {}
+
   '@trpc/server@11.4.4(typescript@5.8.2)':
     dependencies:
       typescript: 5.8.2
@@ -13758,11 +13766,11 @@ snapshots:
 
   nested-error-stacks@2.0.1: {}
 
-  nestjs-trpc@1.6.1(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@trpc/server@11.4.4(typescript@5.8.3))(reflect-metadata@0.2.2)(rxjs@7.8.2)(zod@4.0.15):
+  nestjs-trpc@1.6.1(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/core@11.1.5(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@trpc/server@10.45.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)(zod@4.0.15):
     dependencies:
       '@nestjs/common': 11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2)
       '@nestjs/core': 11.1.5(@nestjs/common@11.1.5(class-transformer@0.5.1)(class-validator@0.14.2)(reflect-metadata@0.2.2)(rxjs@7.8.2))(@nestjs/platform-express@11.1.5)(reflect-metadata@0.2.2)(rxjs@7.8.2)
-      '@trpc/server': 11.4.4(typescript@5.8.3)
+      '@trpc/server': 10.45.2
       lodash: 4.17.21
       reflect-metadata: 0.2.2
       rxjs: 7.8.2

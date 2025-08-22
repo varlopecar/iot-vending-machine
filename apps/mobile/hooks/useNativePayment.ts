@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { Platform } from "react-native";
 import { useStripe } from "@stripe/stripe-react-native";
+import { API_BASE_URL } from "../lib/api";
 
 export const useNativePayment = () => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
@@ -23,14 +24,14 @@ export const useNativePayment = () => {
 
         try {
           const response = await fetch(
-            "https://ab13e2c66694.ngrok-free.app/trpc/stripe.checkNativePayAvailability",
+            `${API_BASE_URL}/trpc/stripe.checkNativePayAvailability`,
             {
               method: "POST",
               headers: {
                 "Content-Type": "application/json",
               },
               body: JSON.stringify({
-                domain: "ab13e2c66694.ngrok-free.app", // URL ngrok mise à jour
+                domain: new URL(API_BASE_URL).hostname, // Use the hostname from API_BASE_URL
               }),
             }
           );

@@ -35,10 +35,10 @@ export function AdminLogin() {
     },
     onError: (error) => {
       console.error('🔴 Login error:', error);
-      
+
       // Handle connection errors specifically
       if (error.message.includes('Connection closed') || error.message.includes('fetch')) {
-        setError('Impossible de se connecter au serveur. Vérifiez que le backend est démarré sur http://localhost:3000');
+        setError('Impossible de se connecter au serveur. Vérifiez votre connexion internet et réessayez.');
       } else {
         setError(error.message);
       }

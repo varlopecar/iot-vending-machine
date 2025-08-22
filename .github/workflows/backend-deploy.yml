@@ -184,6 +184,13 @@ jobs:
       - name: Install dependencies
         run: pnpm install
 
+      - name: Install Scalingo CLI (backup deployment method)
+        run: |
+          echo "📦 Installing Scalingo CLI as backup deployment method..."
+          curl -O https://cli-dl.scalingo.com/install.sh
+          bash install.sh
+          echo "✅ Scalingo CLI installed"
+
       - name: Validate Deployment Configuration
         run: |
           echo "🔍 Checking deployment configuration..."
@@ -203,11 +210,37 @@ jobs:
 
       - name: Setup SSH key for Scalingo
         run: |
+          echo "🔑 Setting up SSH key for Scalingo deployment..."
           mkdir -p ~/.ssh
-          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
+
+          # Write the SSH private key with proper formatting
+          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          ssh-keyscan ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
-          
+
+          # Add Scalingo host to known_hosts
+          ssh-keyscan -H ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
+
+          # Test SSH connection (optional, for debugging)
+          echo "🔍 Testing SSH connection..."
+          ssh -T git@ssh.osc-fr1.scalingo.com || echo "⚠️ SSH test failed, but continuing with deployment..."
+
+          echo "✅ SSH key setup completed"
+
+      - name: Debug SSH Configuration
+        run: |
+          echo "🔍 Debugging SSH configuration..."
+          echo "SSH key permissions:"
+          ls -la ~/.ssh/
+          echo ""
+          echo "SSH key content (first few lines):"
+          head -5 ~/.ssh/id_rsa
+          echo ""
+          echo "Known hosts:"
+          cat ~/.ssh/known_hosts
+          echo ""
+          echo "SSH agent status:"
+          ssh-add -l || echo "No SSH agent running"
+
       - name: Setup Git for deployment
         run: |
           git config --global user.name "github-actions[bot]"
@@ -216,24 +249,41 @@ jobs:
       - name: Deploy to Scalingo using git subtree
         id: deploy
         run: |
-          echo "🚀 Starting deployment to Scalingo using git subtree..."
-          
+          echo "🚀 Starting deployment to Scalingo..."
+
           # Add Scalingo remote
           git remote add scalingo git@ssh.osc-fr1.scalingo.com:iot-vending-machine.git || true
-          
-          # Deploy only the backend folder using git subtree
-          echo "📦 Deploying backend folder to Scalingo..."
-          git subtree push --prefix=apps/backend scalingo main
-          
-          echo "✅ Deployment completed successfully!"
-          # Set the actual deployment URL
-          echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
+
+          # Try git subtree deployment first
+          echo "📦 Attempting git subtree deployment..."
+          if git subtree push --prefix=apps/backend scalingo main; then
+            echo "✅ Git subtree deployment completed successfully!"
+            echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
+            echo "deployment-method=git-subtree" >> $GITHUB_OUTPUT
+          else
+            echo "⚠️ Git subtree deployment failed, trying alternative method..."
+            
+            # Alternative: Use Scalingo CLI if available
+            if command -v scalingo &> /dev/null; then
+              echo "🔄 Attempting Scalingo CLI deployment..."
+              scalingo login --api-token "${{ secrets.SCALINGO_API_TOKEN }}"
+              scalingo --app iot-vending-machine --region osc-fr1 deploy apps/backend
+              echo "✅ Scalingo CLI deployment completed!"
+              echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
+              echo "deployment-method=scalingo-cli" >> $GITHUB_OUTPUT
+            else
+              echo "❌ Both deployment methods failed"
+              echo "Please check your SSH key configuration and Scalingo credentials"
+              exit 1
+            fi
+          fi
 
       - name: Create deployment summary
         run: |
           echo "## 🚀 Backend Production Deployment Successful" >> $GITHUB_STEP_SUMMARY
           echo "" >> $GITHUB_STEP_SUMMARY
           echo "**Deployment URL:** ${{ steps.deploy.outputs.deployment-url }}" >> $GITHUB_STEP_SUMMARY
+          echo "**Deployment Method:** ${{ steps.deploy.outputs.deployment-method }}" >> $GITHUB_STEP_SUMMARY
           echo "**Branch:** ${{ github.ref_name }}" >> $GITHUB_STEP_SUMMARY
           echo "**Commit:** ${{ github.sha }}" >> $GITHUB_STEP_SUMMARY
           echo "**Author:** ${{ github.actor }}" >> $GITHUB_STEP_SUMMARY
@@ -253,6 +303,7 @@ jobs:
           echo "- ✅ Build successful" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Environment validated" >> $GITHUB_STEP_SUMMARY
           echo "- ✅ Deployed to Scalingo production" >> $GITHUB_STEP_SUMMARY
+          echo "- ✅ Deployment method: ${{ steps.deploy.outputs.deployment-method }}" >> $GITHUB_STEP_SUMMARY
 
   notify:
     name: Notify Deployment Status
