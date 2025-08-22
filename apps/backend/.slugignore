@@ -93,3 +93,58 @@ package-lock.json
 yarn.lock
 
 # Development dependencies will be removed by pnpm prune --prod
+
+# Additional size optimizations for Scalingo
+*.spec.ts
+*.test.ts
+*.spec.js
+*.test.js
+
+# Documentation and example files
+README*
+*.md
+CHANGELOG*
+LICENSE*
+example/
+examples/
+docs/
+
+# Scripts and tools (keep only essential startup scripts)
+scripts/qa/
+scripts/backfill_*
+scripts/verify_*
+scripts/patch_*
+scripts/test-*
+scripts/check-*
+scripts/setup-deployment.sh
+
+# Test data and fixtures
+test-data.json
+auth-test.json
+*.fixture.*
+
+# TypeScript source files (keep only compiled JS in dist/)
+src/
+!dist/
+
+# Development configuration files
+.prettierrc*
+prettier.config.*
+eslint.config.*
+.eslintrc*
+tsconfig*.json
+nest-cli.json
+jest.config.*
+
+# Environment files (except production)
+.env.example
+env.example
+
+# Unused binaries and tools
+bin/
+
+# Large unnecessary files
+*.tgz
+*.tar.gz
+*.zip
+*.rar

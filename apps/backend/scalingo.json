@@ -8,6 +8,14 @@
     "NODE_ENV": {
       "description": "Environment mode",
       "value": "production"
+    },
+    "NPM_CONFIG_PRODUCTION": {
+      "description": "Install only production dependencies",
+      "value": "false"
+    },
+    "NODE_OPTIONS": {
+      "description": "Node.js runtime options",
+      "value": "--max-old-space-size=512"
     }
   },
   "formation": {
@@ -25,7 +33,9 @@
     "postdeploy": "cd apps/backend && pnpm run db:setup"
   },
   "environments": {
-    "BUILD_COMMAND": "pnpm install --frozen-lockfile && pnpm build --filter=backend"
+    "BUILD_COMMAND": "pnpm install --frozen-lockfile && pnpm build && pnpm prune --prod",
+    "PNPM_FLAGS": "--frozen-lockfile",
+    "NODE_VERSION": "18.20.8"
   },
   "addons": ["postgresql"]
 }
