@@ -1,0 +1,95 @@
+# Source files (keep only compiled output)
+src/**/*.ts
+!src/**/*.d.ts
+
+# Test files
+**/*.spec.ts
+**/*.test.ts
+**/*.spec.js
+**/*.test.js
+test/
+__tests__/
+
+# Documentation
+*.md
+docs/
+README*
+
+# Development files
+.env.local
+.env.development.local
+.env.test.local
+.env.production.local
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+logs/
+*.log
+
+# Coverage
+coverage/
+*.lcov
+.nyc_output/
+
+# Cache directories
+.cache/
+.parcel-cache/
+.turbo/
+.next/
+.nuxt/
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+*.temp
+
+# Backup files
+*.bak
+*.backup
+
+# TypeScript cache
+*.tsbuildinfo
+
+# ESLint cache
+.eslintcache
+
+# Optional npm cache
+.npm/
+
+# Optional REPL history
+.node_repl_history
+
+# Output of 'npm pack'
+*.tgz
+
+# Yarn Integrity file
+.yarn-integrity
+
+# Git
+.git/
+.gitignore
+
+# CI/CD files
+.github/
+.gitlab-ci.yml
+.travis.yml
+
+# Docker files
+Dockerfile*
+docker-compose*
+
+# Lock files (keep only pnpm-lock.yaml)
+package-lock.json
+yarn.lock
+
+# Development dependencies will be removed by pnpm prune --prod

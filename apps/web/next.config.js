@@ -34,10 +34,13 @@ const nextConfig = {
 
   // Headers de sécurité selon recommandations OWASP
   async headers() {
-    // Ensure we're in development mode for local development
-    const isDev = process.env.NODE_ENV === 'development';
+    // Better development mode detection
+    const isDev = process.env.NODE_ENV === 'development' ||
+      process.env.NODE_ENV !== 'production' ||
+      process.env.NEXT_PUBLIC_DEV_MODE === 'true';
 
     console.log('🔧 Next.js Config - Environment:', process.env.NODE_ENV);
+    console.log('🔧 Next.js Config - NEXT_PUBLIC_DEV_MODE:', process.env.NEXT_PUBLIC_DEV_MODE);
     console.log('🔧 Next.js Config - isDev:', isDev);
 
     // For development, use a more permissive CSP to avoid constant hash updates
