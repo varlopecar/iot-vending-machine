@@ -170,6 +170,8 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Required for git subtree
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -212,18 +214,14 @@ jobs:
         run: |
           echo "🔑 Setting up SSH key for Scalingo deployment..."
           mkdir -p ~/.ssh
-
-          # Write the SSH private key with proper formatting
-          echo "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" | tr -d '\r' > ~/.ssh/id_rsa
+          
+          # Write the SSH private key properly
+          printf '%s\n' "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-
+          
           # Add Scalingo host to known_hosts
-          ssh-keyscan -H ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
-
-          # Test SSH connection (optional, for debugging)
-          echo "🔍 Testing SSH connection..."
-          ssh -T git@ssh.osc-fr1.scalingo.com || echo "⚠️ SSH test failed, but continuing with deployment..."
-
+          ssh-keyscan ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
+          
           echo "✅ SSH key setup completed"
 
       - name: Debug SSH Configuration
@@ -265,9 +263,22 @@ jobs:
             
             # Alternative: Use Scalingo CLI if available
             if command -v scalingo &> /dev/null; then
-              echo "🔄 Attempting Scalingo CLI deployment..."
+              echo "🔄 Attempting Scalingo CLI deployment via git..."
               scalingo login --api-token "${{ secrets.SCALINGO_API_TOKEN }}"
-              scalingo --app iot-vending-machine --region osc-fr1 deploy apps/backend
+              
+              # Create a temporary directory and extract just the backend
+              mkdir -p /tmp/backend-deploy
+              cp -r apps/backend/* /tmp/backend-deploy/
+              cd /tmp/backend-deploy
+              
+              # Initialize git repo and add scalingo remote
+              git init
+              git add .
+              git commit -m "Deploy backend to Scalingo"
+              git remote add scalingo git@ssh.osc-fr1.scalingo.com:iot-vending-machine.git
+              
+              # Push to Scalingo
+              git push scalingo main --force
               echo "✅ Scalingo CLI deployment completed!"
               echo "deployment-url=https://iot-vending-machine.osc-fr1.scalingo.io" >> $GITHUB_OUTPUT
               echo "deployment-method=scalingo-cli" >> $GITHUB_OUTPUT
