@@ -118,7 +118,7 @@ jobs:
 
       - name: Login to EAS
         run: |
-          echo ${{ secrets.EXPO_TOKEN }} | eas login --non-interactive
+          echo ${{ secrets.EXPO_TOKEN }} | eas login
 
       - name: Build Android Preview
         run: |
@@ -198,7 +198,7 @@ jobs:
 
       - name: Login to EAS
         run: |
-          echo ${{ secrets.EXPO_TOKEN }} | eas login --non-interactive
+          echo ${{ secrets.EXPO_TOKEN }} | eas login
 
       - name: Build Android Production
         id: build-android
