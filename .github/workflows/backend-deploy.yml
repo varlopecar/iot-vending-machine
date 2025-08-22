@@ -171,7 +171,7 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Required for git subtree
+          fetch-depth: 0 # Required for git subtree
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v2
@@ -214,14 +214,14 @@ jobs:
         run: |
           echo "🔑 Setting up SSH key for Scalingo deployment..."
           mkdir -p ~/.ssh
-          
+
           # Write the SSH private key properly
           printf '%s\n' "${{ secrets.SCALINGO_SSH_PRIVATE_KEY }}" > ~/.ssh/id_rsa
           chmod 600 ~/.ssh/id_rsa
-          
+
           # Add Scalingo host to known_hosts
           ssh-keyscan ssh.osc-fr1.scalingo.com >> ~/.ssh/known_hosts
-          
+
           echo "✅ SSH key setup completed"
 
       - name: Debug SSH Configuration
@@ -275,6 +275,7 @@ jobs:
               git init
               git add .
               git commit -m "Deploy backend to Scalingo"
+              git branch -M main
               git remote add scalingo git@ssh.osc-fr1.scalingo.com:iot-vending-machine.git
               
               # Push to Scalingo
