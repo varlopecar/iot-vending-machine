@@ -10,12 +10,14 @@ interface AddMachineModalProps {
   isOpen: boolean;
   onClose: () => void;
   onSuccess: () => void;
+  onRedirect?: (machineId: string) => void;
 }
 
 export function AddMachineModal({
   isOpen,
   onClose,
   onSuccess,
+  onRedirect,
 }: AddMachineModalProps) {
   const [formData, setFormData] = useState({
     label: "",
@@ -26,8 +28,11 @@ export function AddMachineModal({
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const createMutation = trpc.machines.createMachine.useMutation({
-    onSuccess: () => {
+    onSuccess: (data) => {
       onSuccess();
+      if (onRedirect && data.id) {
+        onRedirect(data.id);
+      }
       onClose();
       resetForm();
     },
@@ -61,7 +66,10 @@ export function AddMachineModal({
       newErrors.location = "La localisation est requise";
     }
 
-    if (formData.contact && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact)) {
+    if (
+      formData.contact &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.contact)
+    ) {
       newErrors.contact = "L'adresse email n'est pas valide";
     }
 
@@ -71,7 +79,7 @@ export function AddMachineModal({
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!validateForm()) {
       return;
     }
@@ -86,7 +94,9 @@ export function AddMachineModal({
       });
     } catch (error) {
       console.error("Erreur lors de la création de la machine:", error);
-      setErrors({ submit: "Erreur lors de la création de la machine. Veuillez réessayer." });
+      setErrors({
+        submit: "Erreur lors de la création de la machine. Veuillez réessayer.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -116,18 +126,21 @@ export function AddMachineModal({
               </h2>
               <Button
                 onClick={handleClose}
-                variant="ghost"
+                variant="outline"
                 size="sm"
-                className="h-8 w-8 p-0"
                 disabled={isSubmitting}
               >
-                <X className="h-4 w-4" />
+                <X className="h-4 w-4 mr-2" />
+                Fermer
               </Button>
             </div>
 
             <form onSubmit={handleSubmit} className="p-6 space-y-4">
               <div>
-                <label htmlFor="label" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="label"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Nom de la machine *
                 </label>
                 <Input
@@ -145,14 +158,19 @@ export function AddMachineModal({
               </div>
 
               <div>
-                <label htmlFor="location" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="location"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Localisation *
                 </label>
                 <Input
                   id="location"
                   type="text"
                   value={formData.location}
-                  onChange={(e) => handleInputChange("location", e.target.value)}
+                  onChange={(e) =>
+                    handleInputChange("location", e.target.value)
+                  }
                   placeholder="Ex: Rez-de-chaussée, Hall principal"
                   className={errors.location ? "border-red-500" : ""}
                   disabled={isSubmitting}
@@ -163,7 +181,10 @@ export function AddMachineModal({
               </div>
 
               <div>
-                <label htmlFor="contact" className="block text-sm font-medium text-gray-700 mb-1">
+                <label
+                  htmlFor="contact"
+                  className="block text-sm font-medium text-gray-700 mb-1"
+                >
                   Contact (optionnel)
                 </label>
                 <Input

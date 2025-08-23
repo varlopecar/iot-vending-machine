@@ -12,7 +12,13 @@ interface AddProductModalProps {
   onSuccess: () => void;
 }
 
-const categories = ["Boissons", "Snacks", "Confiseries", "Sandwichs", "Autres"] as const;
+const categories = [
+  "Boissons",
+  "Snacks",
+  "Confiseries",
+  "Sandwichs",
+  "Autres",
+] as const;
 
 type AddProductFormData = {
   name: string;
@@ -99,13 +105,23 @@ export function AddProductModal({
     }
 
     const purchasePrice = parseFloat(formData.purchase_price);
-    if (!formData.purchase_price || isNaN(purchasePrice) || purchasePrice <= 0) {
-      newErrors.purchase_price = "Le prix d&apos;achat doit être un nombre positif";
+    if (
+      !formData.purchase_price ||
+      isNaN(purchasePrice) ||
+      purchasePrice <= 0
+    ) {
+      newErrors.purchase_price =
+        "Le prix d&apos;achat doit être un nombre positif";
     }
 
     // Check if purchase price is greater than price
-    if (!newErrors.price && !newErrors.purchase_price && purchasePrice >= price) {
-      newErrors.purchase_price = "Le prix d&apos;achat doit être inférieur au prix de vente";
+    if (
+      !newErrors.price &&
+      !newErrors.purchase_price &&
+      purchasePrice >= price
+    ) {
+      newErrors.purchase_price =
+        "Le prix d&apos;achat doit être inférieur au prix de vente";
     }
 
     setErrors(newErrors);
@@ -142,25 +158,29 @@ export function AddProductModal({
       // Préparer les allergènes
       const allergens_list = formData.allergens
         ? formData.allergens
-          .split(",")
-          .map((a) => a.trim())
-          .filter((a) => a.length > 0)
+            .split(",")
+            .map((a) => a.trim())
+            .filter((a) => a.length > 0)
         : undefined;
 
       // Préparer les valeurs nutritionnelles
       const nutritional =
         formData.calories ||
-          formData.protein ||
-          formData.carbs ||
-          formData.fat ||
-          formData.serving
+        formData.protein ||
+        formData.carbs ||
+        formData.fat ||
+        formData.serving
           ? {
-            calories: formData.calories ? parseFloat(formData.calories) : undefined,
-            protein: formData.protein ? parseFloat(formData.protein) : undefined,
-            carbs: formData.carbs ? parseFloat(formData.carbs) : undefined,
-            fat: formData.fat ? parseFloat(formData.fat) : undefined,
-            serving: formData.serving || "",
-          }
+              calories: formData.calories
+                ? parseFloat(formData.calories)
+                : undefined,
+              protein: formData.protein
+                ? parseFloat(formData.protein)
+                : undefined,
+              carbs: formData.carbs ? parseFloat(formData.carbs) : undefined,
+              fat: formData.fat ? parseFloat(formData.fat) : undefined,
+              serving: formData.serving || "",
+            }
           : undefined;
 
       await createProductMutation.mutateAsync({
@@ -173,7 +193,9 @@ export function AddProductModal({
       });
     } catch (error) {
       console.error("Erreur lors de la création du produit:", error);
-      setErrors({ submit: "Erreur lors de la création du produit. Veuillez réessayer." });
+      setErrors({
+        submit: "Erreur lors de la création du produit. Veuillez réessayer.",
+      });
     } finally {
       setIsSubmitting(false);
     }
@@ -205,12 +227,12 @@ export function AddProductModal({
                 </h2>
                 <Button
                   onClick={handleClose}
-                  variant="ghost"
+                  variant="outline"
                   size="sm"
-                  className="h-8 w-8 p-0"
                   disabled={isSubmitting}
                 >
-                  <X className="h-4 w-4" />
+                  <X className="h-4 w-4 mr-2" />
+                  Fermer
                 </Button>
               </div>
             </div>
@@ -225,7 +247,10 @@ export function AddProductModal({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="name" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="name"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Nom du produit *
                     </label>
                     <Input
@@ -233,7 +258,9 @@ export function AddProductModal({
                       id="name"
                       type="text"
                       value={formData.name}
-                      onChange={(e) => handleInputChange("name", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("name", e.target.value)
+                      }
                       placeholder="Ex: Coca-Cola 330ml"
                       className={errors.name ? "border-red-500" : ""}
                       disabled={isSubmitting}
@@ -244,13 +271,18 @@ export function AddProductModal({
                   </div>
 
                   <div>
-                    <label htmlFor="category" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="category"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Catégorie *
                     </label>
                     <select
                       id="category"
                       value={formData.category}
-                      onChange={(e) => handleInputChange("category", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("category", e.target.value)
+                      }
                       className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:bg-gray-100"
                       disabled={isSubmitting}
                     >
@@ -265,7 +297,10 @@ export function AddProductModal({
 
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <label htmlFor="price" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="price"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Prix de vente (€) *
                     </label>
                     <Input
@@ -274,18 +309,25 @@ export function AddProductModal({
                       step="0.01"
                       min="0"
                       value={formData.price}
-                      onChange={(e) => handleInputChange("price", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("price", e.target.value)
+                      }
                       placeholder="0.00"
                       className={errors.price ? "border-red-500" : ""}
                       disabled={isSubmitting}
                     />
                     {errors.price && (
-                      <p className="mt-1 text-sm text-red-600">{errors.price}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.price}
+                      </p>
                     )}
                   </div>
 
                   <div>
-                    <label htmlFor="purchase_price" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="purchase_price"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Prix d&apos;achat (€) *
                     </label>
                     <Input
@@ -294,13 +336,17 @@ export function AddProductModal({
                       step="0.01"
                       min="0"
                       value={formData.purchase_price}
-                      onChange={(e) => handleInputChange("purchase_price", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("purchase_price", e.target.value)
+                      }
                       placeholder="0.00"
                       className={errors.purchase_price ? "border-red-500" : ""}
                       disabled={isSubmitting}
                     />
                     {errors.purchase_price && (
-                      <p className="mt-1 text-sm text-red-600">{errors.purchase_price}</p>
+                      <p className="mt-1 text-sm text-red-600">
+                        {errors.purchase_price}
+                      </p>
                     )}
                   </div>
                 </div>
@@ -308,16 +354,23 @@ export function AddProductModal({
 
               {/* Allergènes */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Allergènes</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Allergènes
+                </h3>
                 <div>
-                  <label htmlFor="allergens" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="allergens"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Allergènes (séparés par des virgules)
                   </label>
                   <Input
                     id="allergens"
                     type="text"
                     value={formData.allergens}
-                    onChange={(e) => handleInputChange("allergens", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("allergens", e.target.value)
+                    }
                     placeholder="Ex: Gluten, Lactose, Fruits à coque"
                     disabled={isSubmitting}
                   />
@@ -326,10 +379,15 @@ export function AddProductModal({
 
               {/* Valeurs nutritionnelles */}
               <div className="space-y-4">
-                <h3 className="text-lg font-medium text-gray-900">Valeurs nutritionnelles (optionnel)</h3>
+                <h3 className="text-lg font-medium text-gray-900">
+                  Valeurs nutritionnelles (optionnel)
+                </h3>
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                   <div>
-                    <label htmlFor="calories" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="calories"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Calories
                     </label>
                     <Input
@@ -338,14 +396,19 @@ export function AddProductModal({
                       step="0.1"
                       min="0"
                       value={formData.calories}
-                      onChange={(e) => handleInputChange("calories", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("calories", e.target.value)
+                      }
                       placeholder="kcal"
                       disabled={isSubmitting}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="protein" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="protein"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Protéines (g)
                     </label>
                     <Input
@@ -354,14 +417,19 @@ export function AddProductModal({
                       step="0.1"
                       min="0"
                       value={formData.protein}
-                      onChange={(e) => handleInputChange("protein", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("protein", e.target.value)
+                      }
                       placeholder="g"
                       disabled={isSubmitting}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="carbs" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="carbs"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Glucides (g)
                     </label>
                     <Input
@@ -370,14 +438,19 @@ export function AddProductModal({
                       step="0.1"
                       min="0"
                       value={formData.carbs}
-                      onChange={(e) => handleInputChange("carbs", e.target.value)}
+                      onChange={(e) =>
+                        handleInputChange("carbs", e.target.value)
+                      }
                       placeholder="g"
                       disabled={isSubmitting}
                     />
                   </div>
 
                   <div>
-                    <label htmlFor="fat" className="block text-sm font-medium text-gray-700 mb-1">
+                    <label
+                      htmlFor="fat"
+                      className="block text-sm font-medium text-gray-700 mb-1"
+                    >
                       Lipides (g)
                     </label>
                     <Input
@@ -394,14 +467,19 @@ export function AddProductModal({
                 </div>
 
                 <div>
-                  <label htmlFor="serving" className="block text-sm font-medium text-gray-700 mb-1">
+                  <label
+                    htmlFor="serving"
+                    className="block text-sm font-medium text-gray-700 mb-1"
+                  >
                     Portion
                   </label>
                   <Input
                     id="serving"
                     type="text"
                     value={formData.serving}
-                    onChange={(e) => handleInputChange("serving", e.target.value)}
+                    onChange={(e) =>
+                      handleInputChange("serving", e.target.value)
+                    }
                     placeholder="Ex: 100g, 330ml"
                     disabled={isSubmitting}
                   />

@@ -93,7 +93,7 @@ export function ProductCard({
               className="object-contain p-2"
             />
             <div className="absolute top-2 right-2">
-              <Badge variant="secondary" className="text-xs">
+              <Badge variant="info" className="text-xs">
                 {product.category}
               </Badge>
             </div>
@@ -115,7 +115,7 @@ export function ProductCard({
                 <span className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
                   Prix de vente:
                 </span>
-                <span className="font-semibold text-green-600">
+                <span className="font-semibold text-green-800 dark:text-green-300">
                   {formatCurrency(product.price)}
                 </span>
               </div>
@@ -131,7 +131,7 @@ export function ProductCard({
                 <span className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
                   Marge:
                 </span>
-                <span className="font-medium text-blue-600">
+                <span className="font-medium text-blue-800 dark:text-blue-300">
                   {formatCurrency(margin)} ({marginPercentage}%)
                 </span>
               </div>
@@ -152,6 +152,7 @@ export function ProductCard({
                 variant="outline"
                 size="sm"
                 className="flex items-center gap-2 text-red-600 hover:text-red-700 hover:border-red-300"
+                aria-label={`Supprimer le produit ${product.name}`}
               >
                 <Trash2 className="h-4 w-4" />
               </Button>

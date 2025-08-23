@@ -60,6 +60,17 @@ export function ProductFilters({
           </span>
         </div>
 
+        <Button
+          key="all"
+          variant={selectedCategory === "all" ? "primary" : "outline"}
+          size="sm"
+          onClick={() => onCategoryChange("all")}
+          aria-pressed={selectedCategory === "all"}
+          aria-label="Afficher tous les produits"
+        >
+          Tous
+        </Button>
+        
         {categories.map((category) => (
           <Button
             key={category}

@@ -3,11 +3,11 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import {
   Search,
   Plus,
   MapPin,
-  Monitor,
   Wifi,
   WifiOff,
   Wrench,
@@ -60,6 +60,7 @@ export function MachineList() {
   const [searchTerm, setSearchTerm] = useState("");
   const [statusFilter, setStatusFilter] = useState("all");
   const [isAddMachineOpen, setIsAddMachineOpen] = useState(false);
+  const router = useRouter();
 
   // Récupération des données via tRPC
   const {
@@ -135,9 +136,9 @@ export function MachineList() {
       {/* Header */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-light-text dark:text-dark-text">
+          <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
             Machines
-          </h1>
+          </h2>
           <p className="text-light-textSecondary dark:text-dark-textSecondary">
             Gérez vos distributeurs automatiques ({filteredMachines.length}{" "}
             machines)
@@ -242,9 +243,6 @@ export function MachineList() {
         {filteredMachines.map((machine, index) => {
           const machineStats = getMachineStats(machine.id);
           const machineAlerts = getMachineAlerts(machine.id);
-          const StatusIcon =
-            statusConfig[machine.status as keyof typeof statusConfig]?.icon ||
-            Monitor;
 
           return (
             <motion.div
@@ -256,20 +254,18 @@ export function MachineList() {
               <Link href={`/machines/${machine.id}`}>
                 <Card className="hover:shadow-lg transition-shadow duration-300 cursor-pointer">
                   <CardHeader className="pb-3">
-                    <div className="flex items-start justify-between">
-                      <div className="flex-1">
-                        <CardTitle className="text-lg mb-1">
-                          {machine.label}
-                        </CardTitle>
-                        <div className="flex items-center gap-2 text-sm text-light-textSecondary dark:text-dark-textSecondary">
-                          <MapPin className="h-4 w-4" />
-                          {machine.location}
-                        </div>
+                    <div className="flex flex-col space-y-3">
+                      {/* Nom de la machine */}
+                      <CardTitle className="text-lg">{machine.label}</CardTitle>
+
+                      {/* Localisation */}
+                      <div className="flex items-center gap-2 text-sm text-light-textSecondary dark:text-dark-textSecondary">
+                        <MapPin className="h-4 w-4 flex-shrink-0" />
+                        <span className="truncate">{machine.location}</span>
                       </div>
+
+                      {/* Status et alertes */}
                       <div className="flex items-center gap-2 flex-wrap">
-                        <StatusIcon
-                          className={`h-5 w-5 ${statusConfig[machine.status as keyof typeof statusConfig]?.color}`}
-                        />
                         <Badge
                           variant={
                             statusConfig[
@@ -323,7 +319,7 @@ export function MachineList() {
                               <div className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
                                 Revenus 30j
                               </div>
-                              <div className="font-medium text-green-600">
+                              <div className="font-medium text-green-800 dark:text-green-300">
                                 {Math.round(
                                   machineStats.revenueLast30dCents / 100
                                 )}
@@ -337,7 +333,7 @@ export function MachineList() {
                               <div className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
                                 Cmd 30j
                               </div>
-                              <div className="font-medium text-blue-600">
+                              <div className="font-medium text-blue-800 dark:text-blue-300">
                                 {machineStats.ordersLast30d}
                               </div>
                             </div>
@@ -373,26 +369,26 @@ export function MachineList() {
                         {/* Slots */}
                         <div className="grid grid-cols-3 gap-2 text-sm">
                           <div className="bg-blue-50 dark:bg-blue-900/20 text-center p-2 rounded">
-                            <div className="font-bold text-blue-600">
+                            <div className="font-bold text-blue-700 dark:text-blue-400">
                               {machineStats.totalSlots}
                             </div>
-                            <div className="text-xs text-blue-700 dark:text-blue-300">
+                            <div className="text-xs text-blue-800 dark:text-blue-300">
                               Slots
                             </div>
                           </div>
                           <div className="bg-orange-50 dark:bg-orange-900/20 text-center p-2 rounded">
-                            <div className="font-bold text-orange-600">
+                            <div className="font-bold text-orange-700 dark:text-orange-400">
                               {machineStats.lowStockCount}
                             </div>
-                            <div className="text-xs text-orange-700 dark:text-orange-300">
+                            <div className="text-xs text-orange-800 dark:text-orange-300">
                               Stock faible
                             </div>
                           </div>
                           <div className="bg-red-50 dark:bg-red-900/20 text-center p-2 rounded">
-                            <div className="font-bold text-red-600">
+                            <div className="font-bold text-red-700 dark:text-red-400">
                               {machineStats.outOfStockCount}
                             </div>
-                            <div className="text-xs text-red-700 dark:text-red-300">
+                            <div className="text-xs text-red-800 dark:text-red-300">
                               Rupture
                             </div>
                           </div>
@@ -414,10 +410,6 @@ export function MachineList() {
                           </div>
                         </>
                       )}
-                      <div className="text-xs text-light-textSecondary dark:text-dark-textSecondary">
-                        Dernière mise à jour:{" "}
-                        {new Date(machine.last_update).toLocaleString()}
-                      </div>
                     </div>
                   </CardContent>
                 </Card>
@@ -432,8 +424,10 @@ export function MachineList() {
         isOpen={isAddMachineOpen}
         onClose={() => setIsAddMachineOpen(false)}
         onSuccess={() => {
-          setIsAddMachineOpen(false);
           utils.machines.getAllMachines.invalidate();
+        }}
+        onRedirect={(machineId) => {
+          router.push(`/machines/${machineId}`);
         }}
       />
     </div>

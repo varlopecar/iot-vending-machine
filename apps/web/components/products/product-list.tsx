@@ -96,9 +96,9 @@ export function ProductList() {
       {/* Header avec actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-light-text dark:text-dark-text">
+          <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
             Produits
-          </h1>
+          </h2>
           <p className="text-light-textSecondary dark:text-dark-textSecondary">
             Gérez votre catalogue de produits ({filteredProducts.length}{" "}
             produits)

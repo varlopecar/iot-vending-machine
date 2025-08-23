@@ -27,24 +27,24 @@ export function MachineRestockHistory({
 
   const restocks = data as
     | Array<{
-      id: string;
-      machine_id: string;
-      user_id: string;
-      created_at: string;
-      notes?: string;
-      items: Array<{
         id: string;
-        restock_id: string;
-        stock_id: string;
-        quantity_before: number;
-        quantity_after: number;
-        quantity_added: number;
-        slot_number: number;
-        product_name: string;
-        product_image_url?: string;
-        type?: RestockItemType;
-      }>;
-    }>
+        machine_id: string;
+        user_id: string;
+        created_at: string;
+        notes?: string;
+        items: Array<{
+          id: string;
+          restock_id: string;
+          stock_id: string;
+          quantity_before: number;
+          quantity_after: number;
+          quantity_added: number;
+          slot_number: number;
+          product_name: string;
+          product_image_url?: string;
+          type?: RestockItemType;
+        }>;
+      }>
     | undefined;
 
   // Applique le filtre de type au niveau des items, puis enlève les restocks vides
@@ -57,7 +57,7 @@ export function MachineRestockHistory({
           filterType === "all"
             ? true
             : (it.type ?? (it.quantity_added >= 0 ? "addition" : "removal")) ===
-            filterType
+              filterType
         ),
       }))
       .filter((r) => r.items.length > 0);
@@ -182,7 +182,7 @@ export function MachineRestockHistory({
       <CardContent>
         {showInitialButton && (
           <div className="flex items-center justify-center py-4">
-            <Button variant="ghost" onClick={handleShow}>
+            <Button variant="outline" onClick={handleShow}>
               <History className="w-4 h-4 mr-2" /> Afficher l&apos;historique
             </Button>
           </div>
@@ -197,47 +197,52 @@ export function MachineRestockHistory({
         {/* Barre d'actions quand des données existent déjà */}
         {restocks && (
           <div className="flex items-center justify-between mb-4">
-            <div className="text-sm text-muted-foreground">
+            <div className="text-sm text-light-textSecondary dark:text-dark-textSecondary">
               Affichage: 10 derniers ravitaillements — l&apos;export inclut tout
               l&apos;historique
             </div>
             <div className="flex items-center gap-2">
               {/* Filtres type */}
               <Button
-                variant={filterType === "all" ? "secondary" : "outline"}
+                variant={filterType === "all" ? "primary" : "outline"}
                 onClick={() => setFilterType("all")}
+                size="sm"
               >
                 Tous
               </Button>
               <Button
-                variant={filterType === "addition" ? "secondary" : "outline"}
+                variant={filterType === "addition" ? "primary" : "outline"}
                 onClick={() => setFilterType("addition")}
+                size="sm"
               >
                 Ajouts
               </Button>
               <Button
-                variant={filterType === "removal" ? "secondary" : "outline"}
+                variant={filterType === "removal" ? "primary" : "outline"}
                 onClick={() => setFilterType("removal")}
+                size="sm"
               >
                 Retraits
               </Button>
 
               {/* Export & Refresh */}
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={exportCsv}
                 disabled={Boolean(isFetching)}
+                size="sm"
               >
-                <History className="w-4 h-4 mr-2" /> Exporter tout l&apos;historique
-                (CSV)
+                <History className="w-4 h-4 mr-2" /> Exporter tout
+                l&apos;historique (CSV)
               </Button>
               <Button
-                variant="secondary"
+                variant="outline"
                 onClick={() => {
                   setRequested(true);
                   refetch();
                 }}
                 disabled={Boolean(isFetching)}
+                size="sm"
               >
                 {isFetching ? (
                   <>
