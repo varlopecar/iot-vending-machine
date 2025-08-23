@@ -27,7 +27,7 @@ export function ProductFilters({
           Rechercher un produit
         </label>
         <Search
-          className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-light-text dark:text-dark-textSecondary"
+          className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-light-textSecondary dark:text-dark-textSecondary"
           aria-hidden="true"
         />
         <Input
@@ -49,17 +49,28 @@ export function ProductFilters({
       >
         <div className="flex items-center gap-2 w-full sm:w-auto">
           <Filter
-            className="h-4 w-4 text-light-text dark:text-dark-textSecondary"
+            className="h-4 w-4 text-light-textSecondary dark:text-dark-textSecondary"
             aria-hidden="true"
           />
           <span
             id="category-filter-label"
-            className="text-sm font-medium text-light-text dark:text-dark-textSecondary"
+            className="text-sm font-medium text-light-text dark:text-dark-text"
           >
             Catégories :
           </span>
         </div>
 
+        <Button
+          key="all"
+          variant={selectedCategory === "all" ? "primary" : "outline"}
+          size="sm"
+          onClick={() => onCategoryChange("all")}
+          aria-pressed={selectedCategory === "all"}
+          aria-label="Afficher tous les produits"
+        >
+          Tous
+        </Button>
+        
         {categories.map((category) => (
           <Button
             key={category}

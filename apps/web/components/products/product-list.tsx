@@ -35,10 +35,16 @@ const generateCategories = (products: ProductItem[]) => {
 export function ProductList() {
   const [selectedCategory, setSelectedCategory] = useState<string>("all");
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
-  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(null);
+  const [editingProduct, setEditingProduct] = useState<ProductItem | null>(
+    null
+  );
   const [searchTerm, setSearchTerm] = useState("");
 
-  const { data: products, isLoading, refetch } = trpc.products.getAllProductsWithStats.useQuery();
+  const {
+    data: products,
+    isLoading,
+    refetch,
+  } = trpc.products.getAllProductsWithStats.useQuery();
   const utils = trpc.useUtils();
 
   const deleteMutation = trpc.products.deleteProduct.useMutation({
@@ -47,14 +53,21 @@ export function ProductList() {
     },
   });
 
-  const categories = generateCategories((products as ProductItem[] | undefined) || []);
+  const categories = generateCategories(
+    (products as ProductItem[] | undefined) || []
+  );
 
-  const filteredProducts = (products as ProductItem[] | undefined)?.filter((product) => {
-    const matchesCategory = selectedCategory === "all" || product.category === selectedCategory;
-    const matchesSearch = product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (product.description || "").toLowerCase().includes(searchTerm.toLowerCase());
-    return matchesCategory && matchesSearch;
-  }) || [];
+  const filteredProducts =
+    (products as ProductItem[] | undefined)?.filter((product) => {
+      const matchesCategory =
+        selectedCategory === "all" || product.category === selectedCategory;
+      const matchesSearch =
+        product.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (product.description || "")
+          .toLowerCase()
+          .includes(searchTerm.toLowerCase());
+      return matchesCategory && matchesSearch;
+    }) || [];
 
   const handleDelete = (productId: string) => {
     if (confirm("Êtes-vous sûr de vouloir supprimer ce produit ?")) {
@@ -83,9 +96,12 @@ export function ProductList() {
       {/* Header avec actions */}
       <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Produits</h1>
-          <p className="text-gray-600">
-            Gérez votre catalogue de produits ({filteredProducts.length} produits)
+          <h2 className="text-2xl font-bold text-light-text dark:text-dark-text">
+            Produits
+          </h2>
+          <p className="text-light-textSecondary dark:text-dark-textSecondary">
+            Gérez votre catalogue de produits ({filteredProducts.length}{" "}
+            produits)
           </p>
         </div>
         <div className="flex gap-2">

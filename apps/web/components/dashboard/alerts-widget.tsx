@@ -148,7 +148,7 @@ export function AlertsWidget() {
             </Badge>
           )}
           {alertsSummary.incompleteAlerts > 0 && (
-            <Badge variant="outline" className="text-xs">
+            <Badge className="text-xs bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900 dark:text-blue-200 dark:border-blue-700">
               {alertsSummary.incompleteAlerts} incomplète
               {alertsSummary.incompleteAlerts > 1 ? "s" : ""}
             </Badge>
