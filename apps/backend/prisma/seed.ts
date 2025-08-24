@@ -91,7 +91,7 @@ async function main() {
       data: {
         location: 'Building A - Ground Floor',
         label: 'Vending Machine A1',
-        status: 'OFFLINE',
+        status: 'ONLINE',
         last_sync_at: now,
         created_at: now,
         last_update: now,
@@ -107,22 +107,11 @@ async function main() {
         last_update: now,
       },
     }),
-    prisma.machine.create({
-      data: {
-        location: 'Cafeteria',
-        label: 'Vending Machine C1',
-        status: 'OFFLINE',
-        last_sync_at: new Date(Date.now() - 2 * 60 * 60 * 1000).toISOString(), // 2h ago
-        created_at: now,
-        last_update: now,
-      },
-    }),
   ]);
 
   // Mettre à jour le champ contact via SQL (champ ajouté par patch SQL et non présent dans les types Prisma actuels)
   await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'a1-ops@vendingmachine.com'} WHERE id = ${machines[0].id}`;
   await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'b2-ops@vendingmachine.com'} WHERE id = ${machines[1].id}`;
-  await prisma.$executeRaw`UPDATE "machines" SET "contact" = ${'c1-ops@vendingmachine.com'} WHERE id = ${machines[2].id}`;
 
 
 
@@ -138,11 +127,8 @@ async function main() {
         sku: 'COCA_001',
         ingredients:
           'Carbonated water, sugar, caramel, phosphoric acid, natural flavors, caffeine',
-        // ingredients_list removed for compatibility with current Prisma types
         allergens: 'None',
-        // allergens_list removed for compatibility
         nutritional_value: '140 calories per 330ml',
-        // nutritional removed for compatibility
         image_url: 'https://via.placeholder.com/200x200/cc0000/ffffff?text=Coca-Cola',
         is_active: true,
         created_at: now,
@@ -157,11 +143,8 @@ async function main() {
         category: 'Snacks',
         sku: 'CHIPS_001',
         ingredients: 'Potatoes, vegetable oil, salt',
-        // ingredients_list removed
         allergens: 'None',
-        // allergens_list removed
         nutritional_value: '160 calories per 30g',
-        // nutritional removed
         image_url: 'https://via.placeholder.com/200x200/ffcc00/000000?text=Chips',
         is_active: true,
         created_at: now,
@@ -176,11 +159,8 @@ async function main() {
         category: 'Boissons',
         sku: 'WATER_001',
         ingredients: 'Spring water',
-        // ingredients_list removed
         allergens: 'None',
-        // allergens_list removed
         nutritional_value: '0 calories per 500ml',
-        // nutritional removed
         image_url: 'https://via.placeholder.com/200x200/0066cc/ffffff?text=Eau',
         is_active: true,
         created_at: now,
@@ -196,31 +176,9 @@ async function main() {
         sku: 'KINDER_001',
         ingredients:
           'Sugar, vegetable fats, hazelnuts, cocoa mass, skimmed milk powder',
-        // ingredients_list removed
         allergens: 'Milk, hazelnuts',
-        // allergens_list removed
         nutritional_value: '180 calories per 43g',
-        // nutritional removed
         image_url: 'https://via.placeholder.com/200x200/4a2c17/ffffff?text=Kinder',
-        is_active: true,
-        created_at: now,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        name: 'Energy Bar',
-        description: 'High protein energy bar',
-        price: 3.2,
-        purchase_price: 1.2,
-        category: 'Snacks',
-        sku: 'ENERGY_001',
-        ingredients: 'Oats, honey, nuts, dried fruits, protein isolate',
-        // ingredients_list removed
-        allergens: 'Nuts',
-        // allergens_list removed
-        nutritional_value: '220 calories per 60g',
-        // nutritional removed
-        image_url: 'https://via.placeholder.com/200x200/8b4513/ffffff?text=Energy-Bar',
         is_active: true,
         created_at: now,
       },
@@ -230,7 +188,7 @@ async function main() {
 
 
   // Renseigner les listes d'ingrédients, allergènes et nutrition via SQL (compatibilité types Prisma)
-  const [coca, chips, water, kinder, energy] = products;
+  const [coca, chips, water, kinder] = products;
   await prisma.$executeRawUnsafe(
     `UPDATE "products"
      SET ingredients_list = $1::text[],
@@ -275,17 +233,7 @@ async function main() {
     JSON.stringify({ calories: 180, protein: 3, carbs: 20, fat: 12, serving: '43g' }),
     kinder.id,
   );
-  await prisma.$executeRawUnsafe(
-    `UPDATE "products"
-     SET ingredients_list = $1::text[],
-         allergens_list = $2::text[],
-         nutritional = $3::jsonb
-     WHERE id = $4`,
-    ['Oats', 'Honey', 'Nuts', 'Dried fruits', 'Protein isolate'],
-    ['Nuts'],
-    JSON.stringify({ calories: 220, protein: 8, carbs: 30, fat: 7, serving: '60g' }),
-    energy.id,
-  );
+  // Supprimé: mise à jour pour Energy Bar (produit retiré)
 
   // Helper function pour générer un low_threshold aléatoire entre 1 et 2
   const randomLowThreshold = () => Math.floor(Math.random() * 2) + 1;
@@ -344,7 +292,7 @@ async function main() {
     prisma.stock.create({
       data: {
         machine_id: machines[0].id,
-        product_id: products[4].id, // Energy Bar
+        product_id: products[0].id, // Coca-Cola (répétition d'un produit existant)
         quantity: 5,
         slot_number: 5,
         max_capacity: 5,
@@ -366,13 +314,13 @@ async function main() {
       },
     }),
 
-    // MACHINE 2: 6 slots dont seulement 2 remplis, le reste à 0
+    // MACHINE 2: 5 slots vides (slots 1 à 5), slot 6 non configuré
     prisma.stock.create({
       data: {
         machine_id: machines[1].id,
-        product_id: products[0].id, // Coca-Cola - REMPLI
-        quantity: 5,
-        slot_number: 1,
+        product_id: products[0].id, // Coca-Cola - VIDE
+        quantity: 0,
+        slot_number: 3,
         max_capacity: 5,
         low_threshold: randomLowThreshold(),
         created_at: now,
@@ -382,9 +330,9 @@ async function main() {
     prisma.stock.create({
       data: {
         machine_id: machines[1].id,
-        product_id: products[1].id, // Chips - REMPLI
-        quantity: 5,
-        slot_number: 2,
+        product_id: products[1].id, // Chips - VIDE
+        quantity: 0,
+        slot_number: 4,
         max_capacity: 5,
         low_threshold: randomLowThreshold(),
         created_at: now,
@@ -396,104 +344,6 @@ async function main() {
         machine_id: machines[1].id,
         product_id: products[2].id, // Water - VIDE
         quantity: 0,
-        slot_number: 3,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[1].id,
-        product_id: products[3].id, // Kinder Bueno - VIDE
-        quantity: 0,
-        slot_number: 4,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[1].id,
-        product_id: products[4].id, // Energy Bar - VIDE
-        quantity: 0,
-        slot_number: 5,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[1].id,
-        product_id: products[0].id, // Coca-Cola - VIDE
-        quantity: 0,
-        slot_number: 6,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-
-    // MACHINE 3: seulement 5 slots
-    prisma.stock.create({
-      data: {
-        machine_id: machines[2].id,
-        product_id: products[0].id, // Coca-Cola
-        quantity: 3,
-        slot_number: 1,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[2].id,
-        product_id: products[1].id, // Chips
-        quantity: 2,
-        slot_number: 2,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[2].id,
-        product_id: products[2].id, // Water
-        quantity: 4,
-        slot_number: 3,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[2].id,
-        product_id: products[3].id, // Kinder Bueno
-        quantity: 1,
-        slot_number: 4,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[2].id,
-        product_id: products[4].id, // Energy Bar
-        quantity: 5,
         slot_number: 5,
         max_capacity: 5,
         low_threshold: randomLowThreshold(),
@@ -512,16 +362,6 @@ async function main() {
         user_id: users[0].id,
         machine_id: machines[0].id,
         status: 'ACTIVE',
-        created_at: new Date().toISOString(),
-        expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(), // 30 minutes from now
-        qr_code_token: 'qr_' + Math.random().toString(36).substr(2, 9),
-      },
-    }),
-    prisma.order.create({
-      data: {
-        user_id: users[1].id,
-        machine_id: machines[1].id,
-        status: 'PENDING',
         created_at: new Date().toISOString(),
         expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString(),
         qr_code_token: 'qr_' + Math.random().toString(36).substr(2, 9),
@@ -549,14 +389,6 @@ async function main() {
         slot_number: 2,
       },
     }),
-    prisma.orderItem.create({
-      data: {
-        order_id: orders[1].id,
-        product_id: products[3].id, // Kinder Bueno
-        quantity: 2,
-        slot_number: 2,
-      },
-    }),
   ]);
 
 
@@ -577,7 +409,7 @@ async function main() {
   const completedOrderItems: any[] = [];
   
   // Generate 50 random completed orders this month
-  for (let i = 0; i < 50; i++) {
+  for (let i = 0; i < 60; i++) {
     const randomUser = users[Math.floor(Math.random() * users.length)];
     const randomMachine = machines[Math.floor(Math.random() * machines.length)];
     const orderDate = randomDateThisMonth();
@@ -599,7 +431,7 @@ async function main() {
     completedOrders.push(order);
     
     // Add 1-2 random products to each order
-    const numItems = Math.random() > 0.3 ? 1 : 2; // 70% chance of 1 item, 30% chance of 2 items
+    const numItems = Math.random() > 0.4 ? 1 : 2;
     let orderTotal = 0;
     
     for (let j = 0; j < numItems; j++) {
@@ -614,7 +446,7 @@ async function main() {
           order_id: order.id,
           product_id: randomProduct.id,
           quantity: quantity,
-          slot_number: Math.floor(Math.random() * 6) + 1, // Random slot 1-6
+          slot_number: Math.floor(Math.random() * 6) + 1,
           unit_price_cents: unitPriceCents,
           label: randomProduct.name,
           subtotal_cents: subtotalCents,
@@ -649,34 +481,19 @@ async function main() {
 
   // Create some alerts based on new stock configuration
   const alerts = await Promise.all([
-    // Alerte CRITICAL agrégée pour machine 2 (4 slots vides sur 6)
+    // Alerte CRITICAL pour machine 2 (5 slots vides sur 5 configurés)
     prisma.alert.create({
       data: {
         machine_id: machines[1].id,
         type: 'CRITICAL',
-        message: `Stock critique: 4 slot(s) vide(s) sur 6 configurés`,
+        message: `Stock critique: 5 slot(s) vide(s) sur 5 configurés`,
         level: 'ERROR',
         status: 'OPEN',
         created_at: now,
         metadata: {
-          empty_slots: 4,
-          configured_slots: 6,
-          total_slots: 6,
-        }
-      },
-    }),
-    // Alerte INCOMPLETE pour la machine 3 (seulement 5 slots au lieu de 6)
-    prisma.alert.create({
-      data: {
-        machine_id: machines[2].id,
-        type: 'INCOMPLETE',
-        message: `Machine incomplète: 5/6 slots configurés`,
-        level: 'WARNING',
-        status: 'OPEN',
-        created_at: now,
-        metadata: {
+          empty_slots: 5,
           configured_slots: 5,
-          total_slots: 6,
+          total_slots: 5,
         }
       },
     }),
