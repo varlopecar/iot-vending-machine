@@ -15,6 +15,7 @@ import { Product } from "../../types/product";
 import { getStocksByMachine, StockWithProduct } from "../../lib/stocks";
 import { displayNameFromServerName } from "../../lib/productMapping";
 import { getAllMachines, Machine } from "../../lib/machines";
+import { getLocalImageForProductName } from "../../lib/imageAssets";
 import { useMachine } from "../../contexts/MachineContext";
 import { useCart } from "../../contexts/CartContext";
 
@@ -71,7 +72,7 @@ export default function IndexScreen() {
           id: s.id,
           name: displayNameFromServerName(s.product_name),
           price: s.product_price,
-          image: s.product_image_url ? { uri: s.product_image_url } : null,
+          image: getLocalImageForProductName(displayNameFromServerName(s.product_name)),
           stockQty: s.quantity,
           ingredients: s.product_ingredients_list || [],
           allergens: s.product_allergens_list || [],

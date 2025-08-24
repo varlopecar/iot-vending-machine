@@ -3,6 +3,7 @@ import { View, ScrollView } from "react-native";
 import { Stack, useLocalSearchParams, useRouter } from "expo-router";
 import { useTailwindTheme } from "../../hooks/useTailwindTheme";
 import { getAllProducts, ServerProduct } from "../../lib/products";
+import { getLocalImageForProductName } from "../../lib/imageAssets";
 import { Product } from "../../types/product";
 import { getOfferRule } from "../../lib/offers/offerRules";
 import {
@@ -46,7 +47,7 @@ export default function OfferDetailScreen() {
           id: p.id,
           name: p.name,
           price: p.price,
-          image: { uri: p.image_url },
+          image: getLocalImageForProductName(p.name),
           ingredients: p.ingredients.split(',').map((s) => s.trim()),
           allergens: p.allergens.split(',').map((s) => s.trim()).filter(Boolean),
           nutritionalValues: { calories: 0, protein: 0, carbs: 0, fat: 0 },

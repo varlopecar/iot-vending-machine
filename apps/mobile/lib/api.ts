@@ -1,7 +1,7 @@
 import Constants from "expo-constants";
 
 const PRODUCTION_API_URL = "https://iot-vending-machine.osc-fr1.scalingo.io";
-const DEVELOPMENT_API_URL = "https://ab13e2c66694.ngrok-free.app";
+const DEVELOPMENT_API_URL = "https://ce6a32557667.ngrok-free.app";
 
 export const API_BASE_URL: string =
   (process.env.EXPO_PUBLIC_API_URL as string) ||
