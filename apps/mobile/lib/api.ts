@@ -1,10 +1,37 @@
 import Constants from "expo-constants";
+import { Platform } from "react-native";
 
 const PRODUCTION_API_URL = "https://iot-vending-machine.osc-fr1.scalingo.io";
-const DEVELOPMENT_API_URL = "https://ce6a32557667.ngrok-free.app";
+
+function deriveLanDevUrl(): string {
+  const DEFAULT_PORT = 3000;
+  const hostUri =
+    // SDK 49+ (expoConfig)
+    // @ts-ignore
+    (Constants?.expoConfig?.hostUri as string | undefined) ||
+    // SDK 49 manifest2 (expoGo)
+    // @ts-ignore
+    (Constants?.manifest2?.extra?.expoGo?.hostUri as string | undefined) ||
+    // Legacy manifest (debuggerHost)
+    // @ts-ignore
+    (Constants?.manifest?.debuggerHost as string | undefined);
+
+  if (hostUri) {
+    // Examples: "192.168.1.42:19000", "127.0.0.1:19000"
+    const host = hostUri.split("?")[0].split(":")[0];
+    if (host) {
+      return `http://${host}:${DEFAULT_PORT}`;
+    }
+  }
+
+  // Emulateurs
+  if (Platform.OS === "android") return `http://10.0.2.2:${DEFAULT_PORT}`;
+  return `http://localhost:${DEFAULT_PORT}`;
+}
+
+const DEVELOPMENT_API_URL = deriveLanDevUrl();
 
 export const API_BASE_URL: string =
-  (process.env.EXPO_PUBLIC_API_URL as string) ||
   // @ts-ignore expo-constants extra may be undefined
   (Constants?.expoConfig?.extra?.API_URL as string) ||
   // Use production URL in production mode, development URL otherwise
@@ -22,7 +49,6 @@ export async function trpcMutation<TInput extends object, TOutput>(
   const endpoint = `${API_BASE_URL}/trpc/${path}`;
   const headers: Record<string, string> = {
     "Content-Type": "application/json",
-    "ngrok-skip-browser-warning": "true",
   };
   if (options?.token) headers["Authorization"] = `Bearer ${options.token}`;
 
@@ -84,9 +110,7 @@ export async function trpcQuery<TInput extends object | undefined, TOutput>(
     ? `?input=${encodeURIComponent(JSON.stringify(input))}`
     : "";
   const endpoint = `${API_BASE_URL}/trpc/${path}${queryParam}`;
-  const headers: Record<string, string> = {
-    "ngrok-skip-browser-warning": "true",
-  };
+  const headers: Record<string, string> = {};
   if (options?.token) headers["Authorization"] = `Bearer ${options.token}`;
 
   const response = await fetch(endpoint, {
