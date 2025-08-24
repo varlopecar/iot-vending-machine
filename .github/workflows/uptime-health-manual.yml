@@ -9,6 +9,9 @@ jobs:
   ping:
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
       - name: Call health endpoint
         id: call
         run: |
@@ -17,11 +20,26 @@ jobs:
           echo "STATUS=$STATUS"
           if [ "$STATUS" != "200" ]; then exit 2; fi
 
+      - name: Build dynamic issue body
+        if: failure()
+        run: |
+          cat > health-body.md <<'EOF'
+          L’endpoint /health ne répond pas 200.
+
+          - URL testée: $URL
+          - Run ID: $GITHUB_RUN_ID
+
+          **Attendu**: HTTP 200 + { status: "ok" }
+          **Observé**: Code != 200
+          EOF
+        env:
+          URL: ${{ github.event.inputs.url }}
+
       - name: Open issue on failure
         if: failure()
         uses: peter-evans/create-issue-from-file@v4
         with:
           title: "ALERTE: Healthcheck KO (${{ steps.call.outputs.status }})"
-          content-filepath: .github/health-alert-template.md
+          content-filepath: health-body.md
           labels: "bug,alert,supervision"
 
