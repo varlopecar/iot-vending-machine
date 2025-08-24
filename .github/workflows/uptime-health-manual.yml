@@ -1,0 +1,56 @@
+name: uptime-health (manual)
+
+on:
+  workflow_dispatch:
+    inputs:
+      url:
+        description: "Health URL (ex: https://iot-vending-machine.osc-fr1.scalingo.io/health)"
+        required: true
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Call health endpoint
+        id: call
+        run: |
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "${{ github.event.inputs.url }}")
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "STATUS=$STATUS"
+          if [ "$STATUS" != "200" ]; then exit 2; fi
+
+      - name: Build dynamic issue body
+        if: failure()
+        env:
+          URL: ${{ github.event.inputs.url }}
+          RUN_ID: ${{ github.run_id }}
+          STATUS: ${{ steps.call.outputs.status }}
+        run: |
+          cat > health-body.md <<EOF
+          L’endpoint /health ne répond pas 200.
+
+          - URL testée: $URL
+          - Code retourné: $STATUS
+          - Run ID: $RUN_ID
+
+          **Attendu**: HTTP 200 + { "status": "ok" }
+          **Observé**: Code != 200
+
+          Actions: vérifier logs Scalingo, dernier déploiement, dépendances externes.
+          EOF
+
+      - name: Open issue on failure
+        if: failure()
+        uses: peter-evans/create-issue-from-file@v4
+        with:
+          title: "ALERTE: Healthcheck KO (${{ steps.call.outputs.status }})"
+          content-filepath: health-body.md
+          labels: "bug,alert,supervision"
+          token: ${{ secrets.GITHUB_TOKEN }}
