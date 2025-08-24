@@ -1,0 +1,15 @@
+name: uptime-gate (post-merge)
+on:
+  push:
+    branches: [ main ]
+jobs:
+  ping:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Ping prod health
+        run: |
+          URL="https://iot-vending-machine.osc-fr1.scalingo.io/health"
+          STATUS=$(curl -s -o /dev/null -w "%{http_code}" "$URL")
+          echo "Health: $STATUS"
+          test "$STATUS" = "200"
+
