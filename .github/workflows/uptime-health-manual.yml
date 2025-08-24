@@ -34,17 +34,17 @@ jobs:
           STATUS: ${{ steps.call.outputs.status }}
         run: |
           cat > health-body.md <<EOF
-L’endpoint /health ne répond pas 200.
+          L’endpoint /health ne répond pas 200.
 
-- URL testée: $URL
-- Code retourné: $STATUS
-- Run ID: $RUN_ID
+          - URL testée: $URL
+          - Code retourné: $STATUS
+          - Run ID: $RUN_ID
 
-**Attendu**: HTTP 200 + { "status": "ok" }
-**Observé**: Code != 200
+          **Attendu**: HTTP 200 + { "status": "ok" }
+          **Observé**: Code != 200
 
-Actions: vérifier logs Scalingo, dernier déploiement, dépendances externes.
-EOF
+          Actions: vérifier logs Scalingo, dernier déploiement, dépendances externes.
+          EOF
 
       - name: Open issue on failure
         if: failure()
