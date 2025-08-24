@@ -209,6 +209,56 @@ pnpm ios          # Run on iOS simulator
 pnpm web          # Run in web browser
 ```
 
+#### Test avec Expo Go
+
+Pour tester l'application sur un appareil physique avec Expo Go :
+
+1. **Installer ngrok** (requis pour exposer le backend local) :
+
+```bash
+# Via npm
+npm install -g ngrok
+
+# Via Homebrew (macOS)
+brew install ngrok
+
+# Via package manager (Linux)
+sudo snap install ngrok
+```
+
+2. **Démarrer le backend** :
+
+```bash
+cd apps/backend
+pnpm dev          # Le backend démarre sur http://localhost:3000
+```
+
+3. **Exposer le backend avec ngrok** :
+
+```bash
+# Dans un nouveau terminal
+ngrok http 3000
+```
+
+4. **Mettre à jour l'URL API** dans `apps/mobile/lib/api.ts` :
+
+Remplacer l'URL de développement par votre URL ngrok :
+
+```typescript
+const DEVELOPMENT_API_URL = "https://votre-url-ngrok.ngrok-free.app";
+```
+
+5. **Démarrer l'application mobile** :
+
+```bash
+cd apps/mobile
+pnpm dev
+```
+
+6. **Scanner le QR code** avec l'application Expo Go sur votre téléphone
+
+⚠️ **Important** : N'oubliez pas de remettre l'URL de développement locale après vos tests.
+
 ### Web (Next.js)
 
 ```bash
