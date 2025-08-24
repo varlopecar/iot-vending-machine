@@ -37,7 +37,10 @@ export default function CommandesScreen() {
           return;
         }
         const serverOrders = await getOrdersByUserId(user.id);
-        const mapped: Order[] = serverOrders.map((o: OrderWithItems) => ({
+        const sorted = [...serverOrders].sort(
+          (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+        const mapped: Order[] = sorted.map((o: OrderWithItems) => ({
           id: o.id,
           date: new Date(o.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
           items: o.items.map(it => ({ id: it.product_id, name: '', price: 0, image: null, quantity: it.quantity })),
@@ -79,7 +82,10 @@ export default function CommandesScreen() {
         try {
           const serverOrders = await getOrdersByUserId(user.id);
           if (active) {
-            const mapped: Order[] = serverOrders.map((o: OrderWithItems) => ({
+            const sorted = [...serverOrders].sort(
+              (a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+            );
+            const mapped: Order[] = sorted.map((o: OrderWithItems) => ({
               id: o.id,
               date: new Date(o.created_at).toLocaleDateString('fr-FR', { day: '2-digit', month: '2-digit', year: 'numeric' }),
               items: o.items.map(it => ({ id: it.product_id, name: '', price: 0, image: null, quantity: it.quantity })),
