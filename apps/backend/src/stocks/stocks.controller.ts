@@ -11,6 +11,7 @@ import {
   ApiOperation,
   ApiResponse,
   ApiBearerAuth,
+  ApiBody,
 } from '@nestjs/swagger';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { StocksService } from './stocks.service';
@@ -35,19 +36,39 @@ export class StocksController {
     description:
       'Update the quantity of a specific stock item (for IoT machines)',
   })
+  @ApiBody({
+    description: 'Stock quantity update data',
+    schema: {
+      type: 'object',
+      required: ['stockId', 'quantity'],
+      properties: {
+        stockId: {
+          type: 'string',
+          description: 'ID of the stock item to update',
+          example: 'stock_123456789',
+        },
+        quantity: {
+          type: 'number',
+          description: 'New quantity for the stock item',
+          minimum: 0,
+          example: 15,
+        },
+      },
+    },
+  })
   @ApiResponse({
     status: 200,
     description: 'Stock quantity updated successfully',
     schema: {
       type: 'object',
       properties: {
-        id: { type: 'string' },
-        machine_id: { type: 'string' },
-        product_id: { type: 'string' },
-        quantity: { type: 'number' },
-        slot_number: { type: 'number' },
-        max_capacity: { type: 'number' },
-        low_threshold: { type: 'number' },
+        id: { type: 'string', example: 'stock_123456789' },
+        machine_id: { type: 'string', example: 'machine_123456789' },
+        product_id: { type: 'string', example: 'product_123456789' },
+        quantity: { type: 'number', example: 15 },
+        slot_number: { type: 'number', example: 1 },
+        max_capacity: { type: 'number', example: 20 },
+        low_threshold: { type: 'number', example: 5 },
       },
     },
   })

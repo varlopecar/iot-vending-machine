@@ -52,10 +52,33 @@
       }
     },
     "validate-token": {
-      "description": "Validate QR token",
+      "description": "Validate QR token and return complete order information",
       "endpoint": "POST /api/order-validation/validate-token",
       "sample-request": {
-        "qr_code_token": "qr_token_123456789"
+        "qr_code_token": "qr_6565917e-a288-4d69-8693-b55e19ea8ba8_1755260515417"
+      },
+      "sample-response": {
+        "status": "VALID_ORDER",
+        "message": "Commande valide et prête pour le retrait",
+        "order": {
+          "id": "order_123456789",
+          "user_id": "user_123456789",
+          "machine_id": "machine_123456789",
+          "status": "active",
+          "created_at": "2024-01-15T10:30:00.000Z",
+          "expires_at": "2024-01-15T11:00:00.000Z",
+          "qr_code_token": "qr_6565917e-a288-4d69-8693-b55e19ea8ba8_1755260515417",
+          "items": [
+            {
+              "id": "item_123456789",
+              "order_id": "order_123456789",
+              "product_id": "product_123456789",
+              "quantity": 2,
+              "slot_number": 1
+            }
+          ],
+          "total_price": 250
+        }
       }
     },
     "get-order-status": {
@@ -124,6 +147,25 @@
       "endpoint": "GET /metrics/payments/health"
     }
   },
+  "stocks": {
+    "update-quantity": {
+      "description": "Update stock quantity for IoT machines",
+      "endpoint": "POST /api/stocks/update-quantity",
+      "sample-request": {
+        "stockId": "stock_123456789",
+        "quantity": 15
+      },
+      "sample-response": {
+        "id": "stock_123456789",
+        "machine_id": "machine_123456789",
+        "product_id": "product_123456789",
+        "quantity": 15,
+        "slot_number": 1,
+        "max_capacity": 20,
+        "low_threshold": 5
+      }
+    }
+  },
   "test-cards": {
     "success": {
       "number": "4242424242424242",
@@ -148,6 +190,8 @@
     "health-check": "curl -X GET http://localhost:3000/health",
     "confirm-delivery": "curl -X POST http://localhost:3000/api/order-delivery/confirm -H 'Content-Type: application/json' -d '{\"order_id\": \"order_123456789\"}'",
     "validate-qr": "curl -X POST http://localhost:3000/api/order-validation/validate-qr -H 'Content-Type: application/json' -d '{\"orderID\": \"order_123456789\"}'",
+    "validate-token": "curl -X POST http://localhost:3000/api/order-validation/validate-token -H 'Content-Type: application/json' -d '{\"qr_code_token\": \"qr_6565917e-a288-4d69-8693-b55e19ea8ba8_1755260515417\"}'",
+    "update-stock": "curl -X POST http://localhost:3000/api/stocks/update-quantity -H 'Content-Type: application/json' -H 'Authorization: Bearer YOUR_JWT_TOKEN' -d '{\"stockId\": \"stock_123456789\", \"quantity\": 15}'",
     "process-payment": "curl -X POST http://localhost:3000/api/card-payment/process -H 'Content-Type: application/json' -d '{\"number\": \"4242424242424242\", \"exp_month\": 12, \"exp_year\": 2025, \"cvc\": \"123\", \"country\": \"FR\", \"amount\": 2000, \"currency\": \"eur\"}'",
     "get-metrics": "curl -X GET http://localhost:3000/metrics/payments"
   }

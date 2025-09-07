@@ -20,6 +20,7 @@ import {
   QRCodeDataDto,
   QRTokenDto,
   OrderValidationResponseDto,
+  OrderTokenValidationResponseDto,
   OrderStatusResponseDto,
 } from '../dto/order-validation.dto';
 
@@ -164,14 +165,15 @@ export class OrderValidationController {
 
   @Post('validate-token')
   @ApiOperation({
-    summary: 'Validate QR token',
-    description: 'Validate a QR token for order pickup',
+    summary: 'Validate QR token and return complete order information',
+    description:
+      'Validate a QR token for order pickup and return all order details including items',
   })
   @ApiBody({ type: QRTokenDto })
   @ApiResponse({
     status: 200,
-    description: 'QR token validation result',
-    type: OrderValidationResponseDto,
+    description: 'QR token validation result with complete order information',
+    type: OrderTokenValidationResponseDto,
   })
   @ApiResponse({ status: 400, description: 'Invalid QR token' })
   async validateQRToken(@Body() body: QRTokenData) {
@@ -179,21 +181,20 @@ export class OrderValidationController {
       // Validation des données d'entrée
       const validatedData = qrTokenSchema.parse(body);
 
-      // Utiliser la méthode existante du service orders
+      // Utiliser la méthode existante du service orders pour valider le token
       const order = await this.ordersService.validateQRCode(
         validatedData.qr_code_token,
       );
 
+      // Récupérer les informations complètes de la commande avec les items
+      const completeOrder = await this.ordersService.getOrderById(order.id);
+
       return {
         status: 'VALID_ORDER',
         message: 'Commande valide et prête pour le retrait',
-        order_id: order.id,
-        user_id: order.user_id,
-        machine_id: order.machine_id,
-        expires_at: order.expires_at,
-        created_at: order.created_at,
+        order: completeOrder,
       };
-    } catch (error) {
+    } catch (error: unknown) {
       if (error instanceof z.ZodError) {
         throw new BadRequestException({
           status: 'VALIDATION_ERROR',
