@@ -22,8 +22,6 @@ cp packages/trpc/package.json "$TEMP_DIR/packages/trpc/"
 rsync -av --exclude='node_modules' packages/typescript-config/ "$TEMP_DIR/packages/typescript-config/"
 
 # Copy essential config files
-cp package.json "$TEMP_DIR/"
-cp pnpm-lock.yaml "$TEMP_DIR/"
 cp pnpm-workspace.yaml "$TEMP_DIR/"
 cp turbo.json "$TEMP_DIR/"
 cp tsconfig.json "$TEMP_DIR/"
@@ -42,9 +40,9 @@ cat > "$TEMP_DIR/package.json" << 'EOF'
     "node": "18.x"
   },
   "scripts": {
-    "build": "cd apps/backend && pnpm build",
-    "start": "cd apps/backend && pnpm start:prod",
-    "postinstall": "cd apps/backend && pnpm postinstall"
+    "build": "cd apps/backend && npm run build",
+    "start": "cd apps/backend && npm run start:prod",
+    "postinstall": "cd apps/backend && npm run postinstall"
   },
   "workspaces": [
     "apps/backend",
@@ -54,10 +52,17 @@ cat > "$TEMP_DIR/package.json" << 'EOF'
 }
 EOF
 
+# Create .npmrc to handle peer dependency conflicts
+cat > "$TEMP_DIR/.npmrc" << 'EOF'
+legacy-peer-deps=true
+auto-install-peers=true
+EOF
+
 # Skip generating lockfile - let Scalingo handle dependencies
 echo "🔒 Skipping lockfile generation - Scalingo will handle dependencies..."
 
-# Initialize git repository
+# Change to temp directory and initialize git repository
+cd "$TEMP_DIR"
 git init
 git add .
 git commit -m "Backend deployment $(date)"
