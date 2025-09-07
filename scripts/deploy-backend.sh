@@ -17,18 +17,17 @@ mkdir -p "$TEMP_DIR/apps/backend"
 mkdir -p "$TEMP_DIR/packages/trpc/src"
 mkdir -p "$TEMP_DIR/packages/typescript-config"
 
-# Copy only backend-related files
+# Copy only backend-related files with aggressive exclusions
 echo "📋 Copying backend files..."
-rsync -av --exclude='node_modules' --exclude='dist' --exclude='coverage' --exclude='.turbo' --exclude='*.spec.ts' --exclude='*.test.ts' --exclude='__tests__' apps/backend/ "$TEMP_DIR/apps/backend/"
+rsync -av --exclude='node_modules' --exclude='dist' --exclude='coverage' --exclude='.turbo' --exclude='*.spec.ts' --exclude='*.test.ts' --exclude='__tests__' --exclude='*.md' --exclude='.cursor' --exclude='.scalingo' --exclude='scripts' --exclude='test-data.json' --exclude='auth-test.json' apps/backend/ "$TEMP_DIR/apps/backend/"
 
 # Copy only essential packages (trpc and typescript-config) - source only
-rsync -av --exclude='node_modules' --exclude='dist' --exclude='coverage' packages/trpc/src/ "$TEMP_DIR/packages/trpc/src/"
+rsync -av --exclude='node_modules' --exclude='dist' --exclude='coverage' --exclude='*.md' --exclude='*.test.*' --exclude='*.spec.*' packages/trpc/src/ "$TEMP_DIR/packages/trpc/src/"
 cp packages/trpc/package.json "$TEMP_DIR/packages/trpc/"
-rsync -av --exclude='node_modules' packages/typescript-config/ "$TEMP_DIR/packages/typescript-config/"
+rsync -av --exclude='node_modules' --exclude='*.md' --exclude='*.test.*' --exclude='*.spec.*' packages/typescript-config/ "$TEMP_DIR/packages/typescript-config/"
 
-# Copy essential config files
+# Copy minimal config files (no turbo.json to avoid turbo build)
 cp pnpm-workspace.yaml "$TEMP_DIR/"
-cp turbo.json "$TEMP_DIR/"
 cp tsconfig.json "$TEMP_DIR/"
 
 # Copy .dockerignore to exclude unnecessary files
