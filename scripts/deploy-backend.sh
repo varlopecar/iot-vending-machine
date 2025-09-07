@@ -68,6 +68,11 @@ echo "🔒 Skipping lockfile generation - Scalingo will handle dependencies..."
 # Change to temp directory and initialize git repository
 cd "$TEMP_DIR"
 git init
+
+# Configure git user for the deployment
+git config user.email "deploy@iot-vending-machine.com"
+git config user.name "Deployment Bot"
+
 git add .
 git commit -m "Backend deployment $(date)"
 
