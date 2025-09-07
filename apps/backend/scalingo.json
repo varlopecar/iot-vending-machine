@@ -30,11 +30,11 @@
     }
   ],
   "scripts": {
-    "postdeploy": "cd apps/backend && pnpm run db:setup"
+    "postdeploy": "pnpm run db:setup"
   },
   "environments": {
-    "BUILD_COMMAND": "pnpm install --frozen-lockfile && pnpm build && pnpm prune --prod",
-    "PNPM_FLAGS": "--frozen-lockfile",
+    "BUILD_COMMAND": "cd apps/backend && pnpm install --frozen-lockfile --prod && pnpm build",
+    "PNPM_FLAGS": "--frozen-lockfile --prod",
     "NODE_VERSION": "18.20.8"
   },
   "addons": ["postgresql"]
