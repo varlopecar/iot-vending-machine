@@ -11,12 +11,17 @@ echo "🚀 Preparing backend-only deployment..."
 TEMP_DIR=$(mktemp -d)
 echo "📁 Created temporary directory: $TEMP_DIR"
 
+# Create directory structure first
+echo "📋 Creating directory structure..."
+mkdir -p "$TEMP_DIR/apps/backend"
+mkdir -p "$TEMP_DIR/packages/trpc/src"
+mkdir -p "$TEMP_DIR/packages/typescript-config"
+
 # Copy only backend-related files
 echo "📋 Copying backend files..."
 rsync -av --exclude='node_modules' --exclude='dist' --exclude='coverage' --exclude='.turbo' --exclude='*.spec.ts' --exclude='*.test.ts' --exclude='__tests__' apps/backend/ "$TEMP_DIR/apps/backend/"
 
 # Copy only essential packages (trpc and typescript-config) - source only
-mkdir -p "$TEMP_DIR/packages"
 rsync -av --exclude='node_modules' --exclude='dist' --exclude='coverage' packages/trpc/src/ "$TEMP_DIR/packages/trpc/src/"
 cp packages/trpc/package.json "$TEMP_DIR/packages/trpc/"
 rsync -av --exclude='node_modules' packages/typescript-config/ "$TEMP_DIR/packages/typescript-config/"
