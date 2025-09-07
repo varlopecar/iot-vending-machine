@@ -144,6 +144,50 @@ export class OrderValidationResponseDto {
   provided_machine?: string;
 }
 
+export class OrderTokenValidationResponseDto {
+  @ApiProperty({
+    description: 'Validation status',
+    example: 'VALID_ORDER',
+    enum: ['VALID_ORDER', 'INVALID_ORDER', 'VALIDATION_ERROR'],
+  })
+  status: string;
+
+  @ApiProperty({
+    description: 'Response message',
+    example: 'Commande valide et prête pour le retrait',
+  })
+  message: string;
+
+  @ApiProperty({
+    description: 'Complete order information with items',
+    type: 'object',
+    properties: {
+      id: { type: 'string', example: 'order_123456789' },
+      user_id: { type: 'string', example: 'user_123456789' },
+      machine_id: { type: 'string', example: 'machine_123456789' },
+      status: { type: 'string', example: 'active' },
+      created_at: { type: 'string', example: '2024-01-15T10:30:00.000Z' },
+      expires_at: { type: 'string', example: '2024-01-15T11:00:00.000Z' },
+      qr_code_token: { type: 'string', example: 'qr_6565917e-a288-4d69-8693-b55e19ea8ba8_1755260515417' },
+      items: {
+        type: 'array',
+        items: {
+          type: 'object',
+          properties: {
+            id: { type: 'string' },
+            order_id: { type: 'string' },
+            product_id: { type: 'string' },
+            quantity: { type: 'number' },
+            slot_number: { type: 'number' }
+          }
+        }
+      },
+      total_price: { type: 'number', example: 250 }
+    }
+  })
+  order: any;
+}
+
 export class OrderStatusResponseDto {
   @ApiProperty({
     description: 'Order ID',

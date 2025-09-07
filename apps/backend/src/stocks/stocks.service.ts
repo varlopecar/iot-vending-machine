@@ -135,7 +135,7 @@ export class StocksService {
                   updated.machine_id,
                 );
               }
-            } catch (error) {
+            } catch {
               // Erreur silencieuse pour éviter de faire échouer la mise à jour
             }
 
@@ -152,7 +152,7 @@ export class StocksService {
       // Déclencher la mise à jour des alertes pour la machine
       try {
         await this.alertsService.updateMachineAlerts(stock.machine_id);
-      } catch (error) {
+      } catch {
         // Erreur silencieuse pour éviter de faire échouer la mise à jour
       }
 
@@ -192,7 +192,7 @@ export class StocksService {
     // Déclencher la mise à jour des alertes pour la machine
     try {
       await this.alertsService.updateMachineAlerts(updated.machine_id);
-    } catch (error) {
+    } catch {
       // Erreur silencieuse pour éviter de faire échouer la mise à jour
     }
 
@@ -332,7 +332,7 @@ export class StocksService {
     // Déclencher la mise à jour des alertes pour la machine après ajout de slot
     try {
       await this.alertsService.updateMachineAlerts(slotData.machine_id);
-    } catch (error) {}
+    } catch {}
 
     return this.mapStock(stock);
   }
