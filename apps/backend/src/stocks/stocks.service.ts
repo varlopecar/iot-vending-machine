@@ -149,7 +149,6 @@ export class StocksService {
         data: updateData,
       });
 
-      // Déclencher la mise à jour des alertes pour la machine
       try {
         await this.alertsService.updateMachineAlerts(stock.machine_id);
       } catch {
