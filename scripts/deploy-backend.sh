@@ -73,6 +73,9 @@ git init
 git config user.email "deploy@iot-vending-machine.com"
 git config user.name "Deployment Bot"
 
+# Set the default branch to main
+git branch -M main
+
 git add .
 git commit -m "Backend deployment $(date)"
 
