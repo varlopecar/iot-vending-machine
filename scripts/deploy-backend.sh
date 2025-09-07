@@ -2,6 +2,7 @@
 
 # Script to deploy only the backend to Scalingo
 # This creates a minimal deployment with only backend files
+# Updated: Trigger deployment workflow
 
 set -e
 
