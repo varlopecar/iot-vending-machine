@@ -16,7 +16,9 @@
         "CFBundleURLTypes": [
           {
             "CFBundleURLName": "stripe-redirect",
-            "CFBundleURLSchemes": ["mobile"]
+            "CFBundleURLSchemes": [
+              "mobile"
+            ]
           }
         ],
         "ITSAppUsesNonExemptEncryption": false
@@ -35,7 +37,10 @@
               "scheme": "mobile"
             }
           ],
-          "category": ["BROWSABLE", "DEFAULT"]
+          "category": [
+            "BROWSABLE",
+            "DEFAULT"
+          ]
         }
       ]
     },
@@ -54,7 +59,9 @@
           "backgroundColor": "#ffffff"
         }
       ],
-      "expo-secure-store"
+      "expo-secure-store",
+      "expo-font",
+      "expo-web-browser"
     ],
     "experiments": {
       "typedRoutes": true

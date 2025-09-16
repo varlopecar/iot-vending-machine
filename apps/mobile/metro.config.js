@@ -24,7 +24,11 @@ module.exports = {
     ...resolver,
     assetExts: resolver.assetExts.filter((ext) => ext !== "svg"),
     sourceExts: [...resolver.sourceExts, "svg"],
-    nodeModulesPaths: [projectRoot, workspaceRoot],
+    // Conserver les chemins par défaut et ajouter le node_modules du workspace pour monorepo
+    nodeModulesPaths: [
+      ...(resolver.nodeModulesPaths || []),
+      path.resolve(workspaceRoot, "node_modules"),
+    ],
     // Add resolver for Stripe React Native web compatibility
     alias: {
       ...resolver.alias,
@@ -32,5 +36,10 @@ module.exports = {
       '@stripe/stripe-react-native': path.resolve(__dirname, './stripe-web-mock.js'),
     },
   },
-  watchFolders: [workspaceRoot],
+  // Inclure les watchFolders par défaut et le workspace pour monorepo
+  watchFolders: [
+    ...(nativeWindConfig.watchFolders || []),
+    ...(baseConfig.watchFolders || []),
+    workspaceRoot,
+  ],
 };
