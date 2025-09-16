@@ -1,6 +1,7 @@
 "use client";
 
 import { Moon, Sun, Menu, LogOut } from "lucide-react";
+import type { ComponentType, SVGProps } from "react";
 import { Button } from "@/components/ui/button";
 import { useTheme } from "@/hooks/use-theme";
 import { useAuth } from "@/contexts/auth-context";
