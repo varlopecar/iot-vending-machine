@@ -186,8 +186,8 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
 
   // Calcul des slots non-configurés
   const configuredSlots = totalSlots;
-  const unConfiguredSlots = 6 - configuredSlots;
-  const isFullyConfigured = configuredSlots === 6;
+  const unConfiguredSlots = 4 - configuredSlots;
+  const isFullyConfigured = configuredSlots === 4;
 
   // Statut directement depuis la BDD
   const statusInfo = statusConfig[machine.status as MachineStatus];
@@ -278,7 +278,7 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
                   {unConfiguredSlots} slot{unConfiguredSlots > 1 ? "s" : ""}{" "}
                   restant{unConfiguredSlots > 1 ? "s" : ""}
                 </strong>{" "}
-                à configurer sur 6 total. La machine est actuellement hors
+                à configurer sur 4 total. La machine est actuellement hors
                 service jusqu&apos;à ce que tous les slots soient configurés.
               </p>
             </div>
@@ -388,9 +388,9 @@ export function MachineDetail({ machineId }: MachineDetailProps) {
               <Package className="w-5 h-5" />
               Slots de la machine
               {totalSlots > 0 && (
-                <Badge variant="default">{totalSlots}/6 slots</Badge>
+                <Badge variant="default">{totalSlots}/4 slots</Badge>
               )}
-              {totalSlots === 0 && <Badge variant="outline">0/6 slots</Badge>}
+              {totalSlots === 0 && <Badge variant="outline">0/4 slots</Badge>}
             </CardTitle>
           </CardHeader>
           <CardContent>

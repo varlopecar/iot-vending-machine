@@ -40,7 +40,7 @@ export default function OrderDetails({ items, totalPrice, showTitle = true }: Or
             <Image
               source={item.image}
               className="w-10 h-10 rounded-lg mr-3"
-              resizeMode="cover"
+              resizeMode="contain"
             />
             
             {/* Détails du produit */}

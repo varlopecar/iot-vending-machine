@@ -249,15 +249,15 @@ export class StocksService {
 
     const usedSlots = existingSlots.map((s) => s.slot_number);
 
-    // Trouve le premier slot disponible de 1 à 6
-    for (let i = 1; i <= 6; i++) {
+    // Trouve le premier slot disponible de 1 à 4
+    for (let i = 1; i <= 4; i++) {
       if (!usedSlots.includes(i)) {
         return i;
       }
     }
 
     throw new BadRequestException(
-      'Aucun slot disponible (maximum 6 slots par machine)',
+      'Aucun slot disponible (maximum 4 slots par machine)',
     );
   }
 

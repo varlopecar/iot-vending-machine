@@ -121,7 +121,7 @@ async function main() {
       data: {
         name: 'Coca-Cola',
         description: 'Refreshing cola drink',
-        price: 2.5,
+        price: 2.1,
         purchase_price: 1.0,
         category: 'Boissons',
         sku: 'COCA_001',
@@ -136,49 +136,49 @@ async function main() {
     }),
     prisma.product.create({
       data: {
-        name: 'Chips Classic',
-        description: 'Crispy potato chips',
+        name: 'Fuze Tea',
+        description: 'Refreshing iced tea with natural flavors',
         price: 1.8,
-        purchase_price: 0.7,
-        category: 'Snacks',
-        sku: 'CHIPS_001',
-        ingredients: 'Potatoes, vegetable oil, salt',
-        allergens: 'None',
-        nutritional_value: '160 calories per 30g',
-        image_url: 'https://via.placeholder.com/200x200/ffcc00/000000?text=Chips',
-        is_active: true,
-        created_at: now,
-      },
-    }),
-    prisma.product.create({
-      data: {
-        name: 'Water Bottle',
-        description: 'Pure spring water',
-        price: 1.2,
-        purchase_price: 0.4,
+        purchase_price: 0.9,
         category: 'Boissons',
-        sku: 'WATER_001',
-        ingredients: 'Spring water',
+        sku: 'FUZE_001',
+        ingredients: 'Water, sugar, tea extract, natural lemon flavor, citric acid',
         allergens: 'None',
-        nutritional_value: '0 calories per 500ml',
-        image_url: 'https://via.placeholder.com/200x200/0066cc/ffffff?text=Eau',
+        nutritional_value: '90 calories per 330ml',
+        image_url: 'https://via.placeholder.com/200x200/ffaa00/000000?text=Fuze+Tea',
         is_active: true,
         created_at: now,
       },
     }),
     prisma.product.create({
       data: {
-        name: 'Kinder Bueno',
-        description: 'Chocolate bar with hazelnut cream',
-        price: 2.8,
-        purchase_price: 1.5,
-        category: 'Confiseries',
-        sku: 'KINDER_001',
+        name: 'Orangina',
+        description: 'Sparkling orange drink with real orange pulp',
+        price: 1.9,
+        purchase_price: 1.0,
+        category: 'Boissons',
+        sku: 'ORANGINA_001',
+        ingredients: 'Carbonated water, orange juice, sugar, citric acid, natural orange flavor',
+        allergens: 'None',
+        nutritional_value: '125 calories per 330ml',
+        image_url: 'https://via.placeholder.com/200x200/ff6600/ffffff?text=Orangina',
+        is_active: true,
+        created_at: now,
+      },
+    }),
+    prisma.product.create({
+      data: {
+        name: 'Pepsi',
+        description: 'Classic cola with a bold taste',
+        price: 2.2,
+        purchase_price: 1.1,
+        category: 'Boissons',
+        sku: 'PEPSI_001',
         ingredients:
-          'Sugar, vegetable fats, hazelnuts, cocoa mass, skimmed milk powder',
-        allergens: 'Milk, hazelnuts',
-        nutritional_value: '180 calories per 43g',
-        image_url: 'https://via.placeholder.com/200x200/4a2c17/ffffff?text=Kinder',
+          'Carbonated water, sugar, caramel, phosphoric acid, natural flavors, caffeine',
+        allergens: 'None',
+        nutritional_value: '135 calories per 330ml',
+        image_url: 'https://via.placeholder.com/200x200/0066cc/ffffff?text=Pepsi',
         is_active: true,
         created_at: now,
       },
@@ -188,7 +188,7 @@ async function main() {
 
 
   // Renseigner les listes d'ingrédients, allergènes et nutrition via SQL (compatibilité types Prisma)
-  const [coca, chips, water, kinder] = products;
+  const [coca, fuze, orangina, pepsi] = products;
   await prisma.$executeRawUnsafe(
     `UPDATE "products"
      SET ingredients_list = $1::text[],
@@ -206,10 +206,10 @@ async function main() {
          allergens_list = $2::text[],
          nutritional = $3::jsonb
      WHERE id = $4`,
-    ['Potatoes', 'Vegetable oil', 'Salt'],
+    ['Water', 'Sugar', 'Tea extract', 'Natural lemon flavor', 'Citric acid'],
     [],
-    JSON.stringify({ calories: 160, protein: 2, carbs: 15, fat: 10, serving: '30g' }),
-    chips.id,
+    JSON.stringify({ calories: 90, protein: 0, carbs: 22, fat: 0, serving: '330ml' }),
+    fuze.id,
   );
   await prisma.$executeRawUnsafe(
     `UPDATE "products"
@@ -217,10 +217,10 @@ async function main() {
          allergens_list = $2::text[],
          nutritional = $3::jsonb
      WHERE id = $4`,
-    ['Spring water'],
+    ['Carbonated water', 'Orange juice', 'Sugar', 'Citric acid', 'Natural orange flavor'],
     [],
-    JSON.stringify({ calories: 0, protein: 0, carbs: 0, fat: 0, serving: '500ml' }),
-    water.id,
+    JSON.stringify({ calories: 125, protein: 0, carbs: 31, fat: 0, serving: '330ml' }),
+    orangina.id,
   );
   await prisma.$executeRawUnsafe(
     `UPDATE "products"
@@ -228,26 +228,25 @@ async function main() {
          allergens_list = $2::text[],
          nutritional = $3::jsonb
      WHERE id = $4`,
-    ['Sugar', 'Vegetable fats', 'Hazelnuts', 'Cocoa mass', 'Skimmed milk powder'],
-    ['Milk', 'Hazelnuts'],
-    JSON.stringify({ calories: 180, protein: 3, carbs: 20, fat: 12, serving: '43g' }),
-    kinder.id,
+    ['Carbonated water', 'Sugar', 'Caramel', 'Phosphoric acid', 'Natural flavors', 'Caffeine'],
+    [],
+    JSON.stringify({ calories: 135, protein: 0, carbs: 38, fat: 0, serving: '330ml' }),
+    pepsi.id,
   );
-  // Supprimé: mise à jour pour Energy Bar (produit retiré)
 
   // Helper function pour générer un low_threshold aléatoire entre 1 et 2
   const randomLowThreshold = () => Math.floor(Math.random() * 2) + 1;
 
   // Create stocks (slots) selon les spécifications demandées
   const stocks = await Promise.all([
-    // MACHINE 1: 6 slots tous remplis (max_capacity=5)
+    // MACHINE 1: 4 slots tous remplis (max_capacity=4)
     prisma.stock.create({
       data: {
         machine_id: machines[0].id,
         product_id: products[0].id, // Coca-Cola
-        quantity: 5,
+        quantity: 4,
         slot_number: 1,
-        max_capacity: 5,
+        max_capacity: 4,
         low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
@@ -256,10 +255,10 @@ async function main() {
     prisma.stock.create({
       data: {
         machine_id: machines[0].id,
-        product_id: products[1].id, // Chips
-        quantity: 5,
+        product_id: products[1].id, // Fuze Tea
+        quantity: 4,
         slot_number: 2,
-        max_capacity: 5,
+        max_capacity: 4,
         low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
@@ -268,10 +267,10 @@ async function main() {
     prisma.stock.create({
       data: {
         machine_id: machines[0].id,
-        product_id: products[2].id, // Water
-        quantity: 5,
+        product_id: products[2].id, // Orangina
+        quantity: 4,
         slot_number: 3,
-        max_capacity: 5,
+        max_capacity: 4,
         low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
@@ -280,48 +279,24 @@ async function main() {
     prisma.stock.create({
       data: {
         machine_id: machines[0].id,
-        product_id: products[3].id, // Kinder Bueno
-        quantity: 5,
+        product_id: products[3].id, // Pepsi
+        quantity: 4,
         slot_number: 4,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[0].id,
-        product_id: products[0].id, // Coca-Cola (répétition d'un produit existant)
-        quantity: 5,
-        slot_number: 5,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[0].id,
-        product_id: products[0].id, // Coca-Cola (slot 6)
-        quantity: 5,
-        slot_number: 6,
-        max_capacity: 5,
+        max_capacity: 4,
         low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
       },
     }),
 
-    // MACHINE 2: 5 slots vides (slots 1 à 5), slot 6 non configuré
+    // MACHINE 2: 4 slots vides (machine hors ligne)
     prisma.stock.create({
       data: {
         machine_id: machines[1].id,
         product_id: products[0].id, // Coca-Cola - VIDE
         quantity: 0,
-        slot_number: 3,
-        max_capacity: 5,
+        slot_number: 1,
+        max_capacity: 4,
         low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
@@ -330,22 +305,34 @@ async function main() {
     prisma.stock.create({
       data: {
         machine_id: machines[1].id,
-        product_id: products[1].id, // Chips - VIDE
+        product_id: products[1].id, // Fuze Tea - VIDE
+        quantity: 0,
+        slot_number: 2,
+        max_capacity: 4,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[1].id,
+        product_id: products[2].id, // Orangina - VIDE
+        quantity: 0,
+        slot_number: 3,
+        max_capacity: 4,
+        low_threshold: randomLowThreshold(),
+        created_at: now,
+        updated_at: now,
+      },
+    }),
+    prisma.stock.create({
+      data: {
+        machine_id: machines[1].id,
+        product_id: products[3].id, // Pepsi - VIDE
         quantity: 0,
         slot_number: 4,
-        max_capacity: 5,
-        low_threshold: randomLowThreshold(),
-        created_at: now,
-        updated_at: now,
-      },
-    }),
-    prisma.stock.create({
-      data: {
-        machine_id: machines[1].id,
-        product_id: products[2].id, // Water - VIDE
-        quantity: 0,
-        slot_number: 5,
-        max_capacity: 5,
+        max_capacity: 4,
         low_threshold: randomLowThreshold(),
         created_at: now,
         updated_at: now,
@@ -384,7 +371,7 @@ async function main() {
     prisma.orderItem.create({
       data: {
         order_id: orders[0].id,
-        product_id: products[1].id, // Chips
+        product_id: products[1].id, // Fuze Tea
         quantity: 1,
         slot_number: 2,
       },
@@ -446,7 +433,7 @@ async function main() {
           order_id: order.id,
           product_id: randomProduct.id,
           quantity: quantity,
-          slot_number: Math.floor(Math.random() * 6) + 1,
+          slot_number: Math.floor(Math.random() * 4) + 1,
           unit_price_cents: unitPriceCents,
           label: randomProduct.name,
           subtotal_cents: subtotalCents,
@@ -481,19 +468,19 @@ async function main() {
 
   // Create some alerts based on new stock configuration
   const alerts = await Promise.all([
-    // Alerte CRITICAL pour machine 2 (5 slots vides sur 5 configurés)
+    // Alerte CRITICAL pour machine 2 (4 slots vides sur 4 configurés)
     prisma.alert.create({
       data: {
         machine_id: machines[1].id,
         type: 'CRITICAL',
-        message: `Stock critique: 5 slot(s) vide(s) sur 5 configurés`,
+        message: `Stock critique: 4 slot(s) vide(s) sur 4 configurés`,
         level: 'ERROR',
         status: 'OPEN',
         created_at: now,
         metadata: {
-          empty_slots: 5,
-          configured_slots: 5,
-          total_slots: 5,
+          empty_slots: 4,
+          configured_slots: 4,
+          total_slots: 4,
         }
       },
     }),
@@ -520,26 +507,35 @@ async function main() {
         restock_id: restocks[0].id,
         stock_id: stocks[0].id, // Coca-Cola slot 1
         quantity_before: 2,
-        quantity_after: 5,
+        quantity_after: 4,
+        quantity_added: 2,
+      },
+    }),
+    prisma.restockItem.create({
+      data: {
+        restock_id: restocks[0].id,
+        stock_id: stocks[1].id, // Fuze Tea slot 2
+        quantity_before: 1,
+        quantity_after: 4,
         quantity_added: 3,
       },
     }),
     prisma.restockItem.create({
       data: {
         restock_id: restocks[0].id,
-        stock_id: stocks[1].id, // Chips slot 2
-        quantity_before: 1,
-        quantity_after: 5,
-        quantity_added: 4,
+        stock_id: stocks[2].id, // Orangina slot 3
+        quantity_before: 3,
+        quantity_after: 4,
+        quantity_added: 1,
       },
     }),
     prisma.restockItem.create({
       data: {
         restock_id: restocks[0].id,
-        stock_id: stocks[2].id, // Water slot 3
-        quantity_before: 3,
-        quantity_after: 5,
-        quantity_added: 2,
+        stock_id: stocks[3].id, // Pepsi slot 4
+        quantity_before: 0,
+        quantity_after: 4,
+        quantity_added: 4,
       },
     }),
   ]);

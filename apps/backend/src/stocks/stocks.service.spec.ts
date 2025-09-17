@@ -835,8 +835,6 @@ describe('StocksService', () => {
         { slot_number: 2 },
         { slot_number: 3 },
         { slot_number: 4 },
-        { slot_number: 5 },
-        { slot_number: 6 },
       ]);
 
       await expect(

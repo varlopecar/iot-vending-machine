@@ -156,8 +156,8 @@ const ProductDetailModal = React.forwardRef<BottomSheet, ProductDetailModalProps
           <View className="items-center mb-4">
             <Image
               source={product.image}
-              style={{ width: 128, height: 128, borderRadius: 12 }}
-              contentFit="cover"
+              style={{ width: 120, height: 120, borderRadius: 12 }}
+              contentFit="contain"
               cachePolicy="memory-disk"
               transition={100}
             />
