@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 import { Card, CardContent, CardHeader, Button, Badge } from "../ui";
 import { trpc } from "../../lib/trpc/client";
+import { getProductImage } from "../../lib/utils/product-images";
 import Image from "next/image";
 
 type StockLevel = "empty" | "low" | "normal" | "full";
@@ -25,6 +26,7 @@ interface SlotCardProps {
     low_threshold: number;
     product_name: string;
     product_price: number;
+    product_category: string;
     product_image_url?: string;
     product_id: string;
   };
@@ -140,10 +142,13 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               {/* Image du produit */}
               <div className="relative w-12 h-12 rounded-lg overflow-hidden bg-muted flex-shrink-0">
                 <Image
-                  src="/assets/images/coca.png"
+                  src={getProductImage(
+                    slot.product_name,
+                    slot.product_category
+                  )}
                   alt={slot.product_name}
                   fill
-                  className="object-cover"
+                  className="object-contain p-1"
                   sizes="48px"
                 />
               </div>
@@ -196,14 +201,15 @@ export function SlotCard({ slot, onEdit, onRestockComplete }: SlotCardProps) {
               aria-label={`Niveau de stock: ${slot.quantity} sur ${slot.max_capacity}`}
             >
               <div
-                className={`h-2 rounded-full transition-all duration-300 ${stockLevel === "empty"
-                  ? "bg-red-500"
-                  : stockLevel === "low"
-                    ? "bg-yellow-500"
-                    : stockLevel === "full"
-                      ? "bg-green-500"
-                      : "bg-blue-500"
-                  }`}
+                className={`h-2 rounded-full transition-all duration-300 ${
+                  stockLevel === "empty"
+                    ? "bg-red-500"
+                    : stockLevel === "low"
+                      ? "bg-yellow-500"
+                      : stockLevel === "full"
+                        ? "bg-green-500"
+                        : "bg-blue-500"
+                }`}
                 style={{ width: `${fillPercentage}%` }}
               />
             </div>

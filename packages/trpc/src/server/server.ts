@@ -531,6 +531,7 @@ const appRouter = t.router({
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
+      product_category: z.string(),
       product_image_url: z.string().optional(),
       product_ingredients_list: z.array(z.string()).optional(),
       product_allergens_list: z.array(z.string()).optional(),
@@ -567,6 +568,7 @@ const appRouter = t.router({
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
+      product_category: z.string(),
       product_image_url: z.string().optional(),
       product_ingredients_list: z.array(z.string()).optional(),
       product_allergens_list: z.array(z.string()).optional(),
@@ -591,6 +593,7 @@ const appRouter = t.router({
     }).extend({
       product_name: z.string(),
       product_price: z.number().positive(),
+      product_category: z.string(),
       product_image_url: z.string().optional(),
       product_ingredients_list: z.array(z.string()).optional(),
       product_allergens_list: z.array(z.string()).optional(),

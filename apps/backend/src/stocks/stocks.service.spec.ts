@@ -206,6 +206,7 @@ describe('StocksService', () => {
         product: {
           id: 'product-1',
           name: 'Coca-Cola',
+          category: 'Boissons',
           price: 1.5,
           image_url: 'coca.jpg',
           ingredients_list: ['Eau', 'Sucre'],
@@ -235,6 +236,7 @@ describe('StocksService', () => {
         low_threshold: mockStocksWithProduct[0].low_threshold,
         product_name: mockStocksWithProduct[0].product.name,
         product_price: mockStocksWithProduct[0].product.price,
+        product_category: mockStocksWithProduct[0].product.category,
         product_image_url: mockStocksWithProduct[0].product.image_url,
         product_ingredients_list:
           mockStocksWithProduct[0].product.ingredients_list,
