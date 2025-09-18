@@ -281,13 +281,13 @@ export class StocksService {
       throw new NotFoundException(`Produit ${slotData.product_id} non trouvé`);
     }
 
-    // Vérifier qu'il n'y a pas déjà 6 slots (limite maximale)
+    // Vérifier qu'il n'y a pas déjà 4 slots (limite maximale)
     const existingSlots = await this.prisma.stock.count({
       where: { machine_id: slotData.machine_id },
     });
-    if (existingSlots >= 6) {
+    if (existingSlots >= 4) {
       throw new BadRequestException(
-        'Une machine ne peut avoir que 6 slots maximum',
+        'Une machine ne peut avoir que 4 slots maximum',
       );
     }
 
@@ -311,17 +311,17 @@ export class StocksService {
         product_id: slotData.product_id,
         slot_number: slotData.slot_number,
         quantity: slotData.initial_quantity,
-        max_capacity: 5, // Maximum 4 produits par slot
+        max_capacity: 4, // Maximum 4 produits par slot
         low_threshold: 1, // Seuil bas à 1 pour tous
       },
     });
 
-    // Mettre la machine en ONLINE si maintenant 6 slots sont configurés
+    // Mettre la machine en ONLINE si maintenant 4 slots sont configurés
     const countAfterCreate = await this.prisma.stock.count({
       where: { machine_id: slotData.machine_id },
     });
 
-    if (countAfterCreate >= 6) {
+    if (countAfterCreate >= 4) {
       await this.prisma.machine.update({
         where: { id: slotData.machine_id },
         data: { status: 'ONLINE' },

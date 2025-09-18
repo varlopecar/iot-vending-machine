@@ -29,6 +29,41 @@ export class MachinesService {
       },
     });
 
+    // Créer automatiquement 4 slots vides avec les produits par défaut
+    try {
+      const products = await this.prisma.product.findMany({
+        take: 4,
+        orderBy: { created_at: 'asc' },
+      });
+
+      if (products.length >= 4) {
+        const stocksToCreate = products.slice(0, 4).map((product, index) => ({
+          machine_id: created.id,
+          product_id: product.id,
+          slot_number: index + 1,
+          quantity: 0, // Slots vides par défaut
+          max_capacity: 4, // Maximum 4 produits par slot
+          low_threshold: 1, // Seuil d'alerte à 1
+          created_at: new Date().toISOString(),
+          updated_at: new Date().toISOString(),
+        }));
+
+        await this.prisma.stock.createMany({
+          data: stocksToCreate,
+        });
+
+        this.logger.log(
+          `4 slots vides créés automatiquement pour la machine ${created.id}`,
+        );
+      }
+    } catch (error) {
+      this.logger.error(
+        `Erreur lors de la création des slots pour la machine ${created.id}:`,
+        error,
+      );
+      // Ne pas faire échouer la création de la machine si la création des slots échoue
+    }
+
     // Générer automatiquement les alertes pour la nouvelle machine
     try {
       await this.alertsService.updateMachineAlerts(created.id);
