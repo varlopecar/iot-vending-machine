@@ -50,11 +50,10 @@ function ExpandableSection({
   );
 }
 
-export default function ProductDetailModal({
-  product,
-  visible,
-  onClose,
-}: ProductDetailModalProps) {
+const ProductDetailModal = React.forwardRef<BottomSheet, ProductDetailModalProps>(function ProductDetailModal(
+  { product, visible, onClose }: ProductDetailModalProps,
+  ref: React.ForwardedRef<BottomSheet>
+) {
   const { isDark } = useTailwindTheme();
   const sheetRef = useRef<BottomSheet>(null);
   const snapPoints = useMemo(() => ["60%", "90%"], []);
@@ -96,7 +95,11 @@ export default function ProductDetailModal({
 
   return (
     <BottomSheet
-      ref={sheetRef}
+      ref={(node) => {
+        sheetRef.current = node as BottomSheet | null;
+        if (typeof ref === 'function') ref(node as any);
+        else if (ref && 'current' in (ref as any)) (ref as any).current = node;
+      }}
       index={visible ? 1 : -1}
       snapPoints={snapPoints}
       onChange={handleChange}
@@ -153,8 +156,8 @@ export default function ProductDetailModal({
           <View className="items-center mb-4">
             <Image
               source={product.image}
-              style={{ width: 128, height: 128, borderRadius: 12 }}
-              contentFit="cover"
+              style={{ width: 120, height: 120, borderRadius: 12 }}
+              contentFit="contain"
               cachePolicy="memory-disk"
               transition={100}
             />
@@ -289,4 +292,6 @@ export default function ProductDetailModal({
       </BottomSheetView>
     </BottomSheet>
   );
-}
+});
+
+export default ProductDetailModal;

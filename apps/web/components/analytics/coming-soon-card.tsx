@@ -1,12 +1,13 @@
 'use client';
 
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Clock, LucideIcon } from 'lucide-react';
+import { Clock } from 'lucide-react';
+import type { ComponentType, SVGProps } from 'react';
 
 interface ComingSoonCardProps {
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: ComponentType<SVGProps<SVGSVGElement>>;
   iconColor?: string;
 }
 

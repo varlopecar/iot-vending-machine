@@ -26,12 +26,12 @@ export function ProductSelectorSingle({
             <Image
               source={product.image}
               style={{
-                width: 64,
-                height: 64,
+                width: 56,
+                height: 56,
                 borderRadius: 12,
                 marginRight: 16,
               }}
-              contentFit="cover"
+              contentFit="contain"
               cachePolicy="memory-disk"
               transition={100}
             />

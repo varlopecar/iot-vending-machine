@@ -154,7 +154,7 @@ export function AddSlotModal({
               id="slot-number"
               type="number"
               min="1"
-              max="6"
+              max="4"
               value={nextSlotNumber ?? ""}
               disabled={true}
               className="bg-gray-50"
@@ -162,7 +162,7 @@ export function AddSlotModal({
             {isNextSlotError ? (
               <p className="text-sm text-red-600 mt-1">
                 {nextSlotError?.message ||
-                  "Aucun slot disponible (maximum 6 slots par machine). Libérez un slot avant d'ajouter."}
+                  "Aucun slot disponible (maximum 4 slots par machine). Libérez un slot avant d'ajouter."}
               </p>
             ) : (
               <p className="text-sm text-gray-500 mt-1">

@@ -44,7 +44,7 @@ export class AlertsService {
       orderBy: { slot_number: 'asc' },
     });
 
-    const maxSlots = 6; // Nombre maximum de slots par machine
+    const maxSlots = 4; // Nombre maximum de slots par machine
     const configuredSlots = stocks.length;
     const emptySlots = stocks.filter((stock) => stock.quantity === 0).length;
     const lowStockSlots = stocks.filter(
@@ -91,7 +91,7 @@ export class AlertsService {
       where: { machine_id: machineId },
     });
 
-    const maxSlots = 6;
+    const maxSlots = 4;
     return stocks.length < maxSlots;
   }
 

@@ -1,8 +1,8 @@
 -- AlterTable
 ALTER TABLE "public"."alerts" ALTER COLUMN "created_at" SET DEFAULT now()::text;
 
--- AlterTable
-ALTER TABLE "public"."loyalty_logs" ALTER COLUMN "created_at" SET DEFAULT now()::text;
+-- AlterTable loyalty_logs supprimée - ligne commentée car table n'existe plus
+-- ALTER TABLE "public"."loyalty_logs" ALTER COLUMN "created_at" SET DEFAULT now()::text;
 
 -- AlterTable
 ALTER TABLE "public"."machines" ALTER COLUMN "last_update" SET DEFAULT now()::text,

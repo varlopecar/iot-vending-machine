@@ -21,8 +21,8 @@ COMMIT;
 ALTER TABLE "public"."alerts" ADD COLUMN     "is_active" BOOLEAN NOT NULL DEFAULT true,
 ALTER COLUMN "created_at" SET DEFAULT now()::text;
 
--- AlterTable
-ALTER TABLE "public"."loyalty_logs" ALTER COLUMN "created_at" SET DEFAULT now()::text;
+-- AlterTable loyalty_logs supprimée - ligne commentée car table n'existe plus
+-- ALTER TABLE "public"."loyalty_logs" ALTER COLUMN "created_at" SET DEFAULT now()::text;
 
 -- AlterTable
 ALTER TABLE "public"."machines" ADD COLUMN     "contact" TEXT,
@@ -33,11 +33,8 @@ ALTER COLUMN "created_at" SET DEFAULT now()::text;
 -- AlterTable
 ALTER TABLE "public"."order_actions" ALTER COLUMN "created_at" SET DEFAULT now()::text;
 
--- AlterTable
-ALTER TABLE "public"."orders" ADD COLUMN     "loyalty_applied" BOOLEAN,
-ADD COLUMN     "points_earned" INTEGER,
-ADD COLUMN     "points_spent" INTEGER,
-ALTER COLUMN "created_at" SET DEFAULT now()::text;
+-- AlterTable - colonnes loyalty déjà ajoutées dans migration précédente
+ALTER TABLE "public"."orders" ALTER COLUMN "created_at" SET DEFAULT now()::text;
 
 -- AlterTable
 ALTER TABLE "public"."payment_events" ALTER COLUMN "created_at" SET DEFAULT now()::text;

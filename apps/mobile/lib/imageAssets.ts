@@ -19,6 +19,14 @@ const IMAGE_BY_NAME: Record<string, ImageSourcePropType> = {
   [normalizeName('Coca-Cola')]: require('../assets/images/coca.png'),
   [normalizeName('Coca Cola')]: require('../assets/images/coca.png'),
 
+  [normalizeName('Fuze Tea')]: require('../assets/images/fuze-tea.png'),
+  [normalizeName('Fuze tea')]: require('../assets/images/fuze-tea.png'),
+
+  [normalizeName('Orangina')]: require('../assets/images/orangina.png'),
+
+  [normalizeName('Pepsi')]: require('../assets/images/pepsi.png'),
+
+  // Legacy products (pour compatibilité)
   [normalizeName('Water Bottle')]: require('../assets/images/eau.png'),
   [normalizeName('Eau minérale')]: require('../assets/images/eau.png'),
   [normalizeName('Eau minerale')]: require('../assets/images/eau.png'),

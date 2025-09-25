@@ -29,6 +29,8 @@ export class MachinesService {
       },
     });
 
+    this.logger.log(`Machine ${created.id} créée sans slots par défaut`);
+
     // Générer automatiquement les alertes pour la nouvelle machine
     try {
       await this.alertsService.updateMachineAlerts(created.id);

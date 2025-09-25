@@ -28,8 +28,8 @@ export default function ProductCard({
         <View className="flex-row items-center flex-1">
           <Image
             source={product.image}
-            className="w-16 h-16 rounded-lg mr-4"
-            resizeMode="cover"
+            className="w-14 h-14 rounded-lg mr-4"
+            resizeMode="contain"
           />
           <View className="flex-1">
             <Text

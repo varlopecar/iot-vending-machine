@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from "react";
-import { View, Text, SafeAreaView, TouchableOpacity, Alert, Modal } from "react-native";
+import { View, Text, SafeAreaView, TouchableOpacity, Alert, Modal, ActivityIndicator } from "react-native";
 import { useRouter, useLocalSearchParams } from "expo-router";
 import { PaymentQRView } from "../components/PaymentQRView";
 import { CheckoutGetStatusResponse } from "../types/stripe";
@@ -173,7 +173,7 @@ export default function PaymentSuccessScreen() {
           <Text className={`text-center mt-2 ${isDark ? 'text-dark-textSecondary' : 'text-light-text-secondary'}`}>
             Génération de votre QR code en cours...
           </Text>
-          <View className={`w-8 h-8 border-2 border-t-transparent rounded-full animate-spin mt-4 ${isDark ? 'border-dark-secondary' : 'border-green-500'}`} />
+          <ActivityIndicator size="small" color={isDark ? "#320120" : "#22C55E"} />
         </View>
       </SafeAreaView>
     );
